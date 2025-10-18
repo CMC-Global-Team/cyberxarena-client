@@ -21,7 +21,6 @@ const menuItems = [
     title: "Quản lý máy tính",
     icon: Monitor,
     href: "/dashboard/computers",
-    disabled: true,
   },
   {
     title: "Quản lý doanh thu",
