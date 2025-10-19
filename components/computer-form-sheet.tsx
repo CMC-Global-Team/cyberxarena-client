@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { ComputerApi, type ComputerDTO } from "@/lib/computers"
 import { useToast } from "@/components/ui/use-toast"
+import { useNotice } from "@/components/notice-provider"
 import { useLoading } from "@/components/loading-provider"
 
 interface ComputerFormSheetProps {
@@ -23,6 +24,7 @@ interface ComputerFormSheetProps {
 export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved }: ComputerFormSheetProps) {
   const { toast } = useToast()
   const { withLoading } = useLoading()
+  const { notify } = useNotice()
   const [formData, setFormData] = useState({
     name: computer?.computerName || "",
     ipAddress: computer?.ipAddress || "",
@@ -49,11 +51,26 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    // Client-side validation (simple)
+    if (!formData.name || formData.name.length > 50) {
+      notify({ type: "error", message: "Tên máy tính không hợp lệ (≤ 50 ký tự)" })
+      return
+    }
+    const ipPattern = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+    if (!ipPattern.test(formData.ipAddress)) {
+      notify({ type: "error", message: "Địa chỉ IP không hợp lệ" })
+      return
+    }
+    if (!(Number(formData.hourlyRate) > 0)) {
+      notify({ type: "error", message: "Giá/giờ phải > 0" })
+      return
+    }
+
     const dto: Omit<ComputerDTO, "computerId"> = {
       computerName: formData.name,
       ipAddress: formData.ipAddress,
       pricePerHour: Number(formData.hourlyRate),
-      status: formData.status,
+      status: formData.status === "In Use" ? "In_Use" : formData.status,
       specifications: {
         cpu: formData.cpu,
         ram: formData.ram,
@@ -167,7 +184,7 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="Available">Sẵn sàng</SelectItem>
-                <SelectItem value="In_Use">Đang sử dụng</SelectItem>
+                <SelectItem value="In Use">Đang sử dụng</SelectItem>
                 <SelectItem value="Broken">Bảo trì</SelectItem>
               </SelectContent>
             </Select>

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Search, Monitor, MoreVertical, Cpu, HardDrive, Wifi, Calendar } from "lucide-react"
 import { ComputerFormSheet } from "@/components/computer-form-sheet"
@@ -21,6 +22,9 @@ export default function ComputersPage() {
   const [selectedComputer, setSelectedComputer] = useState<ComputerDTO | null>(null)
   const [computers, setComputers] = useState<ComputerDTO[]>([])
   const [loading, setLoading] = useState<boolean>(false)
+  const [statusFilter, setStatusFilter] = useState<string>("")
+  const [sortBy, setSortBy] = useState<string>("computerId")
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
 
   const loadComputers = async () => {
     try {
@@ -37,6 +41,31 @@ export default function ComputersPage() {
   useEffect(() => {
     loadComputers()
   }, [])
+
+  // Debounced server filter/sort/search
+  useEffect(() => {
+    const t = setTimeout(async () => {
+      try {
+        setLoading(true)
+        const res = await withLoading(() =>
+          ComputerApi.search({
+            name: searchQuery || undefined,
+            status: statusFilter || undefined,
+            page: 0,
+            size: 100,
+            sortBy,
+            sortDir,
+          })
+        )
+        setComputers(res.content)
+      } catch (e: any) {
+        notify({ type: "error", message: `Lỗi tìm kiếm: ${e?.message || ''}` })
+      } finally {
+        setLoading(false)
+      }
+    }, 400)
+    return () => clearTimeout(t)
+  }, [searchQuery, statusFilter, sortBy, sortDir])
 
   const filteredComputers = useMemo(() => {
     return computers.filter((computer) => {
@@ -79,6 +108,7 @@ export default function ComputersPage() {
       case "AVAILABLE":
         return "bg-green-500/20 text-green-600"
       case "In_Use":
+      case "In Use":
       case "IN_USE":
         return "bg-blue-500/20 text-blue-600"
       case "Broken":
@@ -96,6 +126,7 @@ export default function ComputersPage() {
       case "Available":
         return "Sẵn sàng"
       case "In_Use":
+      case "In Use":
         return "Đang sử dụng"
       case "Broken":
         return "Bảo trì"
@@ -128,7 +159,7 @@ export default function ComputersPage() {
 
       <Card className="border-border bg-card">
         <CardHeader>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -137,6 +168,44 @@ export default function ComputersPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-secondary border-border"
               />
+            </div>
+            <div className="w-[180px]">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="bg-secondary border-border">
+                  <SelectValue placeholder="Trạng thái" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">Tất cả</SelectItem>
+                  <SelectItem value="Available">Sẵn sàng</SelectItem>
+                  <SelectItem value="In Use">Đang sử dụng</SelectItem>
+                  <SelectItem value="Broken">Bảo trì</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-[180px]">
+              <Select value={sortBy} onValueChange={(v)=> setSortBy(v)}>
+                <SelectTrigger className="bg-secondary border-border">
+                  <SelectValue placeholder="Sắp xếp theo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="computerId">ID</SelectItem>
+                  <SelectItem value="computerName">Tên</SelectItem>
+                  <SelectItem value="ipAddress">IP</SelectItem>
+                  <SelectItem value="pricePerHour">Giá/giờ</SelectItem>
+                  <SelectItem value="status">Trạng thái</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-[140px]">
+              <Select value={sortDir} onValueChange={(v)=> setSortDir(v as any)}>
+                <SelectTrigger className="bg-secondary border-border">
+                  <SelectValue placeholder="Thứ tự" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="asc">Tăng dần</SelectItem>
+                  <SelectItem value="desc">Giảm dần</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardHeader>
