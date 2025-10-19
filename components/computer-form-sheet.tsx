@@ -26,7 +26,7 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode }: Comput
     cpu: String(computer?.specifications?.cpu ?? ""),
     ram: String(computer?.specifications?.ram ?? ""),
     gpu: String(computer?.specifications?.gpu ?? ""),
-    status: computer?.status || "Available",
+    status: (computer?.status as string) || "Available",
     hourlyRate: computer ? String(computer.pricePerHour) : "15000",
   })
 
@@ -149,9 +149,9 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode }: Comput
                 <SelectValue placeholder="Chọn trạng thái" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="available">Sẵn sàng</SelectItem>
-                <SelectItem value="occupied">Đang sử dụng</SelectItem>
-                <SelectItem value="maintenance">Bảo trì</SelectItem>
+                <SelectItem value="Available">Sẵn sàng</SelectItem>
+                <SelectItem value="In_Use">Đang sử dụng</SelectItem>
+                <SelectItem value="Broken">Bảo trì</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -162,6 +162,9 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode }: Comput
             </Label>
             <Input
               id="hourlyRate"
+              type="number"
+              inputMode="decimal"
+              step="0.01"
               value={formData.hourlyRate}
               onChange={(e) => setFormData({ ...formData, hourlyRate: e.target.value })}
               placeholder="15,000đ/h"
