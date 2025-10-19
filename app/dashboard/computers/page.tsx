@@ -8,10 +8,10 @@ import { Search, Monitor, MoreVertical, Cpu, HardDrive, Wifi, Calendar } from "l
 import { ComputerFormSheet } from "@/components/computer-form-sheet"
 import { ComputerActionsSheet } from "@/components/computer-actions-sheet"
 import { ComputerApi, type ComputerDTO } from "@/lib/computers"
-import { useToast } from "@/components/ui/use-toast"
+import { useNotice } from "@/components/notice-provider"
 
 export default function ComputersPage() {
-  const { toast } = useToast()
+  const { notify } = useNotice()
   const [searchQuery, setSearchQuery] = useState("")
   const [addSheetOpen, setAddSheetOpen] = useState(false)
   const [editSheetOpen, setEditSheetOpen] = useState(false)
@@ -26,7 +26,7 @@ export default function ComputersPage() {
       const res = await ComputerApi.list({ page: 0, size: 100, sortBy: "computerId", sortDir: "asc" })
       setComputers(res.content)
     } catch (e: any) {
-      toast({ title: "Lỗi tải danh sách máy tính", description: e?.message || "", variant: "destructive" })
+      notify({ type: "error", message: `Lỗi tải danh sách: ${e?.message || ''}` })
     } finally {
       setLoading(false)
     }
@@ -64,10 +64,10 @@ export default function ComputersPage() {
     if (!selectedComputer?.computerId) return
     try {
       await ComputerApi.delete(selectedComputer.computerId)
-      toast({ title: "Đã xóa máy tính" })
-      loadComputers()
+      setComputers((prev) => prev.filter((c) => c.computerId !== selectedComputer.computerId))
+      notify({ type: "success", message: "Đã xóa máy tính" })
     } catch (e: any) {
-      toast({ title: "Xóa thất bại", description: e?.message || "", variant: "destructive" })
+      notify({ type: "error", message: `Xóa thất bại: ${e?.message || ''}` })
     }
   }
 
@@ -267,21 +267,37 @@ export default function ComputersPage() {
         </Card>
       </div>
 
-      <ComputerFormSheet open={addSheetOpen} onOpenChange={(o)=>{ setAddSheetOpen(o); if(!o) loadComputers(); }} mode="add" />
+      <ComputerFormSheet
+        open={addSheetOpen}
+        onOpenChange={setAddSheetOpen}
+        mode="add"
+        onSaved={(newComputer)=>{
+          if (newComputer) setComputers((prev)=> [newComputer, ...prev])
+        }}
+      />
 
       {selectedComputer && (
         <>
           <ComputerFormSheet
             open={editSheetOpen}
-            onOpenChange={(o)=>{ setEditSheetOpen(o); if(!o) loadComputers(); }}
-            computer={selectedComputer as any}
+            onOpenChange={setEditSheetOpen}
+            computer={selectedComputer as ComputerDTO}
             mode="edit"
+            onSaved={(updated)=>{
+              if (!updated) return
+              setComputers((prev)=> prev.map((c)=> c.computerId === updated.computerId ? updated : c))
+            }}
           />
 
           <ComputerActionsSheet
             open={actionsSheetOpen}
             onOpenChange={setActionsSheetOpen}
-            computer={selectedComputer}
+            computer={selectedComputer ? {
+              id: selectedComputer.computerId,
+              name: selectedComputer.computerName,
+              ipAddress: selectedComputer.ipAddress,
+              status: selectedComputer.status as string,
+            } : (null as unknown as any)}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />

@@ -16,9 +16,10 @@ interface ComputerFormSheetProps {
   onOpenChange: (open: boolean) => void
   computer?: ComputerDTO
   mode: "add" | "edit"
+  onSaved?: (computer?: ComputerDTO) => void
 }
 
-export function ComputerFormSheet({ open, onOpenChange, computer, mode }: ComputerFormSheetProps) {
+export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved }: ComputerFormSheetProps) {
   const { toast } = useToast()
   const [formData, setFormData] = useState({
     name: computer?.computerName || "",
@@ -45,15 +46,15 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode }: Comput
     }
     try {
       if (mode === "add") {
-        await ComputerApi.create(dto)
-        toast({ title: "Đã thêm máy tính" })
+        const created = await ComputerApi.create(dto)
+        onSaved?.(created)
       } else if (mode === "edit" && computer?.computerId) {
-        await ComputerApi.update(computer.computerId, dto)
-        toast({ title: "Đã cập nhật máy tính" })
+        const updated = await ComputerApi.update(computer.computerId, dto)
+        onSaved?.(updated)
       }
       onOpenChange(false)
     } catch (err: any) {
-      toast({ title: "Lưu thất bại", description: err?.message || "", variant: "destructive" })
+      // keep sheet open, optionally handle error notice at parent level if needed
     }
   }
 
