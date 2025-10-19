@@ -94,13 +94,25 @@ export default function ComputersPage() {
 
   const handleDelete = async () => {
     if (!selectedComputer?.computerId) return
+    
+    // Check if computer is in use
+    if (selectedComputer.status === "In Use" || selectedComputer.status === "In_Use") {
+      notify({ type: "error", message: "Không thể xóa máy tính đang sử dụng" })
+      return
+    }
+    
     try {
       await withLoading(() => ComputerApi.delete(selectedComputer.computerId))
       setComputers((prev) => prev.filter((c) => c.computerId !== selectedComputer.computerId))
       notify({ type: "success", message: "Đã xóa máy tính" })
     } catch (e: any) {
-      notify({ type: "error", message: `Xóa thất bại: ${e?.message || ''}` })
-      // Optionally reload to reflect server state if deletion is blocked
+      const errorMsg = e?.message || "Lỗi không xác định"
+      if (errorMsg.includes("409") || errorMsg.includes("Conflict")) {
+        notify({ type: "error", message: "Không thể xóa máy tính đang được sử dụng hoặc có dữ liệu liên quan" })
+      } else {
+        notify({ type: "error", message: `Xóa thất bại: ${errorMsg}` })
+      }
+      // Reload to reflect server state
       await loadComputers()
     }
   }
