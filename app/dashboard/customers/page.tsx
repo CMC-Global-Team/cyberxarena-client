@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { UserPlus } from "lucide-react"
 import { CustomerTable } from "@/components/customer-management/customer-table"
@@ -8,14 +8,11 @@ import { CustomerFormSheet } from "@/components/customer-management/customer-for
 import { AccountFormSheet } from "@/components/customer-management/account-form-sheet"
 import { AddBalanceSheet } from "@/components/customer-management/add-balance-sheet"
 import { CustomerStats } from "@/components/customer-management/customer-stats"
+import { CustomerApi, AccountApi, type CustomerDTO, type AccountDTO } from "@/lib/customers"
+import { useNotice } from "@/components/notice-provider"
+import { useLoading } from "@/components/loading-provider"
 
-interface Customer {
-  customerId: number
-  customerName: string
-  phoneNumber: string
-  membershipCard: string
-  balance: number
-  registrationDate: string
+interface Customer extends CustomerDTO {
   hasAccount?: boolean
 }
 
@@ -32,124 +29,167 @@ interface AccountFormData {
 }
 
 export default function CustomersPage() {
+  const { notify } = useNotice()
+  const { withLoading } = useLoading()
   const [customers, setCustomers] = useState<Customer[]>([])
+  const [accounts, setAccounts] = useState<AccountDTO[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
   const [addSheetOpen, setAddSheetOpen] = useState(false)
   const [editSheetOpen, setEditSheetOpen] = useState(false)
   const [accountSheetOpen, setAccountSheetOpen] = useState(false)
   const [addBalanceSheetOpen, setAddBalanceSheetOpen] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
 
-  // Mock data - sẽ thay thế bằng API calls
+  const loadCustomers = async () => {
+    try {
+      setLoading(true)
+      const res = await withLoading(() => CustomerApi.list({ page: 0, size: 100, sortBy: "customerId", sortDir: "asc" }))
+      setCustomers(res)
+    } catch (e: any) {
+      notify({ type: "error", message: `Lỗi tải danh sách khách hàng: ${e?.message || ''}` })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadAccounts = async () => {
+    try {
+      const res = await withLoading(() => AccountApi.search({ page: 0, size: 1000 }))
+      setAccounts(res.content)
+    } catch (e: any) {
+      console.warn("Could not load accounts:", e?.message || '')
+      // Don't show error for accounts as it's optional
+    }
+  }
+
   useEffect(() => {
-    const mockCustomers: Customer[] = [
-      {
-        customerId: 1,
-        customerName: "Nguyễn Văn A",
-        phoneNumber: "0901234567",
-        membershipCard: "VIP001",
-        balance: 50000,
-        registrationDate: "2024-01-15T00:00:00",
-        hasAccount: true,
-      },
-      {
-        customerId: 2,
-        customerName: "Trần Thị B",
-        phoneNumber: "0912345678",
-        membershipCard: "GOLD002",
-        balance: 120000,
-        registrationDate: "2024-02-20T00:00:00",
-        hasAccount: true,
-      },
-      {
-        customerId: 3,
-        customerName: "Lê Văn C",
-        phoneNumber: "0923456789",
-        membershipCard: "",
-        balance: 0,
-        registrationDate: "2024-03-05T00:00:00",
-        hasAccount: false,
-      },
-      {
-        customerId: 4,
-        customerName: "Phạm Thị D",
-        phoneNumber: "0934567890",
-        membershipCard: "SILVER003",
-        balance: 200000,
-        registrationDate: "2024-03-12T00:00:00",
-        hasAccount: true,
-      },
-      {
-        customerId: 5,
-        customerName: "Hoàng Văn E",
-        phoneNumber: "0945678901",
-        membershipCard: "",
-        balance: 75000,
-        registrationDate: "2024-04-18T00:00:00",
-        hasAccount: false,
-      },
-    ]
-    setCustomers(mockCustomers)
+    loadCustomers()
+    loadAccounts()
   }, [])
 
+  // Merge customers with account info
+  const customersWithAccounts = useMemo(() => {
+    return customers.map(customer => ({
+      ...customer,
+      hasAccount: accounts.some(account => account.customerId === customer.customerId)
+    }))
+  }, [customers, accounts])
+
   const handleCreateCustomer = async (data: CustomerFormData) => {
-    // TODO: Implement API call
-    console.log("Creating customer:", data)
-    // Mock implementation
-    const newCustomer: Customer = {
-      customerId: customers.length + 1,
-      customerName: data.customerName,
-      phoneNumber: data.phoneNumber,
-      membershipCard: data.membershipCard,
-      balance: data.balance,
-      registrationDate: new Date().toISOString(),
-      hasAccount: false,
+    try {
+      const newCustomer = await withLoading(() => CustomerApi.create({
+        customerId: 0, // Will be set by server
+        customerName: data.customerName,
+        phoneNumber: data.phoneNumber,
+        membershipCard: data.membershipCard,
+        balance: data.balance,
+        registrationDate: new Date().toISOString()
+      }))
+      
+      setCustomers(prev => [...prev, { ...newCustomer, hasAccount: false }])
+      notify({ type: "success", message: "Đã thêm khách hàng thành công" })
+    } catch (e: any) {
+      notify({ type: "error", message: `Lỗi thêm khách hàng: ${e?.message || ''}` })
+      throw e
     }
-    setCustomers([...customers, newCustomer])
   }
 
   const handleUpdateCustomer = async (data: CustomerFormData) => {
-    // TODO: Implement API call
-    console.log("Updating customer:", selectedCustomer?.customerId, data)
-    // Mock implementation
-    if (selectedCustomer) {
-      setCustomers(customers.map(c => 
+    if (!selectedCustomer) return
+    
+    try {
+      const updatedCustomer = await withLoading(() => CustomerApi.update(selectedCustomer.customerId, {
+        ...selectedCustomer,
+        customerName: data.customerName,
+        phoneNumber: data.phoneNumber,
+        membershipCard: data.membershipCard,
+        balance: data.balance
+      }))
+      
+      setCustomers(prev => prev.map(c => 
         c.customerId === selectedCustomer.customerId 
-          ? { ...c, ...data }
+          ? { ...updatedCustomer, hasAccount: c.hasAccount }
           : c
       ))
+      notify({ type: "success", message: "Đã cập nhật khách hàng thành công" })
+    } catch (e: any) {
+      notify({ type: "error", message: `Lỗi cập nhật khách hàng: ${e?.message || ''}` })
+      throw e
     }
   }
 
   const handleDeleteCustomer = async (customerId: number) => {
-    // TODO: Implement API call
-    console.log("Deleting customer:", customerId)
-    // Mock implementation
-    setCustomers(customers.filter(c => c.customerId !== customerId))
+    try {
+      await withLoading(() => CustomerApi.delete(customerId))
+      setCustomers(prev => prev.filter(c => c.customerId !== customerId))
+      setAccounts(prev => prev.filter(a => a.customerId !== customerId))
+      notify({ type: "success", message: "Đã xóa khách hàng thành công" })
+    } catch (e: any) {
+      const errorMsg = e?.message || "Lỗi không xác định"
+      
+      if (errorMsg.includes("409") || errorMsg.includes("Conflict")) {
+        notify({ type: "error", message: "Không thể xóa khách hàng có tài khoản hoặc có dữ liệu liên quan" })
+      } else if (errorMsg.includes("500") || e?.status === 500) {
+        notify({ type: "error", message: "Không thể xóa khách hàng này. Server có thể đang gặp lỗi hoặc khách hàng có dữ liệu liên quan không thể xóa." })
+      } else if (errorMsg.includes("404")) {
+        notify({ type: "error", message: "Khách hàng không tồn tại hoặc đã bị xóa" })
+      } else {
+        notify({ type: "error", message: `Xóa thất bại: ${errorMsg}` })
+      }
+      
+      // Reload to reflect server state
+      await loadCustomers()
+      await loadAccounts()
+    }
   }
 
   const handleCreateAccount = async (data: AccountFormData) => {
-    // TODO: Implement API call
-    console.log("Creating account for customer:", selectedCustomer?.customerId, data)
-    // Mock implementation
-    if (selectedCustomer) {
-      setCustomers(customers.map(c => 
+    if (!selectedCustomer) return
+    
+    try {
+      const newAccount = await withLoading(() => AccountApi.create({
+        customerId: selectedCustomer.customerId,
+        username: data.username,
+        password: data.password
+      }))
+      
+      setAccounts(prev => [...prev, newAccount])
+      setCustomers(prev => prev.map(c => 
         c.customerId === selectedCustomer.customerId 
           ? { ...c, hasAccount: true }
           : c
       ))
+      notify({ type: "success", message: "Đã tạo tài khoản thành công" })
+    } catch (e: any) {
+      const errorMsg = e?.message || "Lỗi không xác định"
+      
+      if (errorMsg.includes("username") && errorMsg.includes("exists")) {
+        notify({ type: "error", message: "Tên đăng nhập đã tồn tại" })
+      } else {
+        notify({ type: "error", message: `Lỗi tạo tài khoản: ${errorMsg}` })
+      }
+      throw e
     }
   }
 
   const handleAddBalanceAmount = async (amount: number) => {
-    // TODO: Implement API call
-    console.log("Adding balance for customer:", selectedCustomer?.customerId, amount)
-    // Mock implementation
-    if (selectedCustomer) {
-      setCustomers(customers.map(c => 
+    if (!selectedCustomer) return
+    
+    try {
+      const updatedCustomer = await withLoading(() => CustomerApi.update(selectedCustomer.customerId, {
+        ...selectedCustomer,
+        balance: selectedCustomer.balance + amount
+      }))
+      
+      setCustomers(prev => prev.map(c => 
         c.customerId === selectedCustomer.customerId 
-          ? { ...c, balance: c.balance + amount }
+          ? { ...updatedCustomer, hasAccount: c.hasAccount }
           : c
       ))
+      notify({ type: "success", message: `Đã nạp ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)} thành công` })
+    } catch (e: any) {
+      notify({ type: "error", message: `Lỗi nạp tiền: ${e?.message || ''}` })
+      throw e
     }
   }
 
@@ -169,10 +209,10 @@ export default function CustomersPage() {
   }
 
   // Calculate stats
-  const totalCustomers = customers.length
-  const activeCustomers = customers.filter(c => c.hasAccount).length
-  const totalBalance = customers.reduce((sum, c) => sum + c.balance, 0)
-  const newCustomersThisMonth = customers.filter(c => {
+  const totalCustomers = customersWithAccounts.length
+  const activeCustomers = customersWithAccounts.filter(c => c.hasAccount).length
+  const totalBalance = customersWithAccounts.reduce((sum, c) => sum + c.balance, 0)
+  const newCustomersThisMonth = customersWithAccounts.filter(c => {
     const regDate = new Date(c.registrationDate)
     const now = new Date()
     return regDate.getMonth() === now.getMonth() && regDate.getFullYear() === now.getFullYear()
@@ -202,7 +242,7 @@ export default function CustomersPage() {
       />
 
       <CustomerTable 
-        customers={customers}
+        customers={customersWithAccounts}
         onEdit={handleEdit}
         onDelete={handleDeleteCustomer}
         onManageAccount={handleManageAccount}
