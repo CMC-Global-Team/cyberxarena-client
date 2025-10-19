@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Search, MoreVertical, Mail, Phone, Calendar, DollarSign } from "lucide-react"
 import { CustomerActionsSheet } from "@/components/customer-management/customer-actions-sheet"
@@ -34,15 +35,72 @@ export function CustomerTable({
   onAddBalance 
 }: CustomerTableProps) {
   const [searchQuery, setSearchQuery] = useState("")
+  const [accountFilter, setAccountFilter] = useState<string>("all")
+  const [sortBy, setSortBy] = useState<string>("customerId")
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
   const [actionsSheetOpen, setActionsSheetOpen] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
 
-  const filteredCustomers = customers.filter(
-    (customer) =>
-      customer.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.phoneNumber.includes(searchQuery) ||
-      customer.membershipCard?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredAndSortedCustomers = useMemo(() => {
+    let filtered = customers.filter((customer) => {
+      // Search filter
+      const matchesSearch = 
+        customer.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        customer.phoneNumber.includes(searchQuery) ||
+        customer.membershipCard?.toLowerCase().includes(searchQuery.toLowerCase())
+
+      // Account filter
+      const matchesAccount = 
+        accountFilter === "all" || 
+        (accountFilter === "hasAccount" && customer.hasAccount) ||
+        (accountFilter === "noAccount" && !customer.hasAccount)
+
+      return matchesSearch && matchesAccount
+    })
+
+    // Sort
+    filtered.sort((a, b) => {
+      let aValue: any, bValue: any
+      
+      switch (sortBy) {
+        case "customerId":
+          aValue = a.customerId
+          bValue = b.customerId
+          break
+        case "customerName":
+          aValue = a.customerName
+          bValue = b.customerName
+          break
+        case "phoneNumber":
+          aValue = a.phoneNumber || ""
+          bValue = b.phoneNumber || ""
+          break
+        case "membershipCard":
+          aValue = a.membershipCard || ""
+          bValue = b.membershipCard || ""
+          break
+        case "balance":
+          aValue = a.balance
+          bValue = b.balance
+          break
+        case "registrationDate":
+          aValue = new Date(a.registrationDate).getTime()
+          bValue = new Date(b.registrationDate).getTime()
+          break
+        default:
+          aValue = a.customerId
+          bValue = b.customerId
+      }
+
+      if (sortDir === "asc") {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
+      } else {
+        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
+      }
+    })
+
+    return filtered
+  }, [customers, searchQuery, accountFilter, sortBy, sortDir])
 
   const handleOpenActions = (customer: Customer) => {
     setSelectedCustomer(customer)
@@ -64,7 +122,7 @@ export function CustomerTable({
     <>
       <Card className="border-border bg-card">
         <CardHeader>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -73,6 +131,44 @@ export function CustomerTable({
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-secondary border-border"
               />
+            </div>
+            <div className="w-[180px]">
+              <Select value={accountFilter} onValueChange={setAccountFilter}>
+                <SelectTrigger className="bg-secondary border-border">
+                  <SelectValue placeholder="Tài khoản" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="hasAccount">Có tài khoản</SelectItem>
+                  <SelectItem value="noAccount">Chưa có tài khoản</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-[180px]">
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="bg-secondary border-border">
+                  <SelectValue placeholder="Sắp xếp theo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="customerId">ID</SelectItem>
+                  <SelectItem value="customerName">Tên</SelectItem>
+                  <SelectItem value="phoneNumber">Số điện thoại</SelectItem>
+                  <SelectItem value="membershipCard">Thẻ thành viên</SelectItem>
+                  <SelectItem value="balance">Số dư</SelectItem>
+                  <SelectItem value="registrationDate">Ngày đăng ký</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-[140px]">
+              <Select value={sortDir} onValueChange={(v) => setSortDir(v as "asc" | "desc")}>
+                <SelectTrigger className="bg-secondary border-border">
+                  <SelectValue placeholder="Thứ tự" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="asc">Tăng dần</SelectItem>
+                  <SelectItem value="desc">Giảm dần</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardHeader>
@@ -91,7 +187,7 @@ export function CustomerTable({
                 </tr>
               </thead>
               <tbody>
-                {filteredCustomers.map((customer) => (
+                {filteredAndSortedCustomers.map((customer) => (
                   <tr key={customer.customerId} className="border-b border-border hover:bg-secondary/50 transition-colors">
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
@@ -158,7 +254,7 @@ export function CustomerTable({
               </tbody>
             </table>
           </div>
-          {filteredCustomers.length === 0 && (
+          {filteredAndSortedCustomers.length === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">Không tìm thấy khách hàng nào</p>
             </div>
