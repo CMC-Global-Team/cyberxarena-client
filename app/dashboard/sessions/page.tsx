@@ -72,11 +72,16 @@ export default function SessionsPage() {
 
   const filteredSessions = useMemo(() => {
     if (!sessions || !Array.isArray(sessions)) return []
+    const query = searchQuery || ''
     return sessions.filter((session) => {
+      const customerName = session.customerName || ''
+      const computerName = session.computerName || ''
+      const sessionId = session.sessionId || ''
+      
       return (
-        session.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        session.computerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        session.sessionId.toString().includes(searchQuery)
+        customerName.toLowerCase().includes(query.toLowerCase()) ||
+        computerName.toLowerCase().includes(query.toLowerCase()) ||
+        sessionId.toString().includes(query)
       )
     })
   }, [sessions, searchQuery])
@@ -274,19 +279,19 @@ export default function SessionsPage() {
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2 text-sm text-foreground">
                         <User className="h-3 w-3 text-muted-foreground" />
-                        {session.customerName}
+                        {session.customerName || 'N/A'}
                       </div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2 text-sm text-foreground">
                         <Monitor className="h-3 w-3 text-muted-foreground" />
-                        {session.computerName}
+                        {session.computerName || 'N/A'}
                       </div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2 text-sm text-foreground">
                         <Calendar className="h-3 w-3 text-muted-foreground" />
-                        {formatDateTime(session.startTime)}
+                        {session.startTime ? formatDateTime(session.startTime) : 'N/A'}
                       </div>
                     </td>
                     <td className="py-4 px-4">
@@ -297,14 +302,14 @@ export default function SessionsPage() {
                     </td>
                     <td className="py-4 px-4">
                       <span className="text-sm font-medium text-foreground">
-                        {formatDuration(session.startTime, session.endTime)}
+                        {session.startTime ? formatDuration(session.startTime, session.endTime) : 'N/A'}
                       </span>
                     </td>
                     <td className="py-4 px-4">
                       <span
-                        className={`inline-flex items-center px-2 py-1 text-xs font-medium ${getStatusColor(session.status)}`}
+                        className={`inline-flex items-center px-2 py-1 text-xs font-medium ${getStatusColor(session.status || '')}`}
                       >
-                        {getStatusText(session.status)}
+                        {getStatusText(session.status || '')}
                       </span>
                     </td>
                     <td className="py-4 px-4 text-right">
@@ -364,6 +369,7 @@ export default function SessionsPage() {
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
               {(sessions || []).reduce((total, session) => {
+                if (!session.startTime) return total
                 const start = new Date(session.startTime)
                 const end = session.endTime ? new Date(session.endTime) : new Date()
                 const diffMs = end.getTime() - start.getTime()
@@ -384,6 +390,7 @@ export default function SessionsPage() {
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
               {(sessions || []).reduce((total, session) => {
+                if (!session.startTime) return total
                 const start = new Date(session.startTime)
                 const end = session.endTime ? new Date(session.endTime) : new Date()
                 const diffMs = end.getTime() - start.getTime()
