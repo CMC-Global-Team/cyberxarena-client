@@ -103,6 +103,25 @@ export default function ComputersPage() {
     }
   }
 
+  const handleMaintenance = async () => {
+    if (!selectedComputer?.computerId) return
+    try {
+      const updated = await withLoading(() =>
+        ComputerApi.update(selectedComputer.computerId, {
+          computerName: selectedComputer.computerName,
+          ipAddress: selectedComputer.ipAddress,
+          pricePerHour: Number(selectedComputer.pricePerHour),
+          status: "Broken",
+          specifications: selectedComputer.specifications || {},
+        })
+      )
+      setComputers((prev)=> prev.map((c)=> c.computerId === updated.computerId ? updated : c))
+      notify({ type: "success", message: "Đã chuyển sang chế độ bảo trì" })
+    } catch (e: any) {
+      notify({ type: "error", message: `Chuyển bảo trì thất bại: ${e?.message || ''}` })
+    }
+  }
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Available":
@@ -384,6 +403,7 @@ export default function ComputersPage() {
             } : (null as unknown as any)}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onMaintenance={handleMaintenance}
           />
         </>
       )}

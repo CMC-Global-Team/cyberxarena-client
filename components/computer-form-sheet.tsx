@@ -52,7 +52,7 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     // Client-side validation (simple)
-    if (!formData.name || formData.name.length > 50) {
+    if (!formData.name || formData.name.trim().length === 0 || formData.name.length > 50) {
       notify({ type: "error", message: "Tên máy tính không hợp lệ (≤ 50 ký tự)" })
       return
     }
@@ -61,8 +61,16 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
       notify({ type: "error", message: "Địa chỉ IP không hợp lệ" })
       return
     }
-    if (!(Number(formData.hourlyRate) > 0)) {
+    if (!Number.isFinite(Number(formData.hourlyRate)) || !(Number(formData.hourlyRate) > 0)) {
       notify({ type: "error", message: "Giá/giờ phải > 0" })
+      return
+    }
+    if (!formData.status) {
+      notify({ type: "error", message: "Vui lòng chọn trạng thái" })
+      return
+    }
+    if (!formData.cpu || !formData.ram || !formData.gpu) {
+      notify({ type: "error", message: "Vui lòng nhập đủ CPU, RAM, GPU" })
       return
     }
 
