@@ -1,91 +1,59 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search, Monitor, MoreVertical, Cpu, HardDrive, Wifi, Calendar } from "lucide-react"
 import { ComputerFormSheet } from "@/components/computer-form-sheet"
 import { ComputerActionsSheet } from "@/components/computer-actions-sheet"
+import { ComputerApi, type ComputerDTO } from "@/lib/computers"
+import { useNotice } from "@/components/notice-provider"
+import { useLoading } from "@/components/loading-provider"
 
 export default function ComputersPage() {
+  const { notify } = useNotice()
+  const { withLoading } = useLoading()
   const [searchQuery, setSearchQuery] = useState("")
   const [addSheetOpen, setAddSheetOpen] = useState(false)
   const [editSheetOpen, setEditSheetOpen] = useState(false)
   const [actionsSheetOpen, setActionsSheetOpen] = useState(false)
-  const [selectedComputer, setSelectedComputer] = useState<any>(null)
+  const [selectedComputer, setSelectedComputer] = useState<ComputerDTO | null>(null)
+  const [computers, setComputers] = useState<ComputerDTO[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
 
-  const computers = [
-    {
-      id: 1,
-      name: "Máy tính 01",
-      ipAddress: "192.168.1.101",
-      cpu: "Intel i5-12400F",
-      ram: "16GB DDR4",
-      gpu: "RTX 3060",
-      status: "available",
-      lastUsed: "15/01/2024",
-      totalHours: 1250,
-      hourlyRate: "15,000đ/h",
-    },
-    {
-      id: 2,
-      name: "Máy tính 02",
-      ipAddress: "192.168.1.102",
-      cpu: "Intel i7-12700F",
-      ram: "32GB DDR4",
-      gpu: "RTX 3070",
-      status: "occupied",
-      lastUsed: "20/02/2024",
-      totalHours: 1890,
-      hourlyRate: "20,000đ/h",
-    },
-    {
-      id: 3,
-      name: "Máy tính 03",
-      ipAddress: "192.168.1.103",
-      cpu: "AMD Ryzen 5 5600X",
-      ram: "16GB DDR4",
-      gpu: "RTX 3060",
-      status: "maintenance",
-      lastUsed: "05/03/2024",
-      totalHours: 2340,
-      hourlyRate: "15,000đ/h",
-    },
-    {
-      id: 4,
-      name: "Máy tính 04",
-      ipAddress: "192.168.1.104",
-      cpu: "Intel i5-12400F",
-      ram: "16GB DDR4",
-      gpu: "RTX 3060",
-      status: "available",
-      lastUsed: "12/03/2024",
-      totalHours: 1670,
-      hourlyRate: "15,000đ/h",
-    },
-    {
-      id: 5,
-      name: "Máy tính 05",
-      ipAddress: "192.168.1.105",
-      cpu: "AMD Ryzen 7 5800X",
-      ram: "32GB DDR4",
-      gpu: "RTX 3080",
-      status: "available",
-      lastUsed: "18/04/2024",
-      totalHours: 2560,
-      hourlyRate: "25,000đ/h",
-    },
-  ]
+  const loadComputers = async () => {
+    try {
+      setLoading(true)
+      const res = await withLoading(() => ComputerApi.list({ page: 0, size: 100, sortBy: "computerId", sortDir: "asc" }))
+      setComputers(res.content)
+    } catch (e: any) {
+      notify({ type: "error", message: `Lỗi tải danh sách: ${e?.message || ''}` })
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  const filteredComputers = computers.filter(
-    (computer) =>
-      computer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      computer.ipAddress.includes(searchQuery) ||
-      computer.cpu.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  useEffect(() => {
+    loadComputers()
+  }, [])
 
-  const handleOpenActions = (computer: any) => {
+  const filteredComputers = useMemo(() => {
+    return computers.filter((computer) => {
+      const cpu = String(computer.specifications?.cpu ?? "")
+      const ram = String(computer.specifications?.ram ?? "")
+      const gpu = String(computer.specifications?.gpu ?? "")
+      return (
+        computer.computerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        computer.ipAddress.includes(searchQuery) ||
+        cpu.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        ram.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        gpu.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    })
+  }, [computers, searchQuery])
+
+  const handleOpenActions = (computer: ComputerDTO) => {
     setSelectedComputer(computer)
     setActionsSheetOpen(true)
   }
@@ -94,17 +62,24 @@ export default function ComputersPage() {
     setEditSheetOpen(true)
   }
 
-  const handleDelete = () => {
-    console.log("[v0] Computer deleted")
+  const handleDelete = async () => {
+    if (!selectedComputer?.computerId) return
+    try {
+      await withLoading(() => ComputerApi.delete(selectedComputer.computerId))
+      setComputers((prev) => prev.filter((c) => c.computerId !== selectedComputer.computerId))
+      notify({ type: "success", message: "Đã xóa máy tính" })
+    } catch (e: any) {
+      notify({ type: "error", message: `Xóa thất bại: ${e?.message || ''}` })
+    }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "available":
+      case "Available":
         return "bg-green-500/20 text-green-600"
-      case "occupied":
+      case "In_Use":
         return "bg-blue-500/20 text-blue-600"
-      case "maintenance":
+      case "Broken":
         return "bg-yellow-500/20 text-yellow-600"
       default:
         return "bg-muted text-muted-foreground"
@@ -113,11 +88,11 @@ export default function ComputersPage() {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case "available":
+      case "Available":
         return "Sẵn sàng"
-      case "occupied":
+      case "In_Use":
         return "Đang sử dụng"
-      case "maintenance":
+      case "Broken":
         return "Bảo trì"
       default:
         return "Không xác định"
@@ -170,14 +145,14 @@ export default function ComputersPage() {
               </thead>
               <tbody>
                 {filteredComputers.map((computer) => (
-                  <tr key={computer.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
+                  <tr key={computer.computerId} className="border-b border-border hover:bg-secondary/50 transition-colors">
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 bg-primary/20 flex items-center justify-center text-primary font-medium">
                           <Monitor className="h-5 w-5" />
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-foreground">{computer.name}</p>
+                          <p className="text-sm font-medium text-foreground">{computer.computerName}</p>
                           <p className="text-xs text-muted-foreground">IP: {computer.ipAddress}</p>
                         </div>
                       </div>
@@ -186,29 +161,29 @@ export default function ComputersPage() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 text-sm text-foreground">
                           <Cpu className="h-3 w-3 text-muted-foreground" />
-                          {computer.cpu}
+                          {String(computer.specifications?.cpu ?? "")}
                         </div>
                         <div className="flex items-center gap-2 text-sm text-foreground">
                           <HardDrive className="h-3 w-3 text-muted-foreground" />
-                          {computer.ram}
+                          {String(computer.specifications?.ram ?? "")}
                         </div>
                         <div className="flex items-center gap-2 text-sm text-foreground">
                           <Wifi className="h-3 w-3 text-muted-foreground" />
-                          {computer.gpu}
+                          {String(computer.specifications?.gpu ?? "")}
                         </div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2 text-sm text-foreground">
                         <Calendar className="h-3 w-3 text-muted-foreground" />
-                        {computer.lastUsed}
+                        {/* no lastUsed in DTO */}
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="text-sm font-medium text-foreground">{computer.totalHours}h</span>
+                      {/* no totalHours in DTO */}
                     </td>
                     <td className="py-4 px-4">
-                      <span className="text-sm font-medium text-foreground">{computer.hourlyRate}</span>
+                      <span className="text-sm font-medium text-foreground">{Intl.NumberFormat("vi-VN").format(Number(computer.pricePerHour))}đ/h</span>
                     </td>
                     <td className="py-4 px-4">
                       <span
@@ -232,7 +207,7 @@ export default function ComputersPage() {
               </tbody>
             </table>
           </div>
-          {filteredComputers.length === 0 && (
+          {(!loading && filteredComputers.length === 0) && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">Không tìm thấy máy tính nào</p>
             </div>
@@ -248,7 +223,7 @@ export default function ComputersPage() {
           <CardContent>
             <div className="text-2xl font-bold text-foreground">{computers.length}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {computers.filter((c) => c.status === "available").length} sẵn sàng
+              {computers.filter((c) => c.status === "Available").length} sẵn sàng
             </p>
           </CardContent>
         </Card>
@@ -259,10 +234,10 @@ export default function ComputersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {computers.filter((c) => c.status === "occupied").length}
+              {computers.filter((c) => c.status === "In_Use").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {Math.round((computers.filter((c) => c.status === "occupied").length / computers.length) * 100)}% tổng số
+              {computers.length > 0 ? Math.round((computers.filter((c) => c.status === "In_Use").length / computers.length) * 100) : 0}% tổng số
             </p>
           </CardContent>
         </Card>
@@ -273,10 +248,10 @@ export default function ComputersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {computers.reduce((sum, c) => sum + c.totalHours, 0)}h
+              {/* No totalHours in DTO */}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Trung bình {Math.round(computers.reduce((sum, c) => sum + c.totalHours, 0) / computers.length)}h/máy
+              {/* Placeholder */}
             </p>
           </CardContent>
         </Card>
@@ -287,28 +262,45 @@ export default function ComputersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {computers.filter((c) => c.status === "maintenance").length}
+              {computers.filter((c) => c.status === "Broken").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">Máy cần sửa chữa</p>
           </CardContent>
         </Card>
       </div>
 
-      <ComputerFormSheet open={addSheetOpen} onOpenChange={setAddSheetOpen} mode="add" />
+      <ComputerFormSheet
+        open={addSheetOpen}
+        onOpenChange={setAddSheetOpen}
+        mode="add"
+        onSaved={(newComputer)=>{
+          if (newComputer) setComputers((prev)=> [newComputer, ...prev])
+        }}
+      />
 
       {selectedComputer && (
         <>
           <ComputerFormSheet
+            key={selectedComputer?.computerId ?? 'edit'}
             open={editSheetOpen}
             onOpenChange={setEditSheetOpen}
-            computer={selectedComputer}
+            computer={selectedComputer as ComputerDTO}
             mode="edit"
+            onSaved={(updated)=>{
+              if (!updated) return
+              setComputers((prev)=> prev.map((c)=> c.computerId === updated.computerId ? updated : c))
+            }}
           />
 
           <ComputerActionsSheet
             open={actionsSheetOpen}
             onOpenChange={setActionsSheetOpen}
-            computer={selectedComputer}
+            computer={selectedComputer ? {
+              id: selectedComputer.computerId,
+              name: selectedComputer.computerName,
+              ipAddress: selectedComputer.ipAddress,
+              status: selectedComputer.status as string,
+            } : (null as unknown as any)}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />

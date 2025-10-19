@@ -2,45 +2,76 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { ComputerApi, type ComputerDTO } from "@/lib/computers"
+import { useToast } from "@/components/ui/use-toast"
+import { useLoading } from "@/components/loading-provider"
 
 interface ComputerFormSheetProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  computer?: {
-    id: number
-    name: string
-    ipAddress: string
-    cpu: string
-    ram: string
-    gpu: string
-    status: string
-    hourlyRate: string
-  }
+  computer?: ComputerDTO
   mode: "add" | "edit"
+  onSaved?: (computer?: ComputerDTO) => void
 }
 
-export function ComputerFormSheet({ open, onOpenChange, computer, mode }: ComputerFormSheetProps) {
+export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved }: ComputerFormSheetProps) {
+  const { toast } = useToast()
+  const { withLoading } = useLoading()
   const [formData, setFormData] = useState({
-    name: computer?.name || "",
+    name: computer?.computerName || "",
     ipAddress: computer?.ipAddress || "",
-    cpu: computer?.cpu || "",
-    ram: computer?.ram || "",
-    gpu: computer?.gpu || "",
-    status: computer?.status || "available",
-    hourlyRate: computer?.hourlyRate || "15,000đ/h",
+    cpu: String(computer?.specifications?.cpu ?? ""),
+    ram: String(computer?.specifications?.ram ?? ""),
+    gpu: String(computer?.specifications?.gpu ?? ""),
+    status: (computer?.status as string) || "Available",
+    hourlyRate: computer ? String(computer.pricePerHour) : "15000",
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Sync form when the selected computer changes or when sheet opens
+  useEffect(() => {
+    if (!open) return
+    setFormData({
+      name: computer?.computerName || "",
+      ipAddress: computer?.ipAddress || "",
+      cpu: String(computer?.specifications?.cpu ?? ""),
+      ram: String(computer?.specifications?.ram ?? ""),
+      gpu: String(computer?.specifications?.gpu ?? ""),
+      status: (computer?.status as string) || "Available",
+      hourlyRate: computer ? String(computer.pricePerHour) : "15000",
+    })
+  }, [computer, mode, open])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("[v0] Form submitted:", formData)
-    // TODO: Handle form submission
-    onOpenChange(false)
+    const dto: Omit<ComputerDTO, "computerId"> = {
+      computerName: formData.name,
+      ipAddress: formData.ipAddress,
+      pricePerHour: Number(formData.hourlyRate),
+      status: formData.status,
+      specifications: {
+        cpu: formData.cpu,
+        ram: formData.ram,
+        gpu: formData.gpu,
+      },
+    }
+    try {
+      if (mode === "add") {
+        const created = await withLoading(() => ComputerApi.create(dto))
+        onSaved?.(created)
+      } else if (mode === "edit" && computer?.computerId) {
+        const updated = await withLoading(() => ComputerApi.update(computer.computerId, dto))
+        onSaved?.(updated)
+      }
+      onOpenChange(false)
+    } catch (err: any) {
+      // keep sheet open, optionally handle error notice at parent level if needed
+    }
   }
 
   return (
@@ -135,9 +166,9 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode }: Comput
                 <SelectValue placeholder="Chọn trạng thái" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="available">Sẵn sàng</SelectItem>
-                <SelectItem value="occupied">Đang sử dụng</SelectItem>
-                <SelectItem value="maintenance">Bảo trì</SelectItem>
+                <SelectItem value="Available">Sẵn sàng</SelectItem>
+                <SelectItem value="In_Use">Đang sử dụng</SelectItem>
+                <SelectItem value="Broken">Bảo trì</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -148,6 +179,9 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode }: Comput
             </Label>
             <Input
               id="hourlyRate"
+              type="number"
+              inputMode="decimal"
+              step="0.01"
               value={formData.hourlyRate}
               onChange={(e) => setFormData({ ...formData, hourlyRate: e.target.value })}
               placeholder="15,000đ/h"
