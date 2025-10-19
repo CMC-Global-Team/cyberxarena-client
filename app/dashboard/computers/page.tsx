@@ -22,7 +22,7 @@ export default function ComputersPage() {
   const [selectedComputer, setSelectedComputer] = useState<ComputerDTO | null>(null)
   const [computers, setComputers] = useState<ComputerDTO[]>([])
   const [loading, setLoading] = useState<boolean>(false)
-  const [statusFilter, setStatusFilter] = useState<string>("")
+  const [statusFilter, setStatusFilter] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("computerId")
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
 
@@ -50,7 +50,7 @@ export default function ComputersPage() {
         const res = await withLoading(() =>
           ComputerApi.search({
             name: searchQuery || undefined,
-            status: statusFilter || undefined,
+            status: statusFilter === "all" ? undefined : statusFilter,
             page: 0,
             size: 100,
             sortBy,
@@ -175,7 +175,7 @@ export default function ComputersPage() {
                   <SelectValue placeholder="Trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Tất cả</SelectItem>
+                  <SelectItem value="all">Tất cả</SelectItem>
                   <SelectItem value="Available">Sẵn sàng</SelectItem>
                   <SelectItem value="In Use">Đang sử dụng</SelectItem>
                   <SelectItem value="Broken">Bảo trì</SelectItem>
