@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Search, Monitor, MoreVertical, Cpu, HardDrive, Wifi, Calendar } from "lucide-react"
 import { ComputerFormSheet } from "@/components/computer-form-sheet"
@@ -21,6 +22,9 @@ export default function ComputersPage() {
   const [selectedComputer, setSelectedComputer] = useState<ComputerDTO | null>(null)
   const [computers, setComputers] = useState<ComputerDTO[]>([])
   const [loading, setLoading] = useState<boolean>(false)
+  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [sortBy, setSortBy] = useState<string>("computerId")
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
 
   const loadComputers = async () => {
     try {
@@ -37,6 +41,32 @@ export default function ComputersPage() {
   useEffect(() => {
     loadComputers()
   }, [])
+
+  // Debounced server filter/sort/search
+  useEffect(() => {
+    const toApiStatus = (s: string | undefined) => (s === "In Use" ? "In_Use" : s)
+    const t = setTimeout(async () => {
+      try {
+        setLoading(true)
+        const res = await withLoading(() =>
+          ComputerApi.search({
+            name: searchQuery || undefined,
+            status: statusFilter === "all" ? undefined : toApiStatus(statusFilter),
+            page: 0,
+            size: 100,
+            sortBy,
+            sortDir,
+          })
+        )
+        setComputers(res.content)
+      } catch (e: any) {
+        notify({ type: "error", message: `Lỗi tìm kiếm: ${e?.message || ''}` })
+      } finally {
+        setLoading(false)
+      }
+    }, 400)
+    return () => clearTimeout(t)
+  }, [searchQuery, statusFilter, sortBy, sortDir])
 
   const filteredComputers = useMemo(() => {
     return computers.filter((computer) => {
@@ -64,22 +94,65 @@ export default function ComputersPage() {
 
   const handleDelete = async () => {
     if (!selectedComputer?.computerId) return
+    
+    // Check if computer is in use - only block deletion for "In Use" status
+    if (selectedComputer.status === "In Use" || selectedComputer.status === "In_Use") {
+      notify({ type: "error", message: "Không thể xóa máy tính khi đang có người sử dụng" })
+      return
+    }
+    
     try {
       await withLoading(() => ComputerApi.delete(selectedComputer.computerId))
       setComputers((prev) => prev.filter((c) => c.computerId !== selectedComputer.computerId))
-      notify({ type: "success", message: "Đã xóa máy tính" })
+      notify({ type: "success", message: "Đã xóa máy tính thành công" })
     } catch (e: any) {
-      notify({ type: "error", message: `Xóa thất bại: ${e?.message || ''}` })
+      const errorMsg = e?.message || "Lỗi không xác định"
+      console.error("Delete error:", e)
+      
+      if (errorMsg.includes("409") || errorMsg.includes("Conflict")) {
+        notify({ type: "error", message: "Không thể xóa máy tính đang được sử dụng hoặc có dữ liệu liên quan" })
+      } else if (errorMsg.includes("500") || e?.status === 500) {
+        notify({ type: "error", message: "Không thể xóa máy tính này. Server có thể đang gặp lỗi hoặc máy tính có dữ liệu liên quan không thể xóa." })
+      } else if (errorMsg.includes("404")) {
+        notify({ type: "error", message: "Máy tính không tồn tại hoặc đã bị xóa" })
+      } else {
+        notify({ type: "error", message: `Xóa thất bại: ${errorMsg}` })
+      }
+      // Reload to reflect server state
+      await loadComputers()
+    }
+  }
+
+  const handleMaintenance = async () => {
+    if (!selectedComputer?.computerId) return
+    try {
+      const updated = await withLoading(() =>
+        ComputerApi.update(selectedComputer.computerId, {
+          computerName: selectedComputer.computerName,
+          ipAddress: selectedComputer.ipAddress,
+          pricePerHour: Number(selectedComputer.pricePerHour),
+          status: "Broken",
+          specifications: selectedComputer.specifications || {},
+        })
+      )
+      setComputers((prev)=> prev.map((c)=> c.computerId === updated.computerId ? updated : c))
+      notify({ type: "success", message: "Đã chuyển sang chế độ bảo trì" })
+    } catch (e: any) {
+      notify({ type: "error", message: `Chuyển bảo trì thất bại: ${e?.message || ''}` })
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Available":
+      case "AVAILABLE":
         return "bg-green-500/20 text-green-600"
       case "In_Use":
+      case "In Use":
+      case "IN_USE":
         return "bg-blue-500/20 text-blue-600"
       case "Broken":
+      case "BROKEN":
         return "bg-yellow-500/20 text-yellow-600"
       default:
         return "bg-muted text-muted-foreground"
@@ -87,12 +160,21 @@ export default function ComputersPage() {
   }
 
   const getStatusText = (status: string) => {
+    // Debug: log the actual status value
+    console.log('Status received:', status, 'Type:', typeof status)
     switch (status) {
       case "Available":
         return "Sẵn sàng"
       case "In_Use":
+      case "In Use":
         return "Đang sử dụng"
       case "Broken":
+        return "Bảo trì"
+      case "IN_USE":
+        return "Đang sử dụng"
+      case "AVAILABLE":
+        return "Sẵn sàng"
+      case "BROKEN":
         return "Bảo trì"
       default:
         return "Không xác định"
@@ -117,7 +199,7 @@ export default function ComputersPage() {
 
       <Card className="border-border bg-card">
         <CardHeader>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -126,6 +208,44 @@ export default function ComputersPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-secondary border-border"
               />
+            </div>
+            <div className="w-[180px]">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="bg-secondary border-border">
+                  <SelectValue placeholder="Trạng thái" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="Available">Sẵn sàng</SelectItem>
+                  <SelectItem value="In Use">Đang sử dụng</SelectItem>
+                  <SelectItem value="Broken">Bảo trì</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-[180px]">
+              <Select value={sortBy} onValueChange={(v)=> setSortBy(v)}>
+                <SelectTrigger className="bg-secondary border-border">
+                  <SelectValue placeholder="Sắp xếp theo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="computerId">ID</SelectItem>
+                  <SelectItem value="computerName">Tên</SelectItem>
+                  <SelectItem value="ipAddress">IP</SelectItem>
+                  <SelectItem value="pricePerHour">Giá/giờ</SelectItem>
+                  <SelectItem value="status">Trạng thái</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="w-[140px]">
+              <Select value={sortDir} onValueChange={(v)=> setSortDir(v as any)}>
+                <SelectTrigger className="bg-secondary border-border">
+                  <SelectValue placeholder="Thứ tự" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="asc">Tăng dần</SelectItem>
+                  <SelectItem value="desc">Giảm dần</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardHeader>
@@ -303,6 +423,7 @@ export default function ComputersPage() {
             } : (null as unknown as any)}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            onMaintenance={handleMaintenance}
           />
         </>
       )}

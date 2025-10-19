@@ -15,21 +15,18 @@ interface ComputerActionsSheetProps {
   }
   onEdit: () => void
   onDelete: () => void
+  onMaintenance?: () => void
 }
 
-export function ComputerActionsSheet({ open, onOpenChange, computer, onEdit, onDelete }: ComputerActionsSheetProps) {
+export function ComputerActionsSheet({ open, onOpenChange, computer, onEdit, onDelete, onMaintenance }: ComputerActionsSheetProps) {
   const handleEdit = () => {
     onOpenChange(false)
     onEdit()
   }
 
   const handleDelete = () => {
-    if (confirm(`Bạn có chắc chắn muốn xóa máy tính "${computer.name}"?`)) {
-      console.log("[v0] Deleting computer:", computer.id)
-      // TODO: Handle delete
-      onDelete()
-      onOpenChange(false)
-    }
+    onDelete()
+    onOpenChange(false)
   }
 
   const handleRestart = () => {
@@ -39,8 +36,7 @@ export function ComputerActionsSheet({ open, onOpenChange, computer, onEdit, onD
   }
 
   const handleMaintenance = () => {
-    console.log("[v0] Setting maintenance mode for computer:", computer.id)
-    // TODO: Handle maintenance mode
+    onMaintenance?.()
     onOpenChange(false)
   }
 
