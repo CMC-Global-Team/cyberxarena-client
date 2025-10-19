@@ -107,10 +107,14 @@ export default function ComputersPage() {
       notify({ type: "success", message: "Đã xóa máy tính thành công" })
     } catch (e: any) {
       const errorMsg = e?.message || "Lỗi không xác định"
+      console.error("Delete error:", e)
+      
       if (errorMsg.includes("409") || errorMsg.includes("Conflict")) {
         notify({ type: "error", message: "Không thể xóa máy tính đang được sử dụng hoặc có dữ liệu liên quan" })
-      } else if (errorMsg.includes("500")) {
-        notify({ type: "error", message: "Lỗi server: Không thể xóa máy tính này" })
+      } else if (errorMsg.includes("500") || e?.status === 500) {
+        notify({ type: "error", message: "Server không cho phép xóa máy tính này. Có thể máy đang có dữ liệu liên quan (phiên sử dụng, lịch sử, v.v.)" })
+      } else if (errorMsg.includes("404")) {
+        notify({ type: "error", message: "Máy tính không tồn tại hoặc đã bị xóa" })
       } else {
         notify({ type: "error", message: `Xóa thất bại: ${errorMsg}` })
       }
