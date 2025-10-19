@@ -112,7 +112,7 @@ export default function ComputersPage() {
       if (errorMsg.includes("409") || errorMsg.includes("Conflict")) {
         notify({ type: "error", message: "Không thể xóa máy tính đang được sử dụng hoặc có dữ liệu liên quan" })
       } else if (errorMsg.includes("500") || e?.status === 500) {
-        notify({ type: "error", message: "Server không cho phép xóa máy tính này. Có thể máy đang có dữ liệu liên quan (phiên sử dụng, lịch sử, v.v.)" })
+        notify({ type: "error", message: "Không thể xóa máy tính này. Server có thể đang gặp lỗi hoặc máy tính có dữ liệu liên quan không thể xóa." })
       } else if (errorMsg.includes("404")) {
         notify({ type: "error", message: "Máy tính không tồn tại hoặc đã bị xóa" })
       } else {
