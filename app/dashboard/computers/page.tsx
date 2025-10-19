@@ -44,13 +44,14 @@ export default function ComputersPage() {
 
   // Debounced server filter/sort/search
   useEffect(() => {
+    const toApiStatus = (s: string | undefined) => (s === "In Use" ? "In_Use" : s)
     const t = setTimeout(async () => {
       try {
         setLoading(true)
         const res = await withLoading(() =>
           ComputerApi.search({
             name: searchQuery || undefined,
-            status: statusFilter === "all" ? undefined : statusFilter,
+            status: statusFilter === "all" ? undefined : toApiStatus(statusFilter),
             page: 0,
             size: 100,
             sortBy,
