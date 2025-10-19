@@ -4,6 +4,7 @@ import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { NoticeProvider } from '@/components/notice-provider'
+import { LoadingProvider } from '@/components/loading-provider'
 
 export const metadata: Metadata = {
   title: 'v0 App',
@@ -19,9 +20,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <NoticeProvider>
-          {children}
-        </NoticeProvider>
+        <LoadingProvider>
+          <NoticeProvider>
+            {children}
+          </NoticeProvider>
+        </LoadingProvider>
         <Analytics />
       </body>
     </html>

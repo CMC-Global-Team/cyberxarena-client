@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { ComputerApi, type ComputerDTO } from "@/lib/computers"
 import { useToast } from "@/components/ui/use-toast"
+import { useLoading } from "@/components/loading-provider"
 
 interface ComputerFormSheetProps {
   open: boolean
@@ -21,6 +22,7 @@ interface ComputerFormSheetProps {
 
 export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved }: ComputerFormSheetProps) {
   const { toast } = useToast()
+  const { withLoading } = useLoading()
   const [formData, setFormData] = useState({
     name: computer?.computerName || "",
     ipAddress: computer?.ipAddress || "",
@@ -46,10 +48,10 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
     }
     try {
       if (mode === "add") {
-        const created = await ComputerApi.create(dto)
+        const created = await withLoading(() => ComputerApi.create(dto))
         onSaved?.(created)
       } else if (mode === "edit" && computer?.computerId) {
-        const updated = await ComputerApi.update(computer.computerId, dto)
+        const updated = await withLoading(() => ComputerApi.update(computer.computerId, dto))
         onSaved?.(updated)
       }
       onOpenChange(false)

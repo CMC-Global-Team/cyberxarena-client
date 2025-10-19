@@ -9,9 +9,11 @@ import { ComputerFormSheet } from "@/components/computer-form-sheet"
 import { ComputerActionsSheet } from "@/components/computer-actions-sheet"
 import { ComputerApi, type ComputerDTO } from "@/lib/computers"
 import { useNotice } from "@/components/notice-provider"
+import { useLoading } from "@/components/loading-provider"
 
 export default function ComputersPage() {
   const { notify } = useNotice()
+  const { withLoading } = useLoading()
   const [searchQuery, setSearchQuery] = useState("")
   const [addSheetOpen, setAddSheetOpen] = useState(false)
   const [editSheetOpen, setEditSheetOpen] = useState(false)
@@ -23,7 +25,7 @@ export default function ComputersPage() {
   const loadComputers = async () => {
     try {
       setLoading(true)
-      const res = await ComputerApi.list({ page: 0, size: 100, sortBy: "computerId", sortDir: "asc" })
+      const res = await withLoading(() => ComputerApi.list({ page: 0, size: 100, sortBy: "computerId", sortDir: "asc" }))
       setComputers(res.content)
     } catch (e: any) {
       notify({ type: "error", message: `Lỗi tải danh sách: ${e?.message || ''}` })
@@ -63,7 +65,7 @@ export default function ComputersPage() {
   const handleDelete = async () => {
     if (!selectedComputer?.computerId) return
     try {
-      await ComputerApi.delete(selectedComputer.computerId)
+      await withLoading(() => ComputerApi.delete(selectedComputer.computerId))
       setComputers((prev) => prev.filter((c) => c.computerId !== selectedComputer.computerId))
       notify({ type: "success", message: "Đã xóa máy tính" })
     } catch (e: any) {
