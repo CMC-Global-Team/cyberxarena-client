@@ -76,10 +76,13 @@ export default function ComputersPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Available":
+      case "AVAILABLE":
         return "bg-green-500/20 text-green-600"
       case "In_Use":
+      case "IN_USE":
         return "bg-blue-500/20 text-blue-600"
       case "Broken":
+      case "BROKEN":
         return "bg-yellow-500/20 text-yellow-600"
       default:
         return "bg-muted text-muted-foreground"
@@ -87,12 +90,20 @@ export default function ComputersPage() {
   }
 
   const getStatusText = (status: string) => {
+    // Debug: log the actual status value
+    console.log('Status received:', status, 'Type:', typeof status)
     switch (status) {
       case "Available":
         return "Sẵn sàng"
       case "In_Use":
         return "Đang sử dụng"
       case "Broken":
+        return "Bảo trì"
+      case "IN_USE":
+        return "Đang sử dụng"
+      case "AVAILABLE":
+        return "Sẵn sàng"
+      case "BROKEN":
         return "Bảo trì"
       default:
         return "Không xác định"
