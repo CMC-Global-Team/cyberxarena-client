@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -32,6 +32,20 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
     status: (computer?.status as string) || "Available",
     hourlyRate: computer ? String(computer.pricePerHour) : "15000",
   })
+
+  // Sync form when the selected computer changes or when sheet opens
+  useEffect(() => {
+    if (!open) return
+    setFormData({
+      name: computer?.computerName || "",
+      ipAddress: computer?.ipAddress || "",
+      cpu: String(computer?.specifications?.cpu ?? ""),
+      ram: String(computer?.specifications?.ram ?? ""),
+      gpu: String(computer?.specifications?.gpu ?? ""),
+      status: (computer?.status as string) || "Available",
+      hourlyRate: computer ? String(computer.pricePerHour) : "15000",
+    })
+  }, [computer, mode, open])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

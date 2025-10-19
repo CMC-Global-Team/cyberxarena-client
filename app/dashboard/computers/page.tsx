@@ -281,6 +281,7 @@ export default function ComputersPage() {
       {selectedComputer && (
         <>
           <ComputerFormSheet
+            key={selectedComputer?.computerId ?? 'edit'}
             open={editSheetOpen}
             onOpenChange={setEditSheetOpen}
             computer={selectedComputer as ComputerDTO}
