@@ -89,13 +89,15 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
       if (mode === "add") {
         const created = await withLoading(() => ComputerApi.create(dto))
         onSaved?.(created)
+        notify({ type: "success", message: "Đã thêm máy tính" })
       } else if (mode === "edit" && computer?.computerId) {
         const updated = await withLoading(() => ComputerApi.update(computer.computerId, dto))
         onSaved?.(updated)
+        notify({ type: "success", message: "Đã cập nhật máy tính" })
       }
       onOpenChange(false)
     } catch (err: any) {
-      // keep sheet open, optionally handle error notice at parent level if needed
+      notify({ type: "error", message: `Lưu thất bại: ${err?.message || ''}` })
     }
   }
 

@@ -100,6 +100,8 @@ export default function ComputersPage() {
       notify({ type: "success", message: "Đã xóa máy tính" })
     } catch (e: any) {
       notify({ type: "error", message: `Xóa thất bại: ${e?.message || ''}` })
+      // Optionally reload to reflect server state if deletion is blocked
+      await loadComputers()
     }
   }
 

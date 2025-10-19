@@ -25,12 +25,8 @@ export function ComputerActionsSheet({ open, onOpenChange, computer, onEdit, onD
   }
 
   const handleDelete = () => {
-    if (confirm(`Bạn có chắc chắn muốn xóa máy tính "${computer.name}"?`)) {
-      console.log("[v0] Deleting computer:", computer.id)
-      // TODO: Handle delete
-      onDelete()
-      onOpenChange(false)
-    }
+    onDelete()
+    onOpenChange(false)
   }
 
   const handleRestart = () => {
