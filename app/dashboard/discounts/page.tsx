@@ -66,7 +66,7 @@ export default function DiscountsPage() {
     if (!selectedDiscount) return
     
     try {
-      await discountsApi.update(selectedDiscount.discountId, data)
+      await discountsApi.update(selectedDiscount.discount_id, data)
       toast({
         title: "Thành công",
         description: "Đã cập nhật giảm giá thành công",
