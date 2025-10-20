@@ -13,20 +13,20 @@ interface CustomerFormSheetProps {
   onOpenChange: (open: boolean) => void
   customer?: {
     id: number
-    name: string
-    email: string
-    phone: string
-    balance: string
+    customerName: string
+    phoneNumber: string
+    membershipCard: string
+    balance: number
   }
   mode: "add" | "edit"
 }
 
 export function CustomerFormSheet({ open, onOpenChange, customer, mode }: CustomerFormSheetProps) {
   const [formData, setFormData] = useState({
-    name: customer?.name || "",
-    email: customer?.email || "",
-    phone: customer?.phone || "",
-    balance: customer?.balance || "0đ",
+    customerName: customer?.customerName || "",
+    phoneNumber: customer?.phoneNumber || "",
+    membershipCard: customer?.membershipCard || "",
+    balance: customer?.balance?.toString() || "0",
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -50,13 +50,13 @@ export function CustomerFormSheet({ open, onOpenChange, customer, mode }: Custom
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-foreground">
+            <Label htmlFor="customerName" className="text-foreground">
               Họ và tên
             </Label>
             <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              id="customerName"
+              value={formData.customerName}
+              onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
               placeholder="Nhập họ và tên"
               className="bg-secondary border-border"
               required
@@ -64,31 +64,29 @@ export function CustomerFormSheet({ open, onOpenChange, customer, mode }: Custom
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-foreground">
-              Email
+            <Label htmlFor="phoneNumber" className="text-foreground">
+              Số điện thoại
             </Label>
             <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="example@email.com"
+              id="phoneNumber"
+              value={formData.phoneNumber}
+              onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+              placeholder="0901234567"
               className="bg-secondary border-border"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="phone" className="text-foreground">
-              Số điện thoại
+            <Label htmlFor="membershipCard" className="text-foreground">
+              Thẻ thành viên
             </Label>
             <Input
-              id="phone"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="0901234567"
+              id="membershipCard"
+              value={formData.membershipCard}
+              onChange={(e) => setFormData({ ...formData, membershipCard: e.target.value })}
+              placeholder="VIP001"
               className="bg-secondary border-border"
-              required
             />
           </div>
 
@@ -98,10 +96,13 @@ export function CustomerFormSheet({ open, onOpenChange, customer, mode }: Custom
             </Label>
             <Input
               id="balance"
+              type="number"
               value={formData.balance}
               onChange={(e) => setFormData({ ...formData, balance: e.target.value })}
-              placeholder="0đ"
+              placeholder="0"
               className="bg-secondary border-border"
+              min="0"
+              step="1000"
             />
           </div>
 
