@@ -11,26 +11,26 @@ interface DiscountStatsProps {
 
 export function DiscountStats({ discounts }: DiscountStatsProps) {
   const totalDiscounts = discounts.length
-  const flatDiscounts = discounts.filter(d => d.discount_type === 'Flat').length
-  const percentageDiscounts = discounts.filter(d => d.discount_type === 'Percentage').length
+  const flatDiscounts = discounts.filter(d => d.discountType === 'Flat').length
+  const percentageDiscounts = discounts.filter(d => d.discountType === 'Percentage').length
   
   const totalFlatValue = discounts
-    .filter(d => d.discount_type === 'Flat')
-    .reduce((sum, d) => sum + d.discount_value, 0)
+    .filter(d => d.discountType === 'Flat')
+    .reduce((sum, d) => sum + d.discountValue, 0)
   
   const averagePercentage = percentageDiscounts > 0 
     ? discounts
-        .filter(d => d.discount_type === 'Percentage')
-        .reduce((sum, d) => sum + d.discount_value, 0) / percentageDiscounts
+        .filter(d => d.discountType === 'Percentage')
+        .reduce((sum, d) => sum + d.discountValue, 0) / percentageDiscounts
     : 0
 
   const maxFlatDiscount = discounts
-    .filter(d => d.discount_type === 'Flat')
-    .reduce((max, d) => Math.max(max, d.discount_value), 0)
+    .filter(d => d.discountType === 'Flat')
+    .reduce((max, d) => Math.max(max, d.discountValue), 0)
 
   const maxPercentageDiscount = discounts
-    .filter(d => d.discount_type === 'Percentage')
-    .reduce((max, d) => Math.max(max, d.discount_value), 0)
+    .filter(d => d.discountType === 'Percentage')
+    .reduce((max, d) => Math.max(max, d.discountValue), 0)
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

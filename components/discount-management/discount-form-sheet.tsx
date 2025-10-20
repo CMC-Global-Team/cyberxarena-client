@@ -15,10 +15,14 @@ interface DiscountFormSheetProps {
   mode: "add" | "edit"
   onSuccess: (data: DiscountDTO) => void
   children?: React.ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-export function DiscountFormSheet({ discount, mode, onSuccess, children }: DiscountFormSheetProps) {
-  const [open, setOpen] = useState(false)
+export function DiscountFormSheet({ discount, mode, onSuccess, children, open: controlledOpen, onOpenChange }: DiscountFormSheetProps) {
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen
+  const setOpen = onOpenChange || setInternalOpen
   const [formData, setFormData] = useState<DiscountDTO>({
     discount_type: 'Flat',
     discount_value: 0
@@ -29,8 +33,8 @@ export function DiscountFormSheet({ discount, mode, onSuccess, children }: Disco
   useEffect(() => {
     if (discount && mode === "edit") {
       setFormData({
-        discount_type: discount.discount_type,
-        discount_value: discount.discount_value
+        discount_type: discount.discountType,
+        discount_value: discount.discountValue
       })
     } else {
       setFormData({
