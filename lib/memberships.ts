@@ -4,6 +4,9 @@ export interface MembershipCard {
   membership_card_id: number;
   membership_card_name: string;
   discount_id?: number | null;
+  discount_name?: string | null;
+  discount_type?: string | null;
+  discount_value?: number | null;
 }
 
 export interface MembershipCardDTO {
