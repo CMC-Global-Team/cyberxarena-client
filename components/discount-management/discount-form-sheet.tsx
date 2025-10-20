@@ -24,6 +24,7 @@ export function DiscountFormSheet({ discount, mode, onSuccess, children, open: c
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen
   const setOpen = onOpenChange || setInternalOpen
   const [formData, setFormData] = useState<DiscountDTO>({
+    discount_name: '',
     discount_type: 'Flat',
     discount_value: 0
   })
@@ -33,11 +34,13 @@ export function DiscountFormSheet({ discount, mode, onSuccess, children, open: c
   useEffect(() => {
     if (discount && mode === "edit") {
       setFormData({
+        discount_name: discount.discountName,
         discount_type: discount.discountType,
         discount_value: discount.discountValue
       })
     } else {
       setFormData({
+        discount_name: '',
         discount_type: 'Flat',
         discount_value: 0
       })
@@ -46,6 +49,15 @@ export function DiscountFormSheet({ discount, mode, onSuccess, children, open: c
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!formData.discount_name.trim()) {
+      toast({
+        title: "Lỗi",
+        description: "Tên giảm giá không được để trống",
+        variant: "destructive",
+      })
+      return
+    }
     
     if (formData.discount_value <= 0) {
       toast({
@@ -70,6 +82,7 @@ export function DiscountFormSheet({ discount, mode, onSuccess, children, open: c
       await onSuccess(formData)
       setOpen(false)
       setFormData({
+        discount_name: '',
         discount_type: 'Flat',
         discount_value: 0
       })
@@ -124,6 +137,22 @@ export function DiscountFormSheet({ discount, mode, onSuccess, children, open: c
         </SheetHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+          <div className="space-y-2">
+            <Label htmlFor="discount_name">Tên giảm giá</Label>
+            <Input
+              id="discount_name"
+              type="text"
+              value={formData.discount_name}
+              onChange={(e) => handleInputChange('discount_name', e.target.value)}
+              placeholder="Nhập tên giảm giá"
+              maxLength={100}
+              required
+            />
+            <p className="text-sm text-muted-foreground">
+              Tên giảm giá để phân biệt các loại giảm giá khác nhau
+            </p>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="discount_type">Loại giảm giá</Label>
             <Select 
