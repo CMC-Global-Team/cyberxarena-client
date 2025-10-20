@@ -2,16 +2,19 @@ import { http } from "./api";
 
 export interface Discount {
   discountId: number;
+  discountName: string;
   discountType: 'Flat' | 'Percentage';
   discountValue: number;
 }
 
 export interface DiscountDTO {
+  discount_name: string;
   discount_type: 'Flat' | 'Percentage';
   discount_value: number;
 }
 
 export interface UpdateDiscountRequestDTO {
+  discount_name?: string;
   discount_type?: 'Flat' | 'Percentage';
   discount_value?: number;
 }
@@ -19,6 +22,7 @@ export interface UpdateDiscountRequestDTO {
 // Helper function to convert server response to client format
 const convertServerToClient = (serverDiscount: any): Discount => ({
   discountId: serverDiscount.discount_id,
+  discountName: serverDiscount.discount_name,
   discountType: serverDiscount.discount_type,
   discountValue: serverDiscount.discount_value
 });
