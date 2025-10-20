@@ -85,6 +85,7 @@ export function DiscountTable({ discounts, loading, onEdit, onDelete }: Discount
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
+                <TableHead>Tên giảm giá</TableHead>
                 <TableHead>Loại giảm giá</TableHead>
                 <TableHead>Giá trị</TableHead>
                 <TableHead className="text-right">Thao tác</TableHead>
@@ -95,6 +96,9 @@ export function DiscountTable({ discounts, loading, onEdit, onDelete }: Discount
                 <TableRow key={discount.discountId}>
                   <TableCell className="font-medium">
                     #{discount.discountId}
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {discount.discountName}
                   </TableCell>
                   <TableCell>
                     <Badge 
