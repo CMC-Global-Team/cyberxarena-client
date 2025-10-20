@@ -99,16 +99,16 @@ export const AccountApi = {
     if (params?.size !== undefined) query.set("size", String(params.size));
     if (params?.sortBy) query.set("sortBy", params.sortBy);
     if (params?.sortDirection) query.set("sortDirection", params.sortDirection);
-    const path = `/api/accounts/search${query.toString() ? `?${query.toString()}` : ""}`;
+    const path = `/accounts/search${query.toString() ? `?${query.toString()}` : ""}`;
     return http.get<PageResponse<AccountDTO>>(path);
   },
   
-  getByUsername: (username: string) => http.get<AccountDTO>(`/api/accounts/username/${username}`),
-  getByCustomerId: (customerId: number) => http.get<AccountDTO>(`/api/accounts/customer/${customerId}`),
-  checkUsernameExists: (username: string) => http.get<boolean>(`/api/accounts/check-username/${username}`),
+  getByUsername: (username: string) => http.get<AccountDTO>(`/accounts/username/${username}`),
+  getByCustomerId: (customerId: number) => http.get<AccountDTO>(`/accounts/customer/${customerId}`),
+  checkUsernameExists: (username: string) => http.get<boolean>(`/accounts/check-username/${username}`),
   
-  create: (data: CreateAccountRequestDTO) => http.post<AccountDTO>("/api/accounts", data),
+  create: (data: CreateAccountRequestDTO) => http.post<AccountDTO>("/accounts", data),
   update: (customerId: number, data: UpdateAccountRequestDTO) => 
-    http.put<AccountDTO>(`/api/accounts/customer/${customerId}`, data),
-  delete: (customerId: number) => http.delete<string>(`/api/accounts/customer/${customerId}`),
+    http.put<AccountDTO>(`/accounts/customer/${customerId}`, data),
+  delete: (customerId: number) => http.delete<string>(`/accounts/customer/${customerId}`),
 };
