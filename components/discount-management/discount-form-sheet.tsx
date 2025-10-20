@@ -15,11 +15,16 @@ interface DiscountFormSheetProps {
   mode: "add" | "edit"
   onSuccess: (data: DiscountDTO) => void
   children?: React.ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-export function DiscountFormSheet({ discount, mode, onSuccess, children }: DiscountFormSheetProps) {
-  const [open, setOpen] = useState(false)
+export function DiscountFormSheet({ discount, mode, onSuccess, children, open: controlledOpen, onOpenChange }: DiscountFormSheetProps) {
+  const [internalOpen, setInternalOpen] = useState(false)
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen
+  const setOpen = onOpenChange || setInternalOpen
   const [formData, setFormData] = useState<DiscountDTO>({
+    discount_name: '',
     discount_type: 'Flat',
     discount_value: 0
   })
@@ -29,11 +34,13 @@ export function DiscountFormSheet({ discount, mode, onSuccess, children }: Disco
   useEffect(() => {
     if (discount && mode === "edit") {
       setFormData({
-        discount_type: discount.discount_type,
-        discount_value: discount.discount_value
+        discount_name: discount.discountName,
+        discount_type: discount.discountType,
+        discount_value: discount.discountValue
       })
     } else {
       setFormData({
+        discount_name: '',
         discount_type: 'Flat',
         discount_value: 0
       })
@@ -42,6 +49,15 @@ export function DiscountFormSheet({ discount, mode, onSuccess, children }: Disco
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!formData.discount_name.trim()) {
+      toast({
+        title: "Lỗi",
+        description: "Tên giảm giá không được để trống",
+        variant: "destructive",
+      })
+      return
+    }
     
     if (formData.discount_value <= 0) {
       toast({
@@ -66,6 +82,7 @@ export function DiscountFormSheet({ discount, mode, onSuccess, children }: Disco
       await onSuccess(formData)
       setOpen(false)
       setFormData({
+        discount_name: '',
         discount_type: 'Flat',
         discount_value: 0
       })
@@ -120,6 +137,22 @@ export function DiscountFormSheet({ discount, mode, onSuccess, children }: Disco
         </SheetHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+          <div className="space-y-2">
+            <Label htmlFor="discount_name">Tên giảm giá</Label>
+            <Input
+              id="discount_name"
+              type="text"
+              value={formData.discount_name}
+              onChange={(e) => handleInputChange('discount_name', e.target.value)}
+              placeholder="Nhập tên giảm giá"
+              maxLength={100}
+              required
+            />
+            <p className="text-sm text-muted-foreground">
+              Tên giảm giá để phân biệt các loại giảm giá khác nhau
+            </p>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="discount_type">Loại giảm giá</Label>
             <Select 
