@@ -21,9 +21,6 @@ export default function MembershipsPage() {
   const [selected, setSelected] = useState<MembershipCard | null>(null)
   const [editOpen, setEditOpen] = useState(false)
 
-  const discountLabelById = useMemo(() => Object.fromEntries(
-    discounts.map(d => [d.discount_id, d.discount_type === 'Percentage' ? `${d.discount_value}%` : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(d.discount_value)])
-  ), [discounts])
 
   const loadData = async () => {
     try {
@@ -34,7 +31,7 @@ export default function MembershipsPage() {
       setMemberships(m)
       setDiscounts(d)
     } catch (e: any) {
-      toast({ title: "Error", description: e?.message || "Failed to load memberships", variant: "destructive" })
+      toast({ title: "Lỗi", description: e?.message || "Không thể tải dữ liệu thẻ thành viên", variant: "destructive" })
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -51,10 +48,10 @@ export default function MembershipsPage() {
   const handleCreate = async (data: MembershipCardDTO) => {
     try {
       await membershipsApi.create(data)
-      toast({ title: "Success", description: "Membership created" })
+      toast({ title: "Thành công", description: "Đã tạo thẻ thành viên thành công" })
       await loadData()
     } catch (e: any) {
-      toast({ title: "Error", description: e?.message || "Create failed", variant: "destructive" })
+      toast({ title: "Lỗi", description: e?.message || "Không thể tạo thẻ thành viên", variant: "destructive" })
       throw e
     }
   }
@@ -63,10 +60,10 @@ export default function MembershipsPage() {
     if (!selected) return
     try {
       await membershipsApi.update(selected.membership_card_id, data)
-      toast({ title: "Success", description: "Membership updated" })
+      toast({ title: "Thành công", description: "Đã cập nhật thẻ thành viên thành công" })
       await loadData()
     } catch (e: any) {
-      toast({ title: "Error", description: e?.message || "Update failed", variant: "destructive" })
+      toast({ title: "Lỗi", description: e?.message || "Không thể cập nhật thẻ thành viên", variant: "destructive" })
       throw e
     }
   }
@@ -74,10 +71,10 @@ export default function MembershipsPage() {
   const handleDelete = async (id: number) => {
     try {
       await membershipsApi.delete(id)
-      toast({ title: "Success", description: "Membership deleted" })
+      toast({ title: "Thành công", description: "Đã xóa thẻ thành viên thành công" })
       await loadData()
     } catch (e: any) {
-      toast({ title: "Error", description: e?.message || "Delete failed", variant: "destructive" })
+      toast({ title: "Lỗi", description: e?.message || "Không thể xóa thẻ thành viên", variant: "destructive" })
       throw e
     }
   }
@@ -91,13 +88,13 @@ export default function MembershipsPage() {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Membership management</h1>
-          <p className="text-muted-foreground">Manage membership card packages and associated discounts</p>
+          <h1 className="text-3xl font-bold tracking-tight">Quản lý thẻ thành viên</h1>
+          <p className="text-muted-foreground">Quản lý các gói thẻ thành viên và giảm giá liên quan</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
             <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
+            Làm mới
           </Button>
           <MembershipFormSheet mode="add" onSubmit={handleCreate} />
         </div>
@@ -107,11 +104,11 @@ export default function MembershipsPage() {
         <TabsList>
           <TabsTrigger value="table" className="flex items-center gap-2">
             <Table className="h-4 w-4" />
-            List
+            Danh sách
           </TabsTrigger>
           <TabsTrigger value="stats" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
-            Stats
+            Thống kê
           </TabsTrigger>
         </TabsList>
 
@@ -119,7 +116,6 @@ export default function MembershipsPage() {
           <MembershipTable 
             memberships={memberships}
             loading={loading}
-            discountLabelById={discountLabelById}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
