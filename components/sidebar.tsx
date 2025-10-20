@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Users, Monitor, Clock, DollarSign, Settings, LogOut, ChevronLeft, ChevronRight, Package, Percent } from "lucide-react"
+import { LayoutDashboard, Users, Monitor, Clock, DollarSign, Settings, LogOut, ChevronLeft, ChevronRight, Package, Percent, IdCard } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const menuItems = [
@@ -31,6 +31,11 @@ const menuItems = [
     title: "Quản lý giảm giá",
     icon: Percent,
     href: "/dashboard/discounts",
+  },
+  {
+    title: "Gói thành viên",
+    icon: IdCard,
+    href: "/dashboard/memberships",
   },
   {
     title: "Phiên sử dụng",
