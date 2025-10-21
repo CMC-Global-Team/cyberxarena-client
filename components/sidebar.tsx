@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { LayoutDashboard, Users, Monitor, Clock, DollarSign, Settings, LogOut, ChevronLeft, ChevronRight, Package, Percent, IdCard } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 const menuItems = [
   {
@@ -76,14 +77,17 @@ export function Sidebar() {
       >
         <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
           {!isCollapsed && <h2 className="text-lg font-bold text-sidebar-foreground font-mono">CyberX Arena</h2>}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className={cn("h-8 w-8 p-0 text-sidebar-foreground hover:bg-sidebar-accent", isCollapsed && "mx-auto")}
-          >
-            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle isCollapsed={isCollapsed} />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className={cn("h-8 w-8 p-0 text-sidebar-foreground hover:bg-sidebar-accent", isCollapsed && "mx-auto")}
+            >
+              {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
 
         <nav className="flex-1 p-2 space-y-1">
