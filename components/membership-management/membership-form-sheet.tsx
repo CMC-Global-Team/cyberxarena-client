@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Plus, Edit } from "lucide-react"
 import type { MembershipCard, MembershipCardDTO } from "@/lib/memberships"
@@ -27,6 +28,7 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
   const [formData, setFormData] = useState<MembershipCardDTO>({
     membershipCardName: "",
     discountId: null,
+    isDefault: false,
   })
   const [loading, setLoading] = useState(false)
   const [discounts, setDiscounts] = useState<Discount[]>([])
@@ -36,9 +38,10 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
       setFormData({
         membershipCardName: membership.membershipCardName,
         discountId: membership.discountId ?? null,
+        isDefault: membership.isDefault ?? false,
       })
     } else {
-      setFormData({ membershipCardName: "", discountId: null })
+      setFormData({ membershipCardName: "", discountId: null, isDefault: false })
     }
   }, [membership, mode])
 
@@ -63,6 +66,7 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
       await onSubmit({
         membershipCardName: formData.membershipCardName.trim(),
         discountId: formData.discountId ?? null,
+        isDefault: formData.isDefault ?? false,
       })
       setOpen(false)
     } finally {
@@ -125,6 +129,20 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
               </SelectContent>
             </Select>
           </div>
+
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="isDefault"
+              checked={formData.isDefault ?? false}
+              onCheckedChange={(checked) => handleChange("isDefault", checked)}
+            />
+            <Label htmlFor="isDefault" className="text-sm font-medium">
+              Đặt làm thẻ mặc định
+            </Label>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Khi bật, thẻ này sẽ được tự động gán cho khách hàng mới nếu họ không chọn thẻ cụ thể.
+          </p>
 
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>Hủy</Button>
