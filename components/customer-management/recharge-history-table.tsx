@@ -158,8 +158,8 @@ export function RechargeHistoryTable({ customerId, customerName }: RechargeHisto
   }
 
   return (
-    <Card className="border-border bg-card">
-      <CardHeader>
+    <Card className="border-border bg-card h-full flex flex-col">
+      <CardHeader className="flex-shrink-0 p-4">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-foreground">Lịch sử nạp tiền</h3>
@@ -205,8 +205,8 @@ export function RechargeHistoryTable({ customerId, customerName }: RechargeHisto
         </div>
       </CardHeader>
       
-      <CardContent>
-        <div className="overflow-x-auto">
+      <CardContent className="flex-1 overflow-hidden flex flex-col p-4">
+        <div className="flex-1 overflow-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-border">
@@ -293,7 +293,7 @@ export function RechargeHistoryTable({ customerId, customerName }: RechargeHisto
         )}
         
         {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-6">
+          <div className="flex items-center justify-between mt-6 flex-shrink-0">
             <div className="text-sm text-muted-foreground">
               Hiển thị {currentPage * pageSize + 1} - {Math.min((currentPage + 1) * pageSize, totalElements)} trong tổng số {totalElements} giao dịch
             </div>
