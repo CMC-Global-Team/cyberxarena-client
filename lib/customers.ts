@@ -10,6 +10,13 @@ export interface CustomerDTO {
   registrationDate: string; // LocalDateTime -> string
 }
 
+export interface CreateCustomerRequestDTO {
+  customerName: string;
+  phoneNumber: string;
+  membershipCardId: number;
+  balance: number;
+}
+
 export interface AccountDTO {
   accountId: number;
   customerId: number;
@@ -74,7 +81,7 @@ export const CustomerApi = {
   },
   
   getById: (id: number) => http.get<CustomerDTO>(`/customers/${id}`),
-  create: (data: CustomerDTO) => http.post<CustomerDTO>("/customers", data),
+  create: (data: CreateCustomerRequestDTO) => http.post<CustomerDTO>("/customers", data),
   update: (id: number, data: CustomerDTO) => http.put<CustomerDTO>(`/customers/${id}`, data),
   delete: (id: number) => http.delete<void>(`/customers/${id}`),
 };
