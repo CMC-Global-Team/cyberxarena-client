@@ -10,11 +10,12 @@ import { SessionFormSheet } from "@/components/session-form-sheet"
 import { SessionActionsSheet } from "@/components/session-actions-sheet"
 import { SessionApi, type SessionDTO } from "@/lib/sessions"
 import { useNotice } from "@/components/notice-provider"
-import { useLoading } from "@/components/loading-provider"
+import { usePageLoading } from "@/hooks/use-page-loading"
+import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
 
 export default function SessionsPage() {
   const { notify } = useNotice()
-  const { withLoading } = useLoading()
+  const { withPageLoading, isLoading } = usePageLoading()
   const [searchQuery, setSearchQuery] = useState("")
   const [addSheetOpen, setAddSheetOpen] = useState(false)
   const [editSheetOpen, setEditSheetOpen] = useState(false)
@@ -29,7 +30,7 @@ export default function SessionsPage() {
   const loadSessions = async () => {
     try {
       setLoading(true)
-      const res = await withLoading(() => SessionApi.list({ page: 0, size: 100, sortBy: "sessionId", sortDir: "desc" })) as any
+      const res = await withPageLoading(() => SessionApi.list({ page: 0, size: 100, sortBy: "sessionId", sortDir: "desc" })) as any
       setSessions(res?.content || [])
     } catch (e: any) {
       notify({ type: "error", message: `Lỗi tải danh sách: ${e?.message || ''}` })
@@ -48,7 +49,7 @@ export default function SessionsPage() {
     const t = setTimeout(async () => {
       try {
         setLoading(true)
-        const res = await withLoading(() =>
+        const res = await withPageLoading(() =>
           SessionApi.search({
             customerName: searchQuery || undefined,
             computerName: searchQuery || undefined,
@@ -99,7 +100,7 @@ export default function SessionsPage() {
     if (!selectedSession?.sessionId) return
     
     try {
-      await withLoading(() => SessionApi.delete(selectedSession.sessionId))
+      await withPageLoading(() => SessionApi.delete(selectedSession.sessionId))
       setSessions((prev) => (prev || []).filter((s) => s.sessionId !== selectedSession.sessionId))
       notify({ type: "success", message: "Đã xóa phiên sử dụng thành công" })
     } catch (e: any) {
@@ -123,7 +124,7 @@ export default function SessionsPage() {
   const handleEndSession = async () => {
     if (!selectedSession?.sessionId) return
     try {
-      const updated = await withLoading(() =>
+      const updated = await withPageLoading(() =>
         SessionApi.endSession(selectedSession.sessionId)
       ) as any
       setSessions((prev)=> (prev || []).map((s)=> s.sessionId === updated.sessionId ? updated : s))
@@ -181,7 +182,9 @@ export default function SessionsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <>
+      <PageLoadingOverlay isLoading={isLoading} pageType="sessions" />
+      <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý phiên sử dụng</h1>
@@ -443,6 +446,7 @@ export default function SessionsPage() {
           />
         </>
       )}
-    </div>
+      </div>
+    </>
   )
 }
