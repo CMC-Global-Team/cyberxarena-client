@@ -10,13 +10,13 @@ export interface MembershipCard {
 }
 
 export interface MembershipCardDTO {
-  membership_card_name: string;
-  discount_id?: number | null;
+  membershipCardName: string;
+  discountId?: number | null;
 }
 
 export interface UpdateMembershipCardRequestDTO {
-  membership_card_name?: string;
-  discount_id?: number | null;
+  membershipCardName?: string;
+  discountId?: number | null;
 }
 
 export const membershipsApi = {
