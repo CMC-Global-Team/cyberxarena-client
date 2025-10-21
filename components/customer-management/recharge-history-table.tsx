@@ -159,7 +159,7 @@ export function RechargeHistoryTable({ customerId, customerName }: RechargeHisto
 
   return (
     <Card className="border-border bg-card h-full flex flex-col">
-      <CardHeader className="flex-shrink-0">
+      <CardHeader className="flex-shrink-0 p-4">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-foreground">Lịch sử nạp tiền</h3>
@@ -205,9 +205,9 @@ export function RechargeHistoryTable({ customerId, customerName }: RechargeHisto
         </div>
       </CardHeader>
       
-      <CardContent className="flex-1 overflow-hidden flex flex-col">
+      <CardContent className="flex-1 overflow-hidden flex flex-col p-4">
         <div className="flex-1 overflow-auto">
-          <table className="w-full min-w-full">
+          <table className="w-full">
             <thead>
               <tr className="border-b border-border">
                 <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">
