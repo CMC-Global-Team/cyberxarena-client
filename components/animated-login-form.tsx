@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { LoginTour } from "@/components/login-tour"
+import { BackgroundAnimations, FloatingParticles, RotatingElements } from "@/components/animations/background-animations"
 
 export function AnimatedLoginForm() {
   const router = useRouter()
@@ -114,6 +115,23 @@ export function AnimatedLoginForm() {
       repeat: -1
     }, "-=0.5")
 
+    // Add continuous rolling rotation
+    tl.to(cardRef.current, {
+      rotation: 1,
+      duration: 20,
+      ease: "none",
+      repeat: -1
+    }, "-=0.5")
+
+    // Add subtle scale pulsing
+    tl.to(cardRef.current, {
+      scale: 1.02,
+      duration: 4,
+      ease: "power1.inOut",
+      yoyo: true,
+      repeat: -1
+    }, "-=0.5")
+
     return () => {
       tl.kill()
     }
@@ -188,6 +206,7 @@ export function AnimatedLoginForm() {
     if (inputRef.current) {
       gsap.to(inputRef.current, {
         scale: 1.02,
+        rotation: 0.5,
         duration: 0.2,
         ease: "power2.out"
       })
@@ -198,15 +217,47 @@ export function AnimatedLoginForm() {
     if (inputRef.current) {
       gsap.to(inputRef.current, {
         scale: 1,
+        rotation: 0,
         duration: 0.2,
         ease: "power2.out"
       })
     }
   }
 
+  // Add continuous rolling animation for inputs and button
+  useEffect(() => {
+    const inputElements = [usernameInputRef.current, passwordInputRef.current]
+    
+    inputElements.forEach((input, index) => {
+      if (input) {
+        gsap.to(input, {
+          rotation: 0.3,
+          duration: 8 + index * 2,
+          ease: "none",
+          repeat: -1,
+          yoyo: true
+        })
+      }
+    })
+
+    // Button continuous rolling
+    if (buttonRef.current) {
+      gsap.to(buttonRef.current, {
+        rotation: 0.5,
+        duration: 10,
+        ease: "none",
+        repeat: -1,
+        yoyo: true
+      })
+    }
+  }, [])
+
   return (
     <>
-      <div ref={containerRef} className="relative">
+      <BackgroundAnimations />
+      <FloatingParticles />
+      <RotatingElements />
+      <div ref={containerRef} className="relative z-10">
         <Card 
           ref={cardRef}
           className="border-border bg-card shadow-2xl"
@@ -268,6 +319,26 @@ export function AnimatedLoginForm() {
                 type="submit"
                 className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium transition-all duration-200 hover:shadow-lg"
                 disabled={isLoading}
+                onMouseEnter={() => {
+                  if (buttonRef.current) {
+                    gsap.to(buttonRef.current, {
+                      rotation: 2,
+                      scale: 1.05,
+                      duration: 0.3,
+                      ease: "power2.out"
+                    })
+                  }
+                }}
+                onMouseLeave={() => {
+                  if (buttonRef.current) {
+                    gsap.to(buttonRef.current, {
+                      rotation: 0,
+                      scale: 1,
+                      duration: 0.3,
+                      ease: "power2.out"
+                    })
+                  }
+                }}
               >
                 {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
               </Button>
