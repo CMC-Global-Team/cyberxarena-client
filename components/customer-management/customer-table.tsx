@@ -28,6 +28,8 @@ interface CustomerTableProps {
   onManageAccount: (customer: Customer) => void
   onAddBalance: (customer: Customer) => void
   onViewRechargeHistory: (customer: Customer) => void
+  onViewRankInfo: (customer: Customer) => void
+  onOpenDiscountCalculator: (customer: Customer) => void
 }
 
 export function CustomerTable({ 
@@ -36,7 +38,9 @@ export function CustomerTable({
   onDelete, 
   onManageAccount, 
   onAddBalance,
-  onViewRechargeHistory
+  onViewRechargeHistory,
+  onViewRankInfo,
+  onOpenDiscountCalculator
 }: CustomerTableProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [accountFilter, setAccountFilter] = useState<string>("all")
@@ -309,6 +313,8 @@ export function CustomerTable({
           onManageAccount={onManageAccount}
           onAddBalance={onAddBalance}
           onViewRechargeHistory={onViewRechargeHistory}
+          onViewRankInfo={onViewRankInfo}
+          onOpenDiscountCalculator={onOpenDiscountCalculator}
         />
       )}
     </>
