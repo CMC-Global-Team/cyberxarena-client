@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Eye, EyeOff } from "lucide-react"
+import { AccountApi, type AccountDTO } from "@/lib/customers"
 
 interface Customer {
   customerId: number
@@ -15,6 +16,7 @@ interface Customer {
   membershipCardId: number
   balance: number
   registrationDate: string
+  hasAccount?: boolean
 }
 
 interface AccountFormSheetProps {
@@ -23,6 +25,7 @@ interface AccountFormSheetProps {
   customer: Customer
   mode: "create" | "edit"
   onSubmit: (data: AccountFormData) => Promise<void>
+  onUpdate?: (data: AccountFormData) => Promise<void>
 }
 
 interface AccountFormData {
@@ -35,7 +38,8 @@ export function AccountFormSheet({
   onOpenChange, 
   customer, 
   mode, 
-  onSubmit 
+  onSubmit,
+  onUpdate 
 }: AccountFormSheetProps) {
   const [formData, setFormData] = useState<AccountFormData>({
     username: "",
@@ -44,6 +48,8 @@ export function AccountFormSheet({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const [existingAccount, setExistingAccount] = useState<AccountDTO | null>(null)
+  const [isLoadingAccount, setIsLoadingAccount] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -52,8 +58,31 @@ export function AccountFormSheet({
         password: "",
       })
       setError("")
+      setExistingAccount(null)
+      
+      // Load existing account if customer has one
+      if (customer.hasAccount) {
+        loadExistingAccount()
+      }
     }
-  }, [open])
+  }, [open, customer])
+
+  const loadExistingAccount = async () => {
+    setIsLoadingAccount(true)
+    try {
+      const account = await AccountApi.getByCustomerId(customer.customerId)
+      setExistingAccount(account)
+      setFormData({
+        username: account.username,
+        password: "", // Don't show existing password for security
+      })
+    } catch (error) {
+      console.error("Failed to load existing account:", error)
+      setError("Không thể tải thông tin tài khoản hiện tại")
+    } finally {
+      setIsLoadingAccount(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,7 +90,13 @@ export function AccountFormSheet({
     setError("")
 
     try {
-      await onSubmit(formData)
+      if (existingAccount && onUpdate) {
+        // Update existing account
+        await onUpdate(formData)
+      } else {
+        // Create new account
+        await onSubmit(formData)
+      }
       onOpenChange(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Có lỗi xảy ra")
@@ -81,7 +116,7 @@ export function AccountFormSheet({
       <SheetContent className="bg-card border-border">
         <SheetHeader>
           <SheetTitle className="text-foreground">
-            {mode === "create" ? "Tạo tài khoản" : "Cập nhật tài khoản"}
+            {existingAccount ? "Chỉnh sửa tài khoản" : mode === "create" ? "Tạo tài khoản" : "Cập nhật tài khoản"}
           </SheetTitle>
           <SheetDescription className="text-muted-foreground">
             {customer.customerName} - {customer.phoneNumber || 'Chưa có số điện thoại'}
@@ -89,9 +124,23 @@ export function AccountFormSheet({
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+          {isLoadingAccount && (
+            <Alert>
+              <AlertDescription>Đang tải thông tin tài khoản...</AlertDescription>
+            </Alert>
+          )}
+          
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {existingAccount && (
+            <Alert>
+              <AlertDescription>
+                Tài khoản hiện tại: <strong>{existingAccount.username}</strong>
+              </AlertDescription>
             </Alert>
           )}
 
@@ -126,8 +175,8 @@ export function AccountFormSheet({
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 placeholder="Nhập mật khẩu"
                 className="bg-secondary border-border pr-10"
-                required
-                minLength={6}
+                required={!existingAccount}
+                minLength={existingAccount ? 0 : 6}
                 maxLength={255}
               />
               <Button
@@ -145,7 +194,7 @@ export function AccountFormSheet({
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Mật khẩu phải có ít nhất 6 ký tự
+              {existingAccount ? "Để trống nếu không muốn thay đổi mật khẩu" : "Mật khẩu phải có ít nhất 6 ký tự"}
             </p>
           </div>
 
@@ -170,7 +219,7 @@ export function AccountFormSheet({
                   Đang xử lý...
                 </>
               ) : (
-                mode === "create" ? "Tạo tài khoản" : "Cập nhật"
+                existingAccount ? "Cập nhật tài khoản" : mode === "create" ? "Tạo tài khoản" : "Cập nhật"
               )}
             </Button>
           </div>
