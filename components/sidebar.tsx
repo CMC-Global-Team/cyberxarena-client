@@ -3,9 +3,9 @@
 import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Users, Monitor, Clock, DollarSign, Settings, LogOut, ChevronLeft, ChevronRight, Package, Percent, IdCard } from "lucide-react"
+import { LayoutDashboard, Users, Monitor, Clock, DollarSign, Settings, LogOut, ChevronLeft, ChevronRight, Package, Percent, IdCard, Moon, Sun } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { ThemeToggle } from "@/components/theme-toggle"
+import { useTheme } from "next-themes"
 
 const menuItems = [
   {
@@ -61,10 +61,15 @@ export function Sidebar() {
   const router = useRouter()
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(true)
+  const { theme, setTheme } = useTheme()
 
   const handleLogout = () => {
     localStorage.removeItem("isAuthenticated")
     router.push("/")
+  }
+
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light")
   }
 
   return (
@@ -77,17 +82,14 @@ export function Sidebar() {
       >
         <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
           {!isCollapsed && <h2 className="text-lg font-bold text-sidebar-foreground font-mono">CyberX Arena</h2>}
-          <div className="flex items-center gap-2">
-            <ThemeToggle isCollapsed={isCollapsed} />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className={cn("h-8 w-8 p-0 text-sidebar-foreground hover:bg-sidebar-accent", isCollapsed && "mx-auto")}
-            >
-              {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className={cn("h-8 w-8 p-0 text-sidebar-foreground hover:bg-sidebar-accent", isCollapsed && "mx-auto")}
+          >
+            {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </Button>
         </div>
 
         <nav className="flex-1 p-2 space-y-1">
@@ -116,7 +118,24 @@ export function Sidebar() {
           })}
         </nav>
 
-        <div className="p-2 border-t border-sidebar-border">
+        <div className="p-2 border-t border-sidebar-border space-y-1">
+          <Button
+            variant="ghost"
+            className={cn(
+              "w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              isCollapsed && "justify-center px-2",
+            )}
+            onClick={toggleTheme}
+            title={theme === "light" ? "Chuyển sang chế độ tối" : "Chuyển sang chế độ sáng"}
+          >
+            {theme === "light" ? (
+              <Moon className={cn("h-5 w-5", !isCollapsed && "mr-3")} />
+            ) : (
+              <Sun className={cn("h-5 w-5", !isCollapsed && "mr-3")} />
+            )}
+            {!isCollapsed && <span>{theme === "light" ? "Chế độ tối" : "Chế độ sáng"}</span>}
+          </Button>
+          
           <Button
             variant="ghost"
             className={cn(
