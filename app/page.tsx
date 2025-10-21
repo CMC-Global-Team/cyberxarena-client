@@ -1,5 +1,5 @@
 import { AnimatedLoginForm } from "@/components/animated-login-form"
-import { CyberXTitle, AnimatedText } from "@/components/animations/text-animations"
+import { CyberXTitle, FloatingSubtitle } from "@/components/animations/text-animations"
 
 export default function LoginPage() {
   return (
@@ -7,9 +7,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md px-4">
         <CyberXTitle />
         <div className="text-center mb-8">
-          <AnimatedText 
+          <FloatingSubtitle 
             text="Hệ thống quản lý quán net" 
-            animationType="typewriter"
             className="text-muted-foreground text-lg"
           />
         </div>
