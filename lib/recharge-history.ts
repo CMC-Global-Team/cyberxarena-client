@@ -1,4 +1,4 @@
-import { api } from './api'
+import { http } from './api'
 
 export interface RechargeHistoryDTO {
   rechargeId: number
@@ -39,13 +39,11 @@ export interface RechargeHistoryPageResponse {
 
 export class RechargeHistoryApi {
   static async create(data: CreateRechargeHistoryRequestDTO): Promise<RechargeHistoryDTO> {
-    const response = await api.post('/recharge-history', data)
-    return response.data
+    return await http.post<RechargeHistoryDTO>('/recharge-history', data)
   }
 
   static async getById(rechargeId: number): Promise<RechargeHistoryDTO> {
-    const response = await api.get(`/recharge-history/${rechargeId}`)
-    return response.data
+    return await http.get<RechargeHistoryDTO>(`/recharge-history/${rechargeId}`)
   }
 
   static async getAll(params?: {
@@ -60,13 +58,11 @@ export class RechargeHistoryApi {
     if (params?.sortBy) searchParams.append('sortBy', params.sortBy)
     if (params?.sortDir) searchParams.append('sortDir', params.sortDir)
 
-    const response = await api.get(`/recharge-history?${searchParams.toString()}`)
-    return response.data
+    return await http.get<RechargeHistoryPageResponse>(`/recharge-history?${searchParams.toString()}`)
   }
 
   static async getByCustomerId(customerId: number): Promise<RechargeHistoryDTO[]> {
-    const response = await api.get(`/recharge-history/customer/${customerId}`)
-    return response.data
+    return await http.get<RechargeHistoryDTO[]>(`/recharge-history/customer/${customerId}`)
   }
 
   static async getByCustomerIdPaged(
@@ -84,8 +80,7 @@ export class RechargeHistoryApi {
     if (params?.sortBy) searchParams.append('sortBy', params.sortBy)
     if (params?.sortDir) searchParams.append('sortDir', params.sortDir)
 
-    const response = await api.get(`/recharge-history/customer/${customerId}/paged?${searchParams.toString()}`)
-    return response.data
+    return await http.get<RechargeHistoryPageResponse>(`/recharge-history/customer/${customerId}/paged?${searchParams.toString()}`)
   }
 
   static async search(
@@ -103,13 +98,11 @@ export class RechargeHistoryApi {
     if (params?.sortBy) searchParams.append('sortBy', params.sortBy)
     if (params?.sortDir) searchParams.append('sortDir', params.sortDir)
 
-    const response = await api.post(`/recharge-history/search?${searchParams.toString()}`, filters)
-    return response.data
+    return await http.post<RechargeHistoryPageResponse>(`/recharge-history/search?${searchParams.toString()}`, filters)
   }
 
   static async getTotalByCustomerId(customerId: number): Promise<number> {
-    const response = await api.get(`/recharge-history/customer/${customerId}/total`)
-    return response.data
+    return await http.get<number>(`/recharge-history/customer/${customerId}/total`)
   }
 
   static async getTotalByCustomerIdInDateRange(
@@ -117,13 +110,12 @@ export class RechargeHistoryApi {
     startDate: string,
     endDate: string
   ): Promise<number> {
-    const response = await api.get(
+    return await http.get<number>(
       `/recharge-history/customer/${customerId}/total/date-range?startDate=${startDate}&endDate=${endDate}`
     )
-    return response.data
   }
 
   static async delete(rechargeId: number): Promise<void> {
-    await api.delete(`/recharge-history/${rechargeId}`)
+    await http.delete(`/recharge-history/${rechargeId}`)
   }
 }
