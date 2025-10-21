@@ -68,35 +68,35 @@ export function MembershipTable({ memberships, loading, onEdit, onDelete }: Memb
             </TableHeader>
             <TableBody>
               {memberships.map((m) => (
-                <TableRow key={m.membership_card_id}>
-                  <TableCell className="font-medium">#{m.membership_card_id}</TableCell>
-                  <TableCell className="font-medium">{m.membership_card_name}</TableCell>
+                <TableRow key={m.membershipCardId}>
+                  <TableCell className="font-medium">#{m.membershipCardId}</TableCell>
+                  <TableCell className="font-medium">{m.membershipCardName}</TableCell>
                   <TableCell>
-                    {m.discount_name ? (
-                      <Badge variant="secondary">{m.discount_name}</Badge>
+                    {m.discountName ? (
+                      <Badge variant="secondary">{m.discountName}</Badge>
                     ) : (
                       <Badge variant="outline">Không có</Badge>
                     )}
                   </TableCell>
                   <TableCell>
-                    {m.discount_type ? (
-                      <Badge variant={m.discount_type === 'Percentage' ? 'default' : 'secondary'}>
-                        {m.discount_type === 'Percentage' ? 'Phần trăm' : 'Cố định'}
+                    {m.discountType ? (
+                      <Badge variant={m.discountType === 'Percentage' ? 'default' : 'secondary'}>
+                        {m.discountType === 'Percentage' ? 'Phần trăm' : 'Cố định'}
                       </Badge>
                     ) : (
                       <span className="text-muted-foreground">-</span>
                     )}
                   </TableCell>
                   <TableCell>
-                    {m.discount_value !== null && m.discount_value !== undefined ? (
-                      m.discount_type === 'Percentage' ? (
-                        <span className="font-medium">{m.discount_value}%</span>
+                    {m.discountValue !== null && m.discountValue !== undefined && !isNaN(m.discountValue) ? (
+                      m.discountType === 'Percentage' ? (
+                        <span className="font-medium">{m.discountValue}%</span>
                       ) : (
                         <span className="font-medium">
                           {new Intl.NumberFormat('vi-VN', { 
                             style: 'currency', 
                             currency: 'VND' 
-                          }).format(m.discount_value)}
+                          }).format(m.discountValue)}
                         </span>
                       )
                     ) : (
@@ -115,7 +115,7 @@ export function MembershipTable({ memberships, loading, onEdit, onDelete }: Memb
                           <Edit className="h-4 w-4 mr-2" />
                           Chỉnh sửa
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(m.membership_card_id)} className="text-destructive">
+                        <DropdownMenuItem onClick={() => handleDelete(m.membershipCardId)} className="text-destructive">
                           <Trash2 className="h-4 w-4 mr-2" />
                           Xóa
                         </DropdownMenuItem>
