@@ -38,10 +38,18 @@ export const LoadingProvider: React.FC<React.PropsWithChildren> = ({ children })
     <LoadingContext.Provider value={value}>
       {children}
       {active && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-background/50 backdrop-blur-sm">
-          <div className="flex items-center gap-3 rounded-md border bg-card px-4 py-2 text-foreground">
-            <Spinner className="size-5" />
-            <span>Đang tải...</span>
+        <div className="fixed inset-0 z-50 grid place-items-center bg-background/80 backdrop-blur-md">
+          <div className="flex flex-col items-center gap-4 rounded-lg border bg-card p-6 text-foreground shadow-lg">
+            <div className="relative">
+              <Spinner className="size-8 text-primary" />
+              <div className="absolute inset-0 animate-ping">
+                <Spinner className="size-8 text-primary/20" />
+              </div>
+            </div>
+            <div className="text-center">
+              <p className="font-medium">Đang xử lý...</p>
+              <p className="text-sm text-muted-foreground">Vui lòng chờ trong giây lát</p>
+            </div>
           </div>
         </div>
       )}
