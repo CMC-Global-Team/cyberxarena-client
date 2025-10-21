@@ -48,7 +48,7 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
 
   const discountOptions = useMemo(() => discounts.map(d => ({
     id: d.discountId,
-    label: `${d.discountName} - ${d.discountType === 'Percentage' ? `${d.discountValue}%` : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(d.discountValue)}`
+    label: `${d.discountName} (${d.discountType === 'Percentage' ? 'Phần trăm' : 'Cố định'}) - ${d.discountType === 'Percentage' ? `${d.discountValue}%` : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(d.discountValue)}`
   })), [discounts])
 
   const handleChange = (field: keyof MembershipCardDTO, value: unknown) => {
