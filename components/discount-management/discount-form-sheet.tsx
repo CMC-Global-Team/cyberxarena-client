@@ -34,9 +34,9 @@ export function DiscountFormSheet({ discount, mode, onSuccess, children, open: c
   useEffect(() => {
     if (discount && mode === "edit") {
       setFormData({
-        discount_name: discount.discountName,
-        discount_type: discount.discountType,
-        discount_value: discount.discountValue
+        discount_name: discount.discount_name,
+        discount_type: discount.discount_type,
+        discount_value: discount.discount_value
       })
     } else {
       setFormData({

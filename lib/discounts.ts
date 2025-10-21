@@ -1,10 +1,10 @@
 import { http } from "./api";
 
 export interface Discount {
-  discountId: number;
-  discountName: string;
-  discountType: 'Flat' | 'Percentage';
-  discountValue: number;
+  discount_id: number;
+  discount_name: string;
+  discount_type: 'Flat' | 'Percentage';
+  discount_value: number;
 }
 
 export interface DiscountDTO {
@@ -21,10 +21,10 @@ export interface UpdateDiscountRequestDTO {
 
 // Helper function to convert server response to client format
 const convertServerToClient = (serverDiscount: any): Discount => ({
-  discountId: serverDiscount.discount_id,
-  discountName: serverDiscount.discount_name,
-  discountType: serverDiscount.discount_type,
-  discountValue: serverDiscount.discount_value
+  discount_id: serverDiscount.discount_id,
+  discount_name: serverDiscount.discount_name,
+  discount_type: serverDiscount.discount_type,
+  discount_value: serverDiscount.discount_value
 });
 
 export const discountsApi = {
