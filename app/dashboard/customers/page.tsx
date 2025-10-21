@@ -7,10 +7,13 @@ import { CustomerTable } from "@/components/customer-management/customer-table"
 import { CustomerFormSheet } from "@/components/customer-management/customer-form-sheet"
 import { AccountFormSheet } from "@/components/customer-management/account-form-sheet"
 import { AddBalanceSheet } from "@/components/customer-management/add-balance-sheet"
+import { RechargeHistorySheet } from "@/components/customer-management/recharge-history-sheet"
 import { CustomerStats } from "@/components/customer-management/customer-stats"
-import { CustomerApi, AccountApi, type CustomerDTO, type AccountDTO } from "@/lib/customers"
+import { BalanceWarningList } from "@/components/customer-management/balance-warning"
+import { CustomerApi, AccountApi, type CustomerDTO, type AccountDTO, CreateCustomerRequestDTO } from "@/lib/customers"
 import { useNotice } from "@/components/notice-provider"
-import { useLoading } from "@/components/loading-provider"
+import { usePageLoading } from "@/hooks/use-page-loading"
+import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
 
 interface Customer extends CustomerDTO {
   hasAccount?: boolean
@@ -19,7 +22,7 @@ interface Customer extends CustomerDTO {
 interface CustomerFormData {
   customerName: string
   phoneNumber: string
-  membershipCard: string
+  membershipCardId: number
   balance: number
 }
 
@@ -30,7 +33,7 @@ interface AccountFormData {
 
 export default function CustomersPage() {
   const { notify } = useNotice()
-  const { withLoading } = useLoading()
+  const { withPageLoading, isLoading } = usePageLoading()
   const [customers, setCustomers] = useState<Customer[]>([])
   const [accounts, setAccounts] = useState<AccountDTO[]>([])
   const [loading, setLoading] = useState<boolean>(false)
@@ -38,12 +41,13 @@ export default function CustomersPage() {
   const [editSheetOpen, setEditSheetOpen] = useState(false)
   const [accountSheetOpen, setAccountSheetOpen] = useState(false)
   const [addBalanceSheetOpen, setAddBalanceSheetOpen] = useState(false)
+  const [rechargeHistorySheetOpen, setRechargeHistorySheetOpen] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
 
   const loadCustomers = async () => {
     try {
       setLoading(true)
-      const res = await withLoading(() => CustomerApi.list({ page: 0, size: 100, sortBy: "customerId", sortDir: "asc" }))
+      const res = await withPageLoading(() => CustomerApi.list({ page: 0, size: 100, sortBy: "customerId", sortDir: "asc" }))
       setCustomers(res)
     } catch (e: any) {
       notify({ type: "error", message: `Lỗi tải danh sách khách hàng: ${e?.message || ''}` })
@@ -54,7 +58,7 @@ export default function CustomersPage() {
 
   const loadAccounts = async () => {
     try {
-      const res = await withLoading(() => AccountApi.search({ page: 0, size: 1000 }))
+      const res = await withPageLoading(() => AccountApi.search({ page: 0, size: 1000 }))
       setAccounts(res.content)
     } catch (e: any) {
       console.warn("Could not load accounts:", e?.message || '')
@@ -77,13 +81,11 @@ export default function CustomersPage() {
 
   const handleCreateCustomer = async (data: CustomerFormData) => {
     try {
-      const newCustomer = await withLoading(() => CustomerApi.create({
-        customerId: 0, // Will be set by server
+      const newCustomer = await withPageLoading(() => CustomerApi.create({
         customerName: data.customerName,
         phoneNumber: data.phoneNumber,
-        membershipCard: data.membershipCard,
-        balance: data.balance,
-        registrationDate: new Date().toISOString()
+        membershipCardId: data.membershipCardId,
+        balance: data.balance
       }))
       
       setCustomers(prev => [...prev, { ...newCustomer, hasAccount: false }])
@@ -98,11 +100,11 @@ export default function CustomersPage() {
     if (!selectedCustomer) return
     
     try {
-      const updatedCustomer = await withLoading(() => CustomerApi.update(selectedCustomer.customerId, {
+      const updatedCustomer = await withPageLoading(() => CustomerApi.update(selectedCustomer.customerId, {
         ...selectedCustomer,
         customerName: data.customerName,
         phoneNumber: data.phoneNumber,
-        membershipCard: data.membershipCard,
+        membershipCardId: data.membershipCardId,
         balance: data.balance
       }))
       
@@ -120,7 +122,7 @@ export default function CustomersPage() {
 
   const handleDeleteCustomer = async (customerId: number) => {
     try {
-      await withLoading(() => CustomerApi.delete(customerId))
+      await withPageLoading(() => CustomerApi.delete(customerId))
       setCustomers(prev => prev.filter(c => c.customerId !== customerId))
       setAccounts(prev => prev.filter(a => a.customerId !== customerId))
       notify({ type: "success", message: "Đã xóa khách hàng thành công" })
@@ -147,7 +149,7 @@ export default function CustomersPage() {
     if (!selectedCustomer) return
     
     try {
-      const newAccount = await withLoading(() => AccountApi.create({
+      const newAccount = await withPageLoading(() => AccountApi.create({
         customerId: selectedCustomer.customerId,
         username: data.username,
         password: data.password
@@ -172,11 +174,40 @@ export default function CustomersPage() {
     }
   }
 
+  const handleUpdateAccount = async (data: AccountFormData) => {
+    if (!selectedCustomer) return
+    
+    try {
+      const updateData: any = { username: data.username }
+      if (data.password && data.password.trim() !== "") {
+        updateData.password = data.password
+      }
+      
+      const updatedAccount = await withPageLoading(() => AccountApi.update(selectedCustomer.customerId, updateData))
+      
+      setAccounts(prev => prev.map(a => 
+        a.customerId === selectedCustomer.customerId 
+          ? { ...a, username: updatedAccount.username }
+          : a
+      ))
+      notify({ type: "success", message: "Đã cập nhật tài khoản thành công" })
+    } catch (e: any) {
+      const errorMsg = e?.message || "Lỗi không xác định"
+      
+      if (errorMsg.includes("username") && errorMsg.includes("exists")) {
+        notify({ type: "error", message: "Tên đăng nhập đã tồn tại" })
+      } else {
+        notify({ type: "error", message: `Lỗi cập nhật tài khoản: ${errorMsg}` })
+      }
+      throw e
+    }
+  }
+
   const handleAddBalanceAmount = async (amount: number) => {
     if (!selectedCustomer) return
     
     try {
-      const updatedCustomer = await withLoading(() => CustomerApi.update(selectedCustomer.customerId, {
+      const updatedCustomer = await withPageLoading(() => CustomerApi.update(selectedCustomer.customerId, {
         ...selectedCustomer,
         balance: selectedCustomer.balance + amount
       }))
@@ -208,6 +239,11 @@ export default function CustomersPage() {
     setAddBalanceSheetOpen(true)
   }
 
+  const handleViewRechargeHistory = (customer: Customer) => {
+    setSelectedCustomer(customer)
+    setRechargeHistorySheetOpen(true)
+  }
+
   // Calculate stats
   const totalCustomers = customersWithAccounts.length
   const activeCustomers = customersWithAccounts.filter(c => c.hasAccount).length
@@ -219,69 +255,80 @@ export default function CustomersPage() {
   }).length
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý khách hàng</h1>
-          <p className="text-muted-foreground">Danh sách và thông tin khách hàng, quản lý tài khoản</p>
+    <div className="p-6 space-y-6 relative">
+      <PageLoadingOverlay isLoading={isLoading} pageType="customers" />
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý khách hàng</h1>
+            <p className="text-muted-foreground">Danh sách và thông tin khách hàng, quản lý tài khoản</p>
+          </div>
+          <Button
+            onClick={() => setAddSheetOpen(true)}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          >
+            <UserPlus className="h-4 w-4 mr-2" />
+            Thêm khách hàng
+          </Button>
         </div>
-        <Button
-          onClick={() => setAddSheetOpen(true)}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground"
-        >
-          <UserPlus className="h-4 w-4 mr-2" />
-          Thêm khách hàng
-        </Button>
-      </div>
 
-      <CustomerStats 
-        totalCustomers={totalCustomers}
-        activeCustomers={activeCustomers}
-        totalBalance={totalBalance}
-        newCustomersThisMonth={newCustomersThisMonth}
-      />
+        <CustomerStats 
+          totalCustomers={totalCustomers}
+          activeCustomers={activeCustomers}
+          totalBalance={totalBalance}
+          newCustomersThisMonth={newCustomersThisMonth}
+        />
 
-      <CustomerTable 
-        customers={customersWithAccounts}
-        onEdit={handleEdit}
-        onDelete={handleDeleteCustomer}
-        onManageAccount={handleManageAccount}
-        onAddBalance={handleAddBalance}
-      />
+        <BalanceWarningList customers={customersWithAccounts} />
 
-      <CustomerFormSheet 
-        open={addSheetOpen} 
-        onOpenChange={setAddSheetOpen} 
-        mode="add" 
-        onSubmit={handleCreateCustomer}
-      />
+        <CustomerTable 
+          customers={customersWithAccounts}
+          onEdit={handleEdit}
+          onDelete={handleDeleteCustomer}
+          onManageAccount={handleManageAccount}
+          onAddBalance={handleAddBalance}
+          onViewRechargeHistory={handleViewRechargeHistory}
+        />
 
-      {selectedCustomer && (
-        <>
-          <CustomerFormSheet
-            open={editSheetOpen}
-            onOpenChange={setEditSheetOpen}
-            customer={selectedCustomer}
-            mode="edit"
-            onSubmit={handleUpdateCustomer}
-          />
+        <CustomerFormSheet 
+          open={addSheetOpen} 
+          onOpenChange={setAddSheetOpen} 
+          mode="add" 
+          onSubmit={handleCreateCustomer}
+        />
 
-          <AccountFormSheet
-            open={accountSheetOpen}
-            onOpenChange={setAccountSheetOpen}
-            customer={selectedCustomer}
-            mode="create"
-            onSubmit={handleCreateAccount}
-          />
+        {selectedCustomer && (
+          <>
+            <CustomerFormSheet
+              open={editSheetOpen}
+              onOpenChange={setEditSheetOpen}
+              customer={selectedCustomer}
+              mode="edit"
+              onSubmit={handleUpdateCustomer}
+            />
 
-          <AddBalanceSheet
-            open={addBalanceSheetOpen}
-            onOpenChange={setAddBalanceSheetOpen}
-            customer={selectedCustomer}
-            onSubmit={handleAddBalanceAmount}
-          />
-        </>
-      )}
+            <AccountFormSheet
+              open={accountSheetOpen}
+              onOpenChange={setAccountSheetOpen}
+              customer={selectedCustomer}
+              mode="create"
+              onSubmit={handleCreateAccount}
+              onUpdate={handleUpdateAccount}
+            />
+
+            <AddBalanceSheet
+              open={addBalanceSheetOpen}
+              onOpenChange={setAddBalanceSheetOpen}
+              customer={selectedCustomer}
+              onSubmit={handleAddBalanceAmount}
+            />
+
+            <RechargeHistorySheet
+              open={rechargeHistorySheetOpen}
+              onOpenChange={setRechargeHistorySheetOpen}
+              customer={selectedCustomer}
+            />
+          </>
+        )}
     </div>
   )
 }

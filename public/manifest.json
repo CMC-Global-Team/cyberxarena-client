@@ -1,0 +1,21 @@
+{
+  "name": "CyberX Arena - Hệ thống quản lý quán net",
+  "short_name": "CyberX Arena",
+  "description": "Hệ thống quản lý quán net hiện đại với giao diện đẹp mắt và tính năng đầy đủ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3B82F6",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

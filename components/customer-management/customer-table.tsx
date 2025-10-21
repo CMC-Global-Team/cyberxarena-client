@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -8,12 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Search, MoreVertical, Mail, Phone, Calendar, DollarSign } from "lucide-react"
 import { CustomerActionsSheet } from "@/components/customer-management/customer-actions-sheet"
+import { BalanceWarning } from "@/components/customer-management/balance-warning"
+import { membershipsApi, type MembershipCard } from "@/lib/memberships"
 
 interface Customer {
   customerId: number
   customerName: string
   phoneNumber: string
-  membershipCard: string
+  membershipCardId: number
   balance: number
   registrationDate: string
   hasAccount?: boolean
@@ -25,6 +27,7 @@ interface CustomerTableProps {
   onDelete: (customerId: number) => void
   onManageAccount: (customer: Customer) => void
   onAddBalance: (customer: Customer) => void
+  onViewRechargeHistory: (customer: Customer) => void
 }
 
 export function CustomerTable({ 
@@ -32,7 +35,8 @@ export function CustomerTable({
   onEdit, 
   onDelete, 
   onManageAccount, 
-  onAddBalance 
+  onAddBalance,
+  onViewRechargeHistory
 }: CustomerTableProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [accountFilter, setAccountFilter] = useState<string>("all")
@@ -40,14 +44,39 @@ export function CustomerTable({
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
   const [actionsSheetOpen, setActionsSheetOpen] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
+  const [membershipCards, setMembershipCards] = useState<MembershipCard[]>([])
+  const [isLoadingCards, setIsLoadingCards] = useState(false)
+
+  // Load membership cards on component mount
+  useEffect(() => {
+    const loadMembershipCards = async () => {
+      setIsLoadingCards(true)
+      try {
+        const cards = await membershipsApi.getAll()
+        setMembershipCards(cards)
+      } catch (error) {
+        console.error("Failed to load membership cards:", error)
+      } finally {
+        setIsLoadingCards(false)
+      }
+    }
+
+    loadMembershipCards()
+  }, [])
+
+  const getMembershipCardName = (membershipCardId: number) => {
+    const card = membershipCards.find(c => c.membershipCardId === membershipCardId)
+    return card ? `${card.membershipCardName}${card.isDefault ? ' (Mặc định)' : ''}` : 'Không xác định'
+  }
 
   const filteredAndSortedCustomers = useMemo(() => {
     let filtered = customers.filter((customer) => {
       // Search filter
+      const membershipCardName = getMembershipCardName(customer.membershipCardId)
       const matchesSearch = 
         customer.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         customer.phoneNumber.includes(searchQuery) ||
-        customer.membershipCard?.toLowerCase().includes(searchQuery.toLowerCase())
+        membershipCardName.toLowerCase().includes(searchQuery.toLowerCase())
 
       // Account filter
       const matchesAccount = 
@@ -76,8 +105,8 @@ export function CustomerTable({
           bValue = b.phoneNumber || ""
           break
         case "membershipCard":
-          aValue = a.membershipCard || ""
-          bValue = b.membershipCard || ""
+          aValue = getMembershipCardName(a.membershipCardId)
+          bValue = getMembershipCardName(b.membershipCardId)
           break
         case "balance":
           aValue = a.balance
@@ -211,9 +240,9 @@ export function CustomerTable({
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      {customer.membershipCard ? (
+                      {customer.membershipCardId ? (
                         <Badge variant="secondary" className="bg-primary/20 text-primary">
-                          {customer.membershipCard}
+                          {getMembershipCardName(customer.membershipCardId)}
                         </Badge>
                       ) : (
                         <span className="text-sm text-muted-foreground">Chưa có</span>
@@ -226,9 +255,16 @@ export function CustomerTable({
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                        <DollarSign className="h-3 w-3 text-muted-foreground" />
-                        {formatCurrency(customer.balance)}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                          <DollarSign className="h-3 w-3 text-muted-foreground" />
+                          {formatCurrency(customer.balance)}
+                        </div>
+                        <BalanceWarning 
+                          balance={customer.balance} 
+                          customerName={customer.customerName}
+                          showInTable={true}
+                        />
                       </div>
                     </td>
                     <td className="py-4 px-4">
@@ -271,6 +307,7 @@ export function CustomerTable({
           onDelete={onDelete}
           onManageAccount={onManageAccount}
           onAddBalance={onAddBalance}
+          onViewRechargeHistory={onViewRechargeHistory}
         />
       )}
     </>

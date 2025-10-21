@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Edit, Trash2, DollarSign, User, Key } from "lucide-react"
+import { Edit, Trash2, DollarSign, User, Key, History } from "lucide-react"
 
 interface Customer {
   customerId: number
@@ -22,6 +22,7 @@ interface CustomerActionsSheetProps {
   onDelete: (customerId: number) => void
   onManageAccount: (customer: Customer) => void
   onAddBalance: (customer: Customer) => void
+  onViewRechargeHistory: (customer: Customer) => void
 }
 
 export function CustomerActionsSheet({ 
@@ -31,7 +32,8 @@ export function CustomerActionsSheet({
   onEdit, 
   onDelete, 
   onManageAccount, 
-  onAddBalance 
+  onAddBalance,
+  onViewRechargeHistory
 }: CustomerActionsSheetProps) {
   const handleEdit = () => {
     onOpenChange(false)
@@ -53,6 +55,11 @@ export function CustomerActionsSheet({
   const handleAddBalance = () => {
     onOpenChange(false)
     onAddBalance(customer)
+  }
+
+  const handleViewRechargeHistory = () => {
+    onOpenChange(false)
+    onViewRechargeHistory(customer)
   }
 
   return (
@@ -82,6 +89,15 @@ export function CustomerActionsSheet({
           >
             <DollarSign className="h-4 w-4" />
             <span>Nạp tiền</span>
+          </Button>
+
+          <Button
+            onClick={handleViewRechargeHistory}
+            variant="outline"
+            className="w-full justify-start gap-3 h-12 border-border hover:bg-secondary bg-transparent"
+          >
+            <History className="h-4 w-4" />
+            <span>Lịch sử nạp tiền</span>
           </Button>
 
           <Button
