@@ -209,11 +209,7 @@ export function AnimatedLoginForm() {
       <div ref={containerRef} className="relative">
         <Card 
           ref={cardRef}
-          className="border-border bg-card shadow-2xl backdrop-blur-sm"
-          style={{
-            background: "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)",
-            border: "1px solid rgba(255,255,255,0.2)"
-          }}
+          className="border-border bg-card shadow-2xl"
         >
           <CardHeader>
             <CardTitle ref={titleRef} className="text-2xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -239,7 +235,7 @@ export function AnimatedLoginForm() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
-                  className="bg-secondary/50 border-border transition-all duration-200 hover:bg-secondary/70 focus:bg-secondary/70"
+                  className="bg-secondary border-border transition-all duration-200 hover:bg-secondary/80 focus:bg-secondary/80"
                 />
               </div>
               <div 
@@ -256,7 +252,7 @@ export function AnimatedLoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-secondary/50 border-border transition-all duration-200 hover:bg-secondary/70 focus:bg-secondary/70"
+                  className="bg-secondary border-border transition-all duration-200 hover:bg-secondary/80 focus:bg-secondary/80"
                 />
               </div>
               {error && (
