@@ -26,7 +26,7 @@ export function RechargeHistorySheet({
 }: RechargeHistorySheetProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card border-border w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-card border-border w-[95vw] max-w-[95vw] h-[95vh] max-h-[95vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-foreground">Lịch sử nạp tiền</DialogTitle>
           <DialogDescription className="text-muted-foreground">
@@ -34,7 +34,7 @@ export function RechargeHistorySheet({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mt-6">
+        <div className="mt-6 flex-1 overflow-hidden">
           <RechargeHistoryTable 
             customerId={customer.customerId}
             customerName={customer.customerName}
