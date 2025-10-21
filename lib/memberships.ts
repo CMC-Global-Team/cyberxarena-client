@@ -1,9 +1,12 @@
 import { http } from "./api";
 
 export interface MembershipCard {
-  membership_card_id: number;
-  membership_card_name: string;
-  discount_id?: number | null;
+  membershipCardId: number;
+  membershipCardName: string;
+  discountId?: number | null;
+  discountName?: string | null;
+  discountType?: string | null;
+  discountValue?: number | null;
 }
 
 export interface MembershipCardDTO {

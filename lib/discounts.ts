@@ -1,41 +1,62 @@
 import { http } from "./api";
 
 export interface Discount {
-  discount_id: number;
-  discount_type: 'Flat' | 'Percentage';
-  discount_value: number;
+  discountId: number;
+  discountName: string;
+  discountType: 'Flat' | 'Percentage';
+  discountValue: number;
 }
 
 export interface DiscountDTO {
+  discount_name: string;
   discount_type: 'Flat' | 'Percentage';
   discount_value: number;
 }
 
 export interface UpdateDiscountRequestDTO {
+  discount_name?: string;
   discount_type?: 'Flat' | 'Percentage';
   discount_value?: number;
 }
 
+// Helper function to convert server response to client format
+const convertServerToClient = (serverDiscount: any): Discount => ({
+  discountId: serverDiscount.discountId,
+  discountName: serverDiscount.discountName,
+  discountType: serverDiscount.discountType,
+  discountValue: serverDiscount.discountValue
+});
+
 export const discountsApi = {
   // Lấy tất cả discount
-  getAll: (): Promise<Discount[]> => 
-    http.get<Discount[]>("/discounts"),
+  getAll: async (): Promise<Discount[]> => {
+    const serverDiscounts = await http.get<any[]>("/discounts");
+    return serverDiscounts.map(convertServerToClient);
+  },
 
   // Lấy discount theo ID
-  getById: (id: number): Promise<Discount> => 
-    http.get<Discount>(`/discounts/${id}`),
+  getById: async (id: number): Promise<Discount> => {
+    const serverDiscount = await http.get<any>(`/discounts/${id}`);
+    return convertServerToClient(serverDiscount);
+  },
 
   // Lấy discount theo loại
-  getByType: (type: 'Flat' | 'Percentage'): Promise<Discount[]> => 
-    http.get<Discount[]>(`/discounts/type/${type}`),
+  getByType: async (type: 'Flat' | 'Percentage'): Promise<Discount[]> => {
+    const serverDiscounts = await http.get<any[]>(`/discounts/type/${type}`);
+    return serverDiscounts.map(convertServerToClient);
+  },
 
   // Tạo discount mới
-  create: (discount: DiscountDTO): Promise<Discount> => 
-    http.post<Discount>("/discounts", discount),
+  create: async (discount: DiscountDTO): Promise<Discount> => {
+    const serverDiscount = await http.post<any>("/discounts", discount);
+    return convertServerToClient(serverDiscount);
+  },
 
   // Cập nhật discount
-  update: (id: number, discount: UpdateDiscountRequestDTO): Promise<Discount> => 
-    http.put<Discount>(`/discounts/${id}`, discount),
+  update: async (id: number, discount: UpdateDiscountRequestDTO): Promise<Discount> => {
+    const serverDiscount = await http.put<any>(`/discounts/${id}`, discount);
+    return convertServerToClient(serverDiscount);
+  },
 
   // Xóa discount
   delete: (id: number): Promise<void> => 

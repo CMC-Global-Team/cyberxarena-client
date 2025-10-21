@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RefreshCw, Table, BarChart3 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { usePageLoading } from "@/hooks/use-page-loading"
+import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
 import { membershipsApi, type MembershipCard, type MembershipCardDTO } from "@/lib/memberships"
 import { discountsApi, type Discount } from "@/lib/discounts"
 import { MembershipTable } from "@/components/membership-management/membership-table"
@@ -14,6 +16,7 @@ import { MembershipFormSheet } from "@/components/membership-management/membersh
 
 export default function MembershipsPage() {
   const { toast } = useToast()
+  const { withPageLoading, isLoading } = usePageLoading()
   const [memberships, setMemberships] = useState<MembershipCard[]>([])
   const [discounts, setDiscounts] = useState<Discount[]>([])
   const [loading, setLoading] = useState(true)
@@ -21,20 +24,17 @@ export default function MembershipsPage() {
   const [selected, setSelected] = useState<MembershipCard | null>(null)
   const [editOpen, setEditOpen] = useState(false)
 
-  const discountLabelById = useMemo(() => Object.fromEntries(
-    discounts.map(d => [d.discount_id, d.discount_type === 'Percentage' ? `${d.discount_value}%` : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(d.discount_value)])
-  ), [discounts])
 
   const loadData = async () => {
     try {
-      const [m, d] = await Promise.all([
+      const [m, d] = await withPageLoading(() => Promise.all([
         membershipsApi.getAll(),
         discountsApi.getAll().catch(() => [] as Discount[]),
-      ])
+      ]))
       setMemberships(m)
       setDiscounts(d)
     } catch (e: any) {
-      toast({ title: "Error", description: e?.message || "Failed to load memberships", variant: "destructive" })
+      toast({ title: "Lỗi", description: e?.message || "Không thể tải dữ liệu thẻ thành viên", variant: "destructive" })
     } finally {
       setLoading(false)
       setRefreshing(false)
@@ -50,11 +50,11 @@ export default function MembershipsPage() {
 
   const handleCreate = async (data: MembershipCardDTO) => {
     try {
-      await membershipsApi.create(data)
-      toast({ title: "Success", description: "Membership created" })
+      await withPageLoading(() => membershipsApi.create(data))
+      toast({ title: "Thành công", description: "Đã tạo thẻ thành viên thành công" })
       await loadData()
     } catch (e: any) {
-      toast({ title: "Error", description: e?.message || "Create failed", variant: "destructive" })
+      toast({ title: "Lỗi", description: e?.message || "Không thể tạo thẻ thành viên", variant: "destructive" })
       throw e
     }
   }
@@ -62,22 +62,22 @@ export default function MembershipsPage() {
   const handleUpdate = async (data: MembershipCardDTO) => {
     if (!selected) return
     try {
-      await membershipsApi.update(selected.membership_card_id, data)
-      toast({ title: "Success", description: "Membership updated" })
+      await withPageLoading(() => membershipsApi.update(selected.membershipCardId, data))
+      toast({ title: "Thành công", description: "Đã cập nhật thẻ thành viên thành công" })
       await loadData()
     } catch (e: any) {
-      toast({ title: "Error", description: e?.message || "Update failed", variant: "destructive" })
+      toast({ title: "Lỗi", description: e?.message || "Không thể cập nhật thẻ thành viên", variant: "destructive" })
       throw e
     }
   }
 
   const handleDelete = async (id: number) => {
     try {
-      await membershipsApi.delete(id)
-      toast({ title: "Success", description: "Membership deleted" })
+      await withPageLoading(() => membershipsApi.delete(id))
+      toast({ title: "Thành công", description: "Đã xóa thẻ thành viên thành công" })
       await loadData()
     } catch (e: any) {
-      toast({ title: "Error", description: e?.message || "Delete failed", variant: "destructive" })
+      toast({ title: "Lỗi", description: e?.message || "Không thể xóa thẻ thành viên", variant: "destructive" })
       throw e
     }
   }
@@ -88,16 +88,17 @@ export default function MembershipsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 relative">
+      <PageLoadingOverlay isLoading={isLoading} pageType="memberships" />
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Membership management</h1>
-          <p className="text-muted-foreground">Manage membership card packages and associated discounts</p>
+          <h1 className="text-3xl font-bold tracking-tight">Quản lý thẻ thành viên</h1>
+          <p className="text-muted-foreground">Quản lý các gói thẻ thành viên và giảm giá liên quan</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
             <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
+            Làm mới
           </Button>
           <MembershipFormSheet mode="add" onSubmit={handleCreate} />
         </div>
@@ -107,11 +108,11 @@ export default function MembershipsPage() {
         <TabsList>
           <TabsTrigger value="table" className="flex items-center gap-2">
             <Table className="h-4 w-4" />
-            List
+            Danh sách
           </TabsTrigger>
           <TabsTrigger value="stats" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
-            Stats
+            Thống kê
           </TabsTrigger>
         </TabsList>
 
@@ -119,7 +120,6 @@ export default function MembershipsPage() {
           <MembershipTable 
             memberships={memberships}
             loading={loading}
-            discountLabelById={discountLabelById}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />

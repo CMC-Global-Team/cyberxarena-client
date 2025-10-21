@@ -7,21 +7,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RefreshCw, Percent, BarChart3, Table } from "lucide-react"
 import { Discount, discountsApi } from "@/lib/discounts"
 import { useToast } from "@/hooks/use-toast"
+import { usePageLoading } from "@/hooks/use-page-loading"
+import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
 import { DiscountTable } from "@/components/discount-management/discount-table"
 import { DiscountStats } from "@/components/discount-management/discount-stats"
 import { DiscountFormSheet } from "@/components/discount-management/discount-form-sheet"
 
 export default function DiscountsPage() {
+  const { toast } = useToast()
+  const { withPageLoading, isLoading } = usePageLoading()
   const [discounts, setDiscounts] = useState<Discount[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [selectedDiscount, setSelectedDiscount] = useState<Discount | null>(null)
   const [editSheetOpen, setEditSheetOpen] = useState(false)
-  const { toast } = useToast()
 
   const fetchDiscounts = async () => {
     try {
-      const data = await discountsApi.getAll()
+      const data = await withPageLoading(() => discountsApi.getAll())
       setDiscounts(data)
     } catch (error) {
       toast({
@@ -46,7 +49,7 @@ export default function DiscountsPage() {
 
   const handleCreateDiscount = async (data: any) => {
     try {
-      await discountsApi.create(data)
+      await withPageLoading(() => discountsApi.create(data))
       toast({
         title: "Thành công",
         description: "Đã thêm giảm giá thành công",
@@ -66,7 +69,7 @@ export default function DiscountsPage() {
     if (!selectedDiscount) return
     
     try {
-      await discountsApi.update(selectedDiscount.discount_id, data)
+      await withPageLoading(() => discountsApi.update(selectedDiscount.discountId, data))
       toast({
         title: "Thành công",
         description: "Đã cập nhật giảm giá thành công",
@@ -84,7 +87,7 @@ export default function DiscountsPage() {
 
   const handleDeleteDiscount = async (id: number) => {
     try {
-      await discountsApi.delete(id)
+      await withPageLoading(() => discountsApi.delete(id))
       toast({
         title: "Thành công",
         description: "Đã xóa giảm giá thành công",
@@ -110,7 +113,8 @@ export default function DiscountsPage() {
   }, [])
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 relative">
+      <PageLoadingOverlay isLoading={isLoading} pageType="discounts" />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

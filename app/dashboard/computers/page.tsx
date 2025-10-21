@@ -10,11 +10,12 @@ import { ComputerFormSheet } from "@/components/computer-form-sheet"
 import { ComputerActionsSheet } from "@/components/computer-actions-sheet"
 import { ComputerApi, type ComputerDTO } from "@/lib/computers"
 import { useNotice } from "@/components/notice-provider"
-import { useLoading } from "@/components/loading-provider"
+import { usePageLoading } from "@/hooks/use-page-loading"
+import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
 
 export default function ComputersPage() {
   const { notify } = useNotice()
-  const { withLoading } = useLoading()
+  const { withPageLoading, isLoading } = usePageLoading()
   const [searchQuery, setSearchQuery] = useState("")
   const [addSheetOpen, setAddSheetOpen] = useState(false)
   const [editSheetOpen, setEditSheetOpen] = useState(false)
@@ -29,7 +30,7 @@ export default function ComputersPage() {
   const loadComputers = async () => {
     try {
       setLoading(true)
-      const res = await withLoading(() => ComputerApi.list({ page: 0, size: 100, sortBy: "computerId", sortDir: "asc" }))
+      const res = await withPageLoading(() => ComputerApi.list({ page: 0, size: 100, sortBy: "computerId", sortDir: "asc" }))
       setComputers(res.content)
     } catch (e: any) {
       notify({ type: "error", message: `Lỗi tải danh sách: ${e?.message || ''}` })
@@ -48,7 +49,7 @@ export default function ComputersPage() {
     const t = setTimeout(async () => {
       try {
         setLoading(true)
-        const res = await withLoading(() =>
+        const res = await withPageLoading(() =>
           ComputerApi.search({
             name: searchQuery || undefined,
             status: statusFilter === "all" ? undefined : toApiStatus(statusFilter),
@@ -102,7 +103,7 @@ export default function ComputersPage() {
     }
     
     try {
-      await withLoading(() => ComputerApi.delete(selectedComputer.computerId))
+      await withPageLoading(() => ComputerApi.delete(selectedComputer.computerId))
       setComputers((prev) => prev.filter((c) => c.computerId !== selectedComputer.computerId))
       notify({ type: "success", message: "Đã xóa máy tính thành công" })
     } catch (e: any) {
@@ -126,7 +127,7 @@ export default function ComputersPage() {
   const handleMaintenance = async () => {
     if (!selectedComputer?.computerId) return
     try {
-      const updated = await withLoading(() =>
+      const updated = await withPageLoading(() =>
         ComputerApi.update(selectedComputer.computerId, {
           computerName: selectedComputer.computerName,
           ipAddress: selectedComputer.ipAddress,
@@ -182,7 +183,8 @@ export default function ComputersPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 relative">
+      <PageLoadingOverlay isLoading={isLoading} pageType="computers" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý máy tính</h1>
