@@ -7,16 +7,19 @@ export interface MembershipCard {
   discountName?: string | null;
   discountType?: string | null;
   discountValue?: number | null;
+  isDefault: boolean;
 }
 
 export interface MembershipCardDTO {
   membershipCardName: string;
   discountId?: number | null;
+  isDefault?: boolean;
 }
 
 export interface UpdateMembershipCardRequestDTO {
   membershipCardName?: string;
   discountId?: number | null;
+  isDefault?: boolean;
 }
 
 export const membershipsApi = {
@@ -27,6 +30,10 @@ export const membershipsApi = {
   // Get by ID
   getById: (id: number): Promise<MembershipCard> =>
     http.get<MembershipCard>(`/api/membership-cards/${id}`),
+
+  // Get default membership card
+  getDefault: (): Promise<MembershipCard> =>
+    http.get<MembershipCard>("/api/membership-cards/default"),
 
   // Create
   create: (payload: MembershipCardDTO): Promise<MembershipCard> =>

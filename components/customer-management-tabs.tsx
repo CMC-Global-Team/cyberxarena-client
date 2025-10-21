@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,6 +10,7 @@ import { CustomerFormSheet } from "@/components/customer-form-sheet"
 import { CustomerActionsSheet } from "@/components/customer-actions-sheet"
 import { AccountFormSheet } from "@/components/account-form-sheet"
 import { AccountActionsSheet } from "@/components/account-actions-sheet"
+import { membershipsApi, type MembershipCard } from "@/lib/memberships"
 
 export function CustomerManagementTabs() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -26,6 +27,30 @@ export function CustomerManagementTabs() {
   const [editAccountSheetOpen, setEditAccountSheetOpen] = useState(false)
   const [accountActionsSheetOpen, setAccountActionsSheetOpen] = useState(false)
   const [selectedAccount, setSelectedAccount] = useState<any>(null)
+  const [membershipCards, setMembershipCards] = useState<MembershipCard[]>([])
+  const [isLoadingCards, setIsLoadingCards] = useState(false)
+
+  // Load membership cards on component mount
+  useEffect(() => {
+    const loadMembershipCards = async () => {
+      setIsLoadingCards(true)
+      try {
+        const cards = await membershipsApi.getAll()
+        setMembershipCards(cards)
+      } catch (error) {
+        console.error("Failed to load membership cards:", error)
+      } finally {
+        setIsLoadingCards(false)
+      }
+    }
+
+    loadMembershipCards()
+  }, [])
+
+  const getMembershipCardName = (membershipCardId: number) => {
+    const card = membershipCards.find(c => c.membershipCardId === membershipCardId)
+    return card ? `${card.membershipCardName}${card.isDefault ? ' (Mặc định)' : ''}` : 'Không xác định'
+  }
 
   // Mock data for customers
   const customers = [
@@ -33,7 +58,7 @@ export function CustomerManagementTabs() {
       id: 1,
       customerName: "Nguyễn Văn A",
       phoneNumber: "0901234567",
-      membershipCard: "VIP001",
+      membershipCardId: 1,
       balance: 50000,
       registrationDate: "2024-01-15T00:00:00",
       hasAccount: true,
@@ -42,7 +67,7 @@ export function CustomerManagementTabs() {
       id: 2,
       customerName: "Trần Thị B",
       phoneNumber: "0912345678",
-      membershipCard: "VIP002",
+      membershipCardId: 2,
       balance: 120000,
       registrationDate: "2024-02-20T00:00:00",
       hasAccount: true,
@@ -51,7 +76,7 @@ export function CustomerManagementTabs() {
       id: 3,
       customerName: "Lê Văn C",
       phoneNumber: "0923456789",
-      membershipCard: "VIP003",
+      membershipCardId: 3,
       balance: 0,
       registrationDate: "2024-03-05T00:00:00",
       hasAccount: false,
@@ -60,7 +85,7 @@ export function CustomerManagementTabs() {
       id: 4,
       customerName: "Phạm Thị D",
       phoneNumber: "0934567890",
-      membershipCard: "VIP004",
+      membershipCardId: 4,
       balance: 200000,
       registrationDate: "2024-03-12T00:00:00",
       hasAccount: true,
@@ -69,7 +94,7 @@ export function CustomerManagementTabs() {
       id: 5,
       customerName: "Hoàng Văn E",
       phoneNumber: "0945678901",
-      membershipCard: "VIP005",
+      membershipCardId: 5,
       balance: 75000,
       registrationDate: "2024-04-18T00:00:00",
       hasAccount: false,
@@ -84,7 +109,7 @@ export function CustomerManagementTabs() {
       username: "nguyenvana",
       customerName: "Nguyễn Văn A",
       phoneNumber: "0901234567",
-      membershipCard: "VIP001",
+      membershipCardId: 1,
     },
     {
       accountId: 2,
@@ -92,7 +117,7 @@ export function CustomerManagementTabs() {
       username: "tranthib",
       customerName: "Trần Thị B",
       phoneNumber: "0912345678",
-      membershipCard: "VIP002",
+      membershipCardId: 2,
     },
     {
       accountId: 3,
@@ -100,23 +125,27 @@ export function CustomerManagementTabs() {
       username: "phamthid",
       customerName: "Phạm Thị D",
       phoneNumber: "0934567890",
-      membershipCard: "VIP004",
+      membershipCardId: 4,
     },
   ]
 
   const filteredCustomers = customers.filter(
-    (customer) =>
-      customer.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      customer.phoneNumber.includes(searchQuery) ||
-      customer.membershipCard.toLowerCase().includes(searchQuery.toLowerCase())
+    (customer) => {
+      const membershipCardName = getMembershipCardName(customer.membershipCardId)
+      return customer.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        customer.phoneNumber.includes(searchQuery) ||
+        membershipCardName.toLowerCase().includes(searchQuery.toLowerCase())
+    }
   )
 
   const filteredAccounts = accounts.filter(
-    (account) =>
-      account.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      account.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      account.phoneNumber.includes(searchQuery) ||
-      account.membershipCard.toLowerCase().includes(searchQuery.toLowerCase())
+    (account) => {
+      const membershipCardName = getMembershipCardName(account.membershipCardId)
+      return account.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        account.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        account.phoneNumber.includes(searchQuery) ||
+        membershipCardName.toLowerCase().includes(searchQuery.toLowerCase())
+    }
   )
 
   const handleOpenCustomerActions = (customer: any) => {
@@ -238,7 +267,7 @@ export function CustomerManagementTabs() {
                               {customer.phoneNumber}
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              Thẻ: {customer.membershipCard}
+                              Thẻ: {getMembershipCardName(customer.membershipCardId)}
                             </div>
                           </div>
                         </td>
@@ -396,7 +425,7 @@ export function CustomerManagementTabs() {
                           </div>
                         </td>
                         <td className="py-4 px-4">
-                          <span className="text-sm font-medium text-foreground">{account.membershipCard}</span>
+                          <span className="text-sm font-medium text-foreground">{getMembershipCardName(account.membershipCardId)}</span>
                         </td>
                         <td className="py-4 px-4 text-right">
                           <Button

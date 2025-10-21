@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckCircle, AlertCircle } from "lucide-react"
+import { membershipsApi, type MembershipCard } from "@/lib/memberships"
 
 interface AccountFormSheetProps {
   open: boolean
@@ -19,13 +20,13 @@ interface AccountFormSheetProps {
     username: string
     customerName: string
     phoneNumber: string
-    membershipCard: string
+    membershipCardId: number
   }
   customers: Array<{
     id: number
     customerName: string
     phoneNumber: string
-    membershipCard: string
+    membershipCardId: number
     hasAccount?: boolean
   }>
   mode: "add" | "edit"
@@ -42,6 +43,8 @@ export function AccountFormSheet({ open, onOpenChange, account, customers, mode 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isCheckingUsername, setIsCheckingUsername] = useState(false)
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null)
+  const [membershipCards, setMembershipCards] = useState<MembershipCard[]>([])
+  const [isLoadingCards, setIsLoadingCards] = useState(false)
 
   useEffect(() => {
     if (mode === "edit" && account) {
@@ -62,6 +65,24 @@ export function AccountFormSheet({ open, onOpenChange, account, customers, mode 
     setErrors({})
     setUsernameAvailable(null)
   }, [open, mode, account])
+
+  useEffect(() => {
+    const loadMembershipCards = async () => {
+      setIsLoadingCards(true)
+      try {
+        const cards = await membershipsApi.getAll()
+        setMembershipCards(cards)
+      } catch (error) {
+        console.error("Failed to load membership cards:", error)
+      } finally {
+        setIsLoadingCards(false)
+      }
+    }
+
+    if (open) {
+      loadMembershipCards()
+    }
+  }, [open])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -137,6 +158,10 @@ export function AccountFormSheet({ open, onOpenChange, account, customers, mode 
   }
 
   const selectedCustomer = customers.find(c => c.id.toString() === formData.customerId)
+  const getMembershipCardName = (membershipCardId: number) => {
+    const card = membershipCards.find(c => c.membershipCardId === membershipCardId)
+    return card ? `${card.membershipCardName}${card.isDefault ? ' (Mặc định)' : ''}` : 'Không xác định'
+  }
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -172,7 +197,7 @@ export function AccountFormSheet({ open, onOpenChange, account, customers, mode 
                     <div className="flex flex-col">
                       <span className="font-medium">{customer.customerName}</span>
                       <span className="text-xs text-muted-foreground">
-                        {customer.phoneNumber} - {customer.membershipCard}
+                        {customer.phoneNumber} - {getMembershipCardName(customer.membershipCardId)}
                       </span>
                     </div>
                   </SelectItem>
@@ -188,7 +213,7 @@ export function AccountFormSheet({ open, onOpenChange, account, customers, mode 
             <div className="p-3 bg-secondary rounded-lg">
               <p className="text-sm font-medium text-foreground">{selectedCustomer.customerName}</p>
               <p className="text-xs text-muted-foreground">
-                {selectedCustomer.phoneNumber} • {selectedCustomer.membershipCard}
+                {selectedCustomer.phoneNumber} • {getMembershipCardName(selectedCustomer.membershipCardId)}
               </p>
             </div>
           )}

@@ -5,7 +5,7 @@ export interface CustomerDTO {
   customerId: number;
   customerName: string;
   phoneNumber: string;
-  membershipCard: string;
+  membershipCardId: number;
   balance: number; // BigDecimal -> number
   registrationDate: string; // LocalDateTime -> string
 }
@@ -17,7 +17,7 @@ export interface AccountDTO {
   password: string;
   customerName: string;
   phoneNumber: string;
-  membershipCard: string;
+  membershipCardId: number;
 }
 
 export interface CreateAccountRequestDTO {
@@ -84,7 +84,7 @@ export const AccountApi = {
     username?: string;
     customerName?: string;
     phoneNumber?: string;
-    membershipCard?: string;
+    membershipCardId?: number;
     page?: number;
     size?: number;
     sortBy?: string;
@@ -94,7 +94,7 @@ export const AccountApi = {
     if (params?.username) query.set("username", params.username);
     if (params?.customerName) query.set("customerName", params.customerName);
     if (params?.phoneNumber) query.set("phoneNumber", params.phoneNumber);
-    if (params?.membershipCard) query.set("membershipCard", params.membershipCard);
+    if (params?.membershipCardId !== undefined) query.set("membershipCardId", String(params.membershipCardId));
     if (params?.page !== undefined) query.set("page", String(params.page));
     if (params?.size !== undefined) query.set("size", String(params.size));
     if (params?.sortBy) query.set("sortBy", params.sortBy);
