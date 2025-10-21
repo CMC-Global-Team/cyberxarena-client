@@ -88,9 +88,8 @@ export default function MembershipsPage() {
   }
 
   return (
-    <>
+    <div className="space-y-6 p-6 relative">
       <PageLoadingOverlay isLoading={isLoading} pageType="memberships" />
-      <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Quản lý thẻ thành viên</h1>
@@ -151,8 +150,7 @@ export default function MembershipsPage() {
       {selected && (
         <MembershipFormSheet membership={selected} mode="edit" onSubmit={handleUpdate} open={editOpen} onOpenChange={setEditOpen} />
       )}
-      </div>
-    </>
+    </div>
   )
 }
 

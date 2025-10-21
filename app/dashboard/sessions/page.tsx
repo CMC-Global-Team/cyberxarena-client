@@ -182,9 +182,8 @@ export default function SessionsPage() {
   }
 
   return (
-    <>
+    <div className="p-6 space-y-6 relative">
       <PageLoadingOverlay isLoading={isLoading} pageType="sessions" />
-      <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý phiên sử dụng</h1>
@@ -446,7 +445,6 @@ export default function SessionsPage() {
           />
         </>
       )}
-      </div>
-    </>
+    </div>
   )
 }

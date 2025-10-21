@@ -113,9 +113,8 @@ export default function DiscountsPage() {
   }, [])
 
   return (
-    <>
+    <div className="space-y-6 p-6 relative">
       <PageLoadingOverlay isLoading={isLoading} pageType="discounts" />
-      <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -195,7 +194,6 @@ export default function DiscountsPage() {
           onOpenChange={setEditSheetOpen}
         />
       )}
-      </div>
-    </>
+    </div>
   )
 }
