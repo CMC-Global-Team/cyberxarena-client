@@ -13,6 +13,8 @@ import { discountsApi, type Discount } from "@/lib/discounts"
 import { MembershipTable } from "@/components/membership-management/membership-table"
 import { MembershipStats } from "@/components/membership-management/membership-stats"
 import { MembershipFormSheet } from "@/components/membership-management/membership-form-sheet"
+import { MembershipTour } from "@/components/membership-management/membership-tour"
+import { HelpCircle } from "lucide-react"
 
 export default function MembershipsPage() {
   const { toast } = useToast()
@@ -23,6 +25,7 @@ export default function MembershipsPage() {
   const [refreshing, setRefreshing] = useState(false)
   const [selected, setSelected] = useState<MembershipCard | null>(null)
   const [editOpen, setEditOpen] = useState(false)
+  const [showTour, setShowTour] = useState(false)
 
 
   const loadData = async () => {
@@ -97,20 +100,29 @@ export default function MembershipsPage() {
       <PageLoadingOverlay isLoading={isLoading} pageType="memberships" />
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Quản lý thẻ thành viên</h1>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-3xl font-bold tracking-tight" data-tour="page-title">Quản lý thẻ thành viên</h1>
+            <HelpCircle 
+              className="h-6 w-6 text-red-500 cursor-pointer hover:text-red-600 transition-colors" 
+              onClick={() => setShowTour(true)}
+              title="Hướng dẫn sử dụng"
+            />
+          </div>
           <p className="text-muted-foreground">Quản lý các gói thẻ thành viên và giảm giá liên quan</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
+          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing} data-tour="refresh-btn">
             <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Làm mới
           </Button>
-          <MembershipFormSheet mode="add" onSubmit={handleCreate} />
+          <div data-tour="add-membership-btn">
+            <MembershipFormSheet mode="add" onSubmit={handleCreate} />
+          </div>
         </div>
       </div>
 
       <Tabs defaultValue="table" className="space-y-4">
-        <TabsList>
+        <TabsList data-tour="tabs-navigation">
           <TabsTrigger value="table" className="flex items-center gap-2">
             <Table className="h-4 w-4" />
             Danh sách
@@ -122,39 +134,48 @@ export default function MembershipsPage() {
         </TabsList>
 
         <TabsContent value="table" className="space-y-4">
-          <MembershipTable 
-            memberships={memberships}
-            loading={loading}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
+          <div data-tour="membership-table">
+            <MembershipTable 
+              memberships={memberships}
+              loading={loading}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          </div>
         </TabsContent>
 
         <TabsContent value="stats" className="space-y-4">
-          {loading ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[...Array(3)].map((_, i) => (
-                  <Card key={i}>
-                    <CardHeader className="pb-2">
-                      <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-8 w-16 bg-muted animate-pulse rounded" />
-                    </CardContent>
-                  </Card>
-                ))}
+          <div data-tour="membership-stats">
+            {loading ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[...Array(3)].map((_, i) => (
+                    <Card key={i}>
+                      <CardHeader className="pb-2">
+                        <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : (
-            <MembershipStats memberships={memberships} />
-          )}
+            ) : (
+              <MembershipStats memberships={memberships} />
+            )}
+          </div>
         </TabsContent>
       </Tabs>
 
       {selected && (
         <MembershipFormSheet membership={selected} mode="edit" onSubmit={handleUpdate} open={editOpen} onOpenChange={setEditOpen} />
       )}
+
+      <MembershipTour 
+        isActive={showTour} 
+        onComplete={() => setShowTour(false)} 
+      />
     </div>
   )
 }
