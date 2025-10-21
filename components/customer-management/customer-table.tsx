@@ -281,6 +281,7 @@ export function CustomerTable({
                         size="sm"
                         className="h-8 w-8 p-0"
                         onClick={() => handleOpenActions(customer)}
+                        data-tour="table-actions"
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
