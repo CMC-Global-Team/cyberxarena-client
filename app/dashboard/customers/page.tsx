@@ -7,6 +7,7 @@ import { CustomerTable } from "@/components/customer-management/customer-table"
 import { CustomerFormSheet } from "@/components/customer-management/customer-form-sheet"
 import { AccountFormSheet } from "@/components/customer-management/account-form-sheet"
 import { AddBalanceSheet } from "@/components/customer-management/add-balance-sheet"
+import { RechargeHistorySheet } from "@/components/customer-management/recharge-history-sheet"
 import { CustomerStats } from "@/components/customer-management/customer-stats"
 import { BalanceWarningList } from "@/components/customer-management/balance-warning"
 import { CustomerApi, AccountApi, type CustomerDTO, type AccountDTO, CreateCustomerRequestDTO } from "@/lib/customers"
@@ -40,6 +41,7 @@ export default function CustomersPage() {
   const [editSheetOpen, setEditSheetOpen] = useState(false)
   const [accountSheetOpen, setAccountSheetOpen] = useState(false)
   const [addBalanceSheetOpen, setAddBalanceSheetOpen] = useState(false)
+  const [rechargeHistorySheetOpen, setRechargeHistorySheetOpen] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
 
   const loadCustomers = async () => {
@@ -237,6 +239,11 @@ export default function CustomersPage() {
     setAddBalanceSheetOpen(true)
   }
 
+  const handleViewRechargeHistory = (customer: Customer) => {
+    setSelectedCustomer(customer)
+    setRechargeHistorySheetOpen(true)
+  }
+
   // Calculate stats
   const totalCustomers = customersWithAccounts.length
   const activeCustomers = customersWithAccounts.filter(c => c.hasAccount).length
@@ -279,6 +286,7 @@ export default function CustomersPage() {
           onDelete={handleDeleteCustomer}
           onManageAccount={handleManageAccount}
           onAddBalance={handleAddBalance}
+          onViewRechargeHistory={handleViewRechargeHistory}
         />
 
         <CustomerFormSheet 
@@ -312,6 +320,12 @@ export default function CustomersPage() {
               onOpenChange={setAddBalanceSheetOpen}
               customer={selectedCustomer}
               onSubmit={handleAddBalanceAmount}
+            />
+
+            <RechargeHistorySheet
+              open={rechargeHistorySheetOpen}
+              onOpenChange={setRechargeHistorySheetOpen}
+              customer={selectedCustomer}
             />
           </>
         )}

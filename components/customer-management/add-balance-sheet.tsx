@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, DollarSign } from "lucide-react"
+import { RechargeHistoryApi } from "@/lib/recharge-history"
 
 interface Customer {
   customerId: number
@@ -41,6 +42,13 @@ export function AddBalanceSheet({
     setError("")
 
     try {
+      // Tạo lịch sử nạp tiền trước
+      await RechargeHistoryApi.create({
+        customerId: customer.customerId,
+        amount: amount
+      })
+      
+      // Sau đó cập nhật số dư khách hàng
       await onSubmit(amount)
       setAmount(0)
       onOpenChange(false)
