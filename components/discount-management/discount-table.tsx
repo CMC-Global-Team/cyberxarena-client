@@ -39,13 +39,13 @@ export function DiscountTable({ discounts, loading, onEdit, onDelete }: Discount
   }
 
   const formatDiscountValue = (discount: Discount) => {
-    if (discount.discount_type === 'Percentage') {
-      return `${discount.discount_value}%`
+    if (discount.discountType === 'Percentage') {
+      return `${discount.discountValue}%`
     }
     return new Intl.NumberFormat('vi-VN', { 
       style: 'currency', 
       currency: 'VND' 
-    }).format(discount.discount_value)
+    }).format(discount.discountValue || 0)
   }
 
   if (loading) {
@@ -93,24 +93,24 @@ export function DiscountTable({ discounts, loading, onEdit, onDelete }: Discount
             </TableHeader>
             <TableBody>
               {discounts.map((discount) => (
-                <TableRow key={discount.discount_id}>
+                <TableRow key={discount.discountId}>
                   <TableCell className="font-medium">
-                    #{discount.discount_id}
+                    #{discount.discountId}
                   </TableCell>
                   <TableCell className="font-medium">
-                    {discount.discount_name}
+                    {discount.discountName}
                   </TableCell>
                   <TableCell>
                     <Badge 
-                      variant={discount.discount_type === 'Percentage' ? 'default' : 'secondary'}
+                      variant={discount.discountType === 'Percentage' ? 'default' : 'secondary'}
                       className="flex items-center gap-1 w-fit"
                     >
-                      {discount.discount_type === 'Percentage' ? (
+                      {discount.discountType === 'Percentage' ? (
                         <Percent className="h-3 w-3" />
                       ) : (
                         <DollarSign className="h-3 w-3" />
                       )}
-                      {discount.discount_type === 'Percentage' ? 'Phần trăm' : 'Cố định'}
+                      {discount.discountType === 'Percentage' ? 'Phần trăm' : 'Cố định'}
                     </Badge>
                   </TableCell>
                   <TableCell className="font-medium">
@@ -129,7 +129,7 @@ export function DiscountTable({ discounts, loading, onEdit, onDelete }: Discount
                           Chỉnh sửa
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                          onClick={() => handleDelete(discount.discount_id)}
+                          onClick={() => handleDelete(discount.discountId)}
                           className="text-destructive"
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
