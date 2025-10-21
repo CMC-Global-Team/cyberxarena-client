@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Edit, Trash2, DollarSign, User, Key, History } from "lucide-react"
+import { Edit, Trash2, DollarSign, User, Key, History, Crown, Calculator } from "lucide-react"
 
 interface Customer {
   customerId: number
@@ -23,6 +23,8 @@ interface CustomerActionsSheetProps {
   onManageAccount: (customer: Customer) => void
   onAddBalance: (customer: Customer) => void
   onViewRechargeHistory: (customer: Customer) => void
+  onViewRankInfo: (customer: Customer) => void
+  onOpenDiscountCalculator: (customer: Customer) => void
 }
 
 export function CustomerActionsSheet({ 
@@ -33,7 +35,9 @@ export function CustomerActionsSheet({
   onDelete, 
   onManageAccount, 
   onAddBalance,
-  onViewRechargeHistory
+  onViewRechargeHistory,
+  onViewRankInfo,
+  onOpenDiscountCalculator
 }: CustomerActionsSheetProps) {
   const handleEdit = () => {
     onOpenChange(false)
@@ -60,6 +64,16 @@ export function CustomerActionsSheet({
   const handleViewRechargeHistory = () => {
     onOpenChange(false)
     onViewRechargeHistory(customer)
+  }
+
+  const handleViewRankInfo = () => {
+    onOpenChange(false)
+    onViewRankInfo(customer)
+  }
+
+  const handleOpenDiscountCalculator = () => {
+    onOpenChange(false)
+    onOpenDiscountCalculator(customer)
   }
 
   return (
@@ -107,6 +121,24 @@ export function CustomerActionsSheet({
           >
             <User className="h-4 w-4" />
             <span>{customer.hasAccount ? 'Quản lý tài khoản' : 'Tạo tài khoản'}</span>
+          </Button>
+
+          <Button
+            onClick={handleViewRankInfo}
+            variant="outline"
+            className="w-full justify-start gap-3 h-12 border-border hover:bg-secondary bg-transparent"
+          >
+            <Crown className="h-4 w-4" />
+            <span>Thông tin Rank</span>
+          </Button>
+
+          <Button
+            onClick={handleOpenDiscountCalculator}
+            variant="outline"
+            className="w-full justify-start gap-3 h-12 border-border hover:bg-secondary bg-transparent"
+          >
+            <Calculator className="h-4 w-4" />
+            <span>Tính Discount</span>
           </Button>
 
           <div className="pt-4 border-t border-border">

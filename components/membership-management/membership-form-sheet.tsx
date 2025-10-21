@@ -28,6 +28,7 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
   const [formData, setFormData] = useState<MembershipCardDTO>({
     membershipCardName: "",
     discountId: null,
+    rechargeThreshold: 0,
     isDefault: false,
   })
   const [loading, setLoading] = useState(false)
@@ -38,10 +39,11 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
       setFormData({
         membershipCardName: membership.membershipCardName,
         discountId: membership.discountId ?? null,
+        rechargeThreshold: membership.rechargeThreshold ?? 0,
         isDefault: membership.isDefault ?? false,
       })
     } else {
-      setFormData({ membershipCardName: "", discountId: null, isDefault: false })
+      setFormData({ membershipCardName: "", discountId: null, rechargeThreshold: 0, isDefault: false })
     }
   }, [membership, mode])
 
@@ -109,6 +111,18 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
               value={formData.membershipCardName}
               onChange={e => handleChange("membershipCardName", e.target.value)}
               placeholder="Ví dụ: Bạc, Vàng, Bạch kim"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="rechargeThreshold">Ngưỡng nạp tiền (VND)</Label>
+            <Input
+              id="rechargeThreshold"
+              type="number"
+              value={formData.rechargeThreshold}
+              onChange={e => handleChange("rechargeThreshold", Number(e.target.value))}
+              placeholder="Ví dụ: 100000"
+              min="0"
             />
           </div>
 

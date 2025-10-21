@@ -60,9 +60,11 @@ export function MembershipTable({ memberships, loading, onEdit, onDelete }: Memb
               <TableRow>
                 <TableHead>ID</TableHead>
                 <TableHead>Tên thẻ thành viên</TableHead>
+                <TableHead>Ngưỡng nạp tiền</TableHead>
                 <TableHead>Giảm giá</TableHead>
                 <TableHead>Loại giảm giá</TableHead>
                 <TableHead>Giá trị</TableHead>
+                <TableHead>Mặc định</TableHead>
                 <TableHead className="text-right">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
@@ -71,6 +73,14 @@ export function MembershipTable({ memberships, loading, onEdit, onDelete }: Memb
                 <TableRow key={m.membershipCardId}>
                   <TableCell className="font-medium">#{m.membershipCardId}</TableCell>
                   <TableCell className="font-medium">{m.membershipCardName}</TableCell>
+                  <TableCell>
+                    <span className="font-medium">
+                      {new Intl.NumberFormat('vi-VN', { 
+                        style: 'currency', 
+                        currency: 'VND' 
+                      }).format(m.rechargeThreshold)}
+                    </span>
+                  </TableCell>
                   <TableCell>
                     {m.discountName ? (
                       <Badge variant="secondary">{m.discountName}</Badge>
@@ -99,6 +109,15 @@ export function MembershipTable({ memberships, loading, onEdit, onDelete }: Memb
                           }).format(m.discountValue)}
                         </span>
                       )
+                    ) : (
+                      <span className="text-muted-foreground">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {m.isDefault ? (
+                      <Badge variant="default" className="bg-green-500/20 text-green-600">
+                        Mặc định
+                      </Badge>
                     ) : (
                       <span className="text-muted-foreground">-</span>
                     )}

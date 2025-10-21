@@ -11,6 +11,8 @@ import { RechargeHistorySheet } from "@/components/customer-management/recharge-
 import { CustomerStats } from "@/components/customer-management/customer-stats"
 import { BalanceWarningList } from "@/components/customer-management/balance-warning"
 import { CustomerTour } from "@/components/customer-management/customer-tour"
+import { CustomerRankInfo } from "@/components/customer-management/customer-rank-info"
+import { DiscountCalculator } from "@/components/customer-management/discount-calculator"
 import { CustomerApi, AccountApi, type CustomerDTO, type AccountDTO, CreateCustomerRequestDTO } from "@/lib/customers"
 import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
@@ -45,6 +47,8 @@ export default function CustomersPage() {
   const [rechargeHistorySheetOpen, setRechargeHistorySheetOpen] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
   const [showTour, setShowTour] = useState(false)
+  const [showRankInfo, setShowRankInfo] = useState(false)
+  const [showDiscountCalculator, setShowDiscountCalculator] = useState(false)
 
   const loadCustomers = async () => {
     try {
@@ -246,6 +250,16 @@ export default function CustomersPage() {
     setRechargeHistorySheetOpen(true)
   }
 
+  const handleViewRankInfo = (customer: Customer) => {
+    setSelectedCustomer(customer)
+    setShowRankInfo(true)
+  }
+
+  const handleOpenDiscountCalculator = (customer: Customer) => {
+    setSelectedCustomer(customer)
+    setShowDiscountCalculator(true)
+  }
+
   // Calculate stats
   const totalCustomers = customersWithAccounts.length
   const activeCustomers = customersWithAccounts.filter(c => c.hasAccount).length
@@ -302,6 +316,8 @@ export default function CustomersPage() {
             onManageAccount={handleManageAccount}
             onAddBalance={handleAddBalance}
             onViewRechargeHistory={handleViewRechargeHistory}
+            onViewRankInfo={handleViewRankInfo}
+            onOpenDiscountCalculator={handleOpenDiscountCalculator}
           />
         </div>
 
@@ -350,6 +366,58 @@ export default function CustomersPage() {
           isActive={showTour} 
           onComplete={() => setShowTour(false)} 
         />
+
+        {/* Rank Info Sheet */}
+        {selectedCustomer && showRankInfo && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-background rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">Thông tin Rank</h2>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowRankInfo(false)}
+                  >
+                    ✕
+                  </Button>
+                </div>
+                <CustomerRankInfo 
+                  customerId={selectedCustomer.customerId}
+                  customerName={selectedCustomer.customerName}
+                  onRankUpdated={() => {
+                    loadCustomers()
+                    setShowRankInfo(false)
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Discount Calculator Sheet */}
+        {selectedCustomer && showDiscountCalculator && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-background rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold">Tính Discount</h2>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowDiscountCalculator(false)}
+                  >
+                    ✕
+                  </Button>
+                </div>
+                <DiscountCalculator 
+                  customerId={selectedCustomer.customerId}
+                  customerName={selectedCustomer.customerName}
+                />
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   )
 }
