@@ -8,7 +8,7 @@ import { CustomerFormSheet } from "@/components/customer-management/customer-for
 import { AccountFormSheet } from "@/components/customer-management/account-form-sheet"
 import { AddBalanceSheet } from "@/components/customer-management/add-balance-sheet"
 import { CustomerStats } from "@/components/customer-management/customer-stats"
-import { CustomerApi, AccountApi, type CustomerDTO, type AccountDTO } from "@/lib/customers"
+import { CustomerApi, AccountApi, type CustomerDTO, type AccountDTO, CreateCustomerRequestDTO } from "@/lib/customers"
 import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
 import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
@@ -20,7 +20,7 @@ interface Customer extends CustomerDTO {
 interface CustomerFormData {
   customerName: string
   phoneNumber: string
-  membershipCard: string
+  membershipCardId: number
   balance: number
 }
 
@@ -79,12 +79,10 @@ export default function CustomersPage() {
   const handleCreateCustomer = async (data: CustomerFormData) => {
     try {
       const newCustomer = await withPageLoading(() => CustomerApi.create({
-        customerId: 0, // Will be set by server
         customerName: data.customerName,
         phoneNumber: data.phoneNumber,
-        membershipCard: data.membershipCard,
-        balance: data.balance,
-        registrationDate: new Date().toISOString()
+        membershipCardId: data.membershipCardId,
+        balance: data.balance
       }))
       
       setCustomers(prev => [...prev, { ...newCustomer, hasAccount: false }])
@@ -103,7 +101,7 @@ export default function CustomersPage() {
         ...selectedCustomer,
         customerName: data.customerName,
         phoneNumber: data.phoneNumber,
-        membershipCard: data.membershipCard,
+        membershipCardId: data.membershipCardId,
         balance: data.balance
       }))
       
