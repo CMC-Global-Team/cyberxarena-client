@@ -25,8 +25,8 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
   const setOpen = onOpenChange ?? setInternalOpen
 
   const [formData, setFormData] = useState<MembershipCardDTO>({
-    membership_card_name: "",
-    discount_id: null,
+    membershipCardName: "",
+    discountId: null,
   })
   const [loading, setLoading] = useState(false)
   const [discounts, setDiscounts] = useState<Discount[]>([])
@@ -34,11 +34,11 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
   useEffect(() => {
     if (membership && mode === "edit") {
       setFormData({
-        membership_card_name: membership.membership_card_name,
-        discount_id: membership.discount_id ?? null,
+        membershipCardName: membership.membershipCardName,
+        discountId: membership.discountId ?? null,
       })
     } else {
-      setFormData({ membership_card_name: "", discount_id: null })
+      setFormData({ membershipCardName: "", discountId: null })
     }
   }, [membership, mode])
 
@@ -57,12 +57,12 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.membership_card_name.trim()) return
+    if (!formData.membershipCardName.trim()) return
     setLoading(true)
     try {
       await onSubmit({
-        membership_card_name: formData.membership_card_name.trim(),
-        discount_id: formData.discount_id ?? null,
+        membershipCardName: formData.membershipCardName.trim(),
+        discountId: formData.discountId ?? null,
       })
       setOpen(false)
     } finally {
@@ -99,20 +99,20 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
           <div className="space-y-2">
-            <Label htmlFor="membership_card_name">Tên thẻ thành viên</Label>
+            <Label htmlFor="membershipCardName">Tên thẻ thành viên</Label>
             <Input
-              id="membership_card_name"
-              value={formData.membership_card_name}
-              onChange={e => handleChange("membership_card_name", e.target.value)}
+              id="membershipCardName"
+              value={formData.membershipCardName}
+              onChange={e => handleChange("membershipCardName", e.target.value)}
               placeholder="Ví dụ: Bạc, Vàng, Bạch kim"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="discount_id">Giảm giá (tùy chọn)</Label>
+            <Label htmlFor="discountId">Giảm giá (tùy chọn)</Label>
             <Select
-              value={formData.discount_id != null ? String(formData.discount_id) : "none"}
-              onValueChange={value => handleChange("discount_id", value === "none" ? null : Number(value))}
+              value={formData.discountId != null ? String(formData.discountId) : "none"}
+              onValueChange={value => handleChange("discountId", value === "none" ? null : Number(value))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Chọn giảm giá" />
