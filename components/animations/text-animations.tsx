@@ -140,117 +140,62 @@ export function CyberXTitle() {
   useEffect(() => {
     if (!containerRef.current || !cyberRef.current || !arenaRef.current) return
 
-    // Split text into individual characters
-    const cyberText = "CyberX"
-    const arenaText = "Arena"
-    
-    const cyberChars = cyberText.split("")
-    const arenaChars = arenaText.split("")
-    
-    // Create spans for each character
-    const cyberSpans = cyberChars.map((char, index) => {
-      const span = document.createElement("span")
-      span.textContent = char
-      span.style.display = "inline-block"
-      span.style.position = "relative"
-      span.style.marginRight = "2px"
-      return span
-    })
-    
-    const arenaSpans = arenaChars.map((char, index) => {
-      const span = document.createElement("span")
-      span.textContent = char
-      span.style.display = "inline-block"
-      span.style.position = "relative"
-      span.style.marginRight = "2px"
-      return span
-    })
-
-    // Clear and add character spans
-    cyberRef.current.innerHTML = ""
-    arenaRef.current.innerHTML = ""
-    cyberSpans.forEach(span => cyberRef.current?.appendChild(span))
-    arenaSpans.forEach(span => arenaRef.current?.appendChild(span))
-
     const tl = gsap.timeline({ delay: 0.3 })
 
-    // Initial setup - all characters start below
-    gsap.set([...cyberSpans, ...arenaSpans], { 
+    // Initial setup
+    gsap.set([cyberRef.current, arenaRef.current], { 
       opacity: 0, 
-      y: 50,
-      scale: 0.5,
-      rotation: 10
+      y: 30,
+      scale: 0.8
     })
 
-    // Cyber characters floating up with stagger
-    cyberSpans.forEach((span, index) => {
-      tl.to(span, {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        rotation: 0,
-        duration: 0.6,
-        ease: "back.out(1.7)"
-      }, index * 0.1)
+    // Cyber animation
+    tl.to(cyberRef.current, {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      duration: 0.8,
+      ease: "back.out(1.7)"
     })
 
-    // Arena characters floating up with stagger
-    arenaSpans.forEach((span, index) => {
-      tl.to(span, {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        rotation: 0,
-        duration: 0.6,
-        ease: "back.out(1.7)"
-      }, (cyberSpans.length * 0.1) + (index * 0.1))
-    })
+    // Arena animation
+    tl.to(arenaRef.current, {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      duration: 0.8,
+      ease: "back.out(1.7)"
+    }, "-=0.4")
 
-    // Continuous floating animation for each character
-    cyberSpans.forEach((span, index) => {
-      tl.to(span, {
-        y: -8,
-        duration: 2 + (index * 0.2),
-        ease: "power1.inOut",
-        yoyo: true,
-        repeat: -1
-      }, "-=0.5")
-    })
+    // Continuous floating animation
+    tl.to([cyberRef.current, arenaRef.current], {
+      y: -3,
+      duration: 3,
+      ease: "power1.inOut",
+      yoyo: true,
+      repeat: -1
+    }, "-=0.5")
 
-    arenaSpans.forEach((span, index) => {
-      tl.to(span, {
-        y: -6,
-        duration: 2.5 + (index * 0.3),
-        ease: "power1.inOut",
-        yoyo: true,
-        repeat: -1
-      }, "-=0.5")
-    })
+    // Continuous rotation
+    tl.to(cyberRef.current, {
+      rotation: 1,
+      duration: 8,
+      ease: "none",
+      repeat: -1,
+      yoyo: true
+    }, "-=0.5")
 
-    // Continuous rotation for each character
-    cyberSpans.forEach((span, index) => {
-      tl.to(span, {
-        rotation: 2,
-        duration: 4 + (index * 0.5),
-        ease: "none",
-        repeat: -1,
-        yoyo: true
-      }, "-=0.5")
-    })
+    tl.to(arenaRef.current, {
+      rotation: -1,
+      duration: 10,
+      ease: "none",
+      repeat: -1,
+      yoyo: true
+    }, "-=0.5")
 
-    arenaSpans.forEach((span, index) => {
-      tl.to(span, {
-        rotation: -2,
-        duration: 5 + (index * 0.3),
-        ease: "none",
-        repeat: -1,
-        yoyo: true
-      }, "-=0.5")
-    })
-
-    // Glow effect for all characters
-    tl.to([...cyberSpans, ...arenaSpans], {
-      textShadow: "0 0 15px currentColor, 0 0 30px currentColor",
+    // Glow effect
+    tl.to([cyberRef.current, arenaRef.current], {
+      textShadow: "0 0 20px rgba(59, 130, 246, 0.5), 0 0 40px rgba(147, 51, 234, 0.3)",
       duration: 3,
       ease: "power1.inOut",
       yoyo: true,
