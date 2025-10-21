@@ -1,6 +1,6 @@
 "use client"
 
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { RechargeHistoryTable } from "./recharge-history-table"
 
 interface Customer {
@@ -25,14 +25,14 @@ export function RechargeHistorySheet({
   customer 
 }: RechargeHistorySheetProps) {
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="bg-card border-border w-full max-w-6xl overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="text-foreground">Lịch sử nạp tiền</SheetTitle>
-          <SheetDescription className="text-muted-foreground">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-card border-border w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="text-foreground">Lịch sử nạp tiền</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
             {customer.customerName} - {customer.phoneNumber || 'Chưa có số điện thoại'}
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
 
         <div className="mt-6">
           <RechargeHistoryTable 
@@ -40,7 +40,7 @@ export function RechargeHistorySheet({
             customerName={customer.customerName}
           />
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   )
 }
