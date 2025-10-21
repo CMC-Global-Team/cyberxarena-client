@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Search, MoreVertical, Mail, Phone, Calendar, DollarSign } from "lucide-react"
 import { CustomerActionsSheet } from "@/components/customer-management/customer-actions-sheet"
+import { BalanceWarning } from "@/components/customer-management/balance-warning"
 import { membershipsApi, type MembershipCard } from "@/lib/memberships"
 
 interface Customer {
@@ -252,9 +253,16 @@ export function CustomerTable({
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                        <DollarSign className="h-3 w-3 text-muted-foreground" />
-                        {formatCurrency(customer.balance)}
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                          <DollarSign className="h-3 w-3 text-muted-foreground" />
+                          {formatCurrency(customer.balance)}
+                        </div>
+                        <BalanceWarning 
+                          balance={customer.balance} 
+                          customerName={customer.customerName}
+                          showInTable={true}
+                        />
                       </div>
                     </td>
                     <td className="py-4 px-4">

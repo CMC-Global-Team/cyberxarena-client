@@ -8,6 +8,7 @@ import { CustomerFormSheet } from "@/components/customer-management/customer-for
 import { AccountFormSheet } from "@/components/customer-management/account-form-sheet"
 import { AddBalanceSheet } from "@/components/customer-management/add-balance-sheet"
 import { CustomerStats } from "@/components/customer-management/customer-stats"
+import { BalanceWarningList } from "@/components/customer-management/balance-warning"
 import { CustomerApi, AccountApi, type CustomerDTO, type AccountDTO, CreateCustomerRequestDTO } from "@/lib/customers"
 import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
@@ -171,6 +172,35 @@ export default function CustomersPage() {
     }
   }
 
+  const handleUpdateAccount = async (data: AccountFormData) => {
+    if (!selectedCustomer) return
+    
+    try {
+      const updateData: any = { username: data.username }
+      if (data.password && data.password.trim() !== "") {
+        updateData.password = data.password
+      }
+      
+      const updatedAccount = await withPageLoading(() => AccountApi.update(selectedCustomer.customerId, updateData))
+      
+      setAccounts(prev => prev.map(a => 
+        a.customerId === selectedCustomer.customerId 
+          ? { ...a, username: updatedAccount.username }
+          : a
+      ))
+      notify({ type: "success", message: "Đã cập nhật tài khoản thành công" })
+    } catch (e: any) {
+      const errorMsg = e?.message || "Lỗi không xác định"
+      
+      if (errorMsg.includes("username") && errorMsg.includes("exists")) {
+        notify({ type: "error", message: "Tên đăng nhập đã tồn tại" })
+      } else {
+        notify({ type: "error", message: `Lỗi cập nhật tài khoản: ${errorMsg}` })
+      }
+      throw e
+    }
+  }
+
   const handleAddBalanceAmount = async (amount: number) => {
     if (!selectedCustomer) return
     
@@ -241,6 +271,8 @@ export default function CustomersPage() {
           newCustomersThisMonth={newCustomersThisMonth}
         />
 
+        <BalanceWarningList customers={customersWithAccounts} />
+
         <CustomerTable 
           customers={customersWithAccounts}
           onEdit={handleEdit}
@@ -272,6 +304,7 @@ export default function CustomersPage() {
               customer={selectedCustomer}
               mode="create"
               onSubmit={handleCreateAccount}
+              onUpdate={handleUpdateAccount}
             />
 
             <AddBalanceSheet
