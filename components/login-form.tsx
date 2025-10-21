@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { LoginTour } from "@/components/login-tour"
 
 export function LoginForm() {
   const router = useRouter()
@@ -35,11 +36,12 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="border-border bg-card">
-      <CardHeader>
-        <CardTitle className="text-2xl">Đăng nhập</CardTitle>
-        <CardDescription>Nhập thông tin đăng nhập để truy cập hệ thống</CardDescription>
-      </CardHeader>
+    <>
+      <Card className="border-border bg-card">
+        <CardHeader>
+          <CardTitle className="text-2xl">Đăng nhập</CardTitle>
+          <CardDescription>Nhập thông tin đăng nhập để truy cập hệ thống</CardDescription>
+        </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -81,5 +83,8 @@ export function LoginForm() {
         </form>
       </CardContent>
     </Card>
+    
+    <LoginTour />
+    </>
   )
 }
