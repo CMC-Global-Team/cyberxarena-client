@@ -207,10 +207,12 @@ export function ProductTable({ products, loading, onRefresh }: ProductTableProps
                     )}
                   </TableCell>
                   <TableCell>
-                    <ProductActionsSheet 
-                      product={product} 
-                      onSuccess={onRefresh}
-                    />
+                    <div data-tour="product-actions">
+                      <ProductActionsSheet 
+                        product={product} 
+                        onSuccess={onRefresh}
+                      />
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
