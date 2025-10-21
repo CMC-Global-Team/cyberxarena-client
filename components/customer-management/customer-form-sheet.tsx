@@ -6,13 +6,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2 } from "lucide-react"
+import { membershipsApi, type MembershipCard } from "@/lib/memberships"
 
 interface Customer {
   customerId: number
   customerName: string
   phoneNumber: string
-  membershipCard: string
+  membershipCardId: number
   balance: number
   registrationDate: string
 }
@@ -28,7 +30,7 @@ interface CustomerFormSheetProps {
 interface CustomerFormData {
   customerName: string
   phoneNumber: string
-  membershipCard: string
+  membershipCardId: number
   balance: number
 }
 
@@ -42,30 +44,50 @@ export function CustomerFormSheet({
   const [formData, setFormData] = useState<CustomerFormData>({
     customerName: "",
     phoneNumber: "",
-    membershipCard: "",
+    membershipCardId: 0,
     balance: 0,
   })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [membershipCards, setMembershipCards] = useState<MembershipCard[]>([])
+  const [isLoadingCards, setIsLoadingCards] = useState(false)
 
   useEffect(() => {
     if (customer && mode === "edit") {
       setFormData({
         customerName: customer.customerName,
         phoneNumber: customer.phoneNumber || "",
-        membershipCard: customer.membershipCard || "",
+        membershipCardId: customer.membershipCardId || 0,
         balance: customer.balance,
       })
     } else {
       setFormData({
         customerName: "",
         phoneNumber: "",
-        membershipCard: "",
+        membershipCardId: 0,
         balance: 0,
       })
     }
     setError("")
   }, [customer, mode, open])
+
+  useEffect(() => {
+    const loadMembershipCards = async () => {
+      setIsLoadingCards(true)
+      try {
+        const cards = await membershipsApi.getAll()
+        setMembershipCards(cards)
+      } catch (error) {
+        console.error("Failed to load membership cards:", error)
+      } finally {
+        setIsLoadingCards(false)
+      }
+    }
+
+    if (open) {
+      loadMembershipCards()
+    }
+  }, [open])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -146,17 +168,26 @@ export function CustomerFormSheet({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="membershipCard" className="text-foreground">
+            <Label htmlFor="membershipCardId" className="text-foreground">
               Thẻ thành viên
             </Label>
-            <Input
-              id="membershipCard"
-              value={formData.membershipCard}
-              onChange={(e) => setFormData({ ...formData, membershipCard: e.target.value })}
-              placeholder="Nhập mã thẻ thành viên"
-              className="bg-secondary border-border"
-              maxLength={50}
-            />
+            <Select
+              value={formData.membershipCardId ? String(formData.membershipCardId) : ""}
+              onValueChange={(value) => setFormData({ ...formData, membershipCardId: parseInt(value) || 0 })}
+              disabled={isLoadingCards}
+            >
+              <SelectTrigger className="bg-secondary border-border">
+                <SelectValue placeholder={isLoadingCards ? "Đang tải..." : "Chọn thẻ thành viên"} />
+              </SelectTrigger>
+              <SelectContent>
+                {membershipCards.map((card) => (
+                  <SelectItem key={card.membershipCardId} value={String(card.membershipCardId)}>
+                    {card.membershipCardName}
+                    {card.isDefault && " (Mặc định)"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">

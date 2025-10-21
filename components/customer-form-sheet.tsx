@@ -2,11 +2,13 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { membershipsApi, type MembershipCard } from "@/lib/memberships"
 
 interface CustomerFormSheetProps {
   open: boolean
@@ -15,7 +17,7 @@ interface CustomerFormSheetProps {
     id: number
     customerName: string
     phoneNumber: string
-    membershipCard: string
+    membershipCardId: number
     balance: number
   }
   mode: "add" | "edit"
@@ -25,9 +27,29 @@ export function CustomerFormSheet({ open, onOpenChange, customer, mode }: Custom
   const [formData, setFormData] = useState({
     customerName: customer?.customerName || "",
     phoneNumber: customer?.phoneNumber || "",
-    membershipCard: customer?.membershipCard || "",
+    membershipCardId: customer?.membershipCardId || 0,
     balance: customer?.balance?.toString() || "0",
   })
+  const [membershipCards, setMembershipCards] = useState<MembershipCard[]>([])
+  const [isLoadingCards, setIsLoadingCards] = useState(false)
+
+  useEffect(() => {
+    const loadMembershipCards = async () => {
+      setIsLoadingCards(true)
+      try {
+        const cards = await membershipsApi.getAll()
+        setMembershipCards(cards)
+      } catch (error) {
+        console.error("Failed to load membership cards:", error)
+      } finally {
+        setIsLoadingCards(false)
+      }
+    }
+
+    if (open) {
+      loadMembershipCards()
+    }
+  }, [open])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -78,16 +100,26 @@ export function CustomerFormSheet({ open, onOpenChange, customer, mode }: Custom
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="membershipCard" className="text-foreground">
+            <Label htmlFor="membershipCardId" className="text-foreground">
               Thẻ thành viên
             </Label>
-            <Input
-              id="membershipCard"
-              value={formData.membershipCard}
-              onChange={(e) => setFormData({ ...formData, membershipCard: e.target.value })}
-              placeholder="VIP001"
-              className="bg-secondary border-border"
-            />
+            <Select
+              value={formData.membershipCardId ? String(formData.membershipCardId) : ""}
+              onValueChange={(value) => setFormData({ ...formData, membershipCardId: parseInt(value) || 0 })}
+              disabled={isLoadingCards}
+            >
+              <SelectTrigger className="bg-secondary border-border">
+                <SelectValue placeholder={isLoadingCards ? "Đang tải..." : "Chọn thẻ thành viên"} />
+              </SelectTrigger>
+              <SelectContent>
+                {membershipCards.map((card) => (
+                  <SelectItem key={card.membershipCardId} value={String(card.membershipCardId)}>
+                    {card.membershipCardName}
+                    {card.isDefault && " (Mặc định)"}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
