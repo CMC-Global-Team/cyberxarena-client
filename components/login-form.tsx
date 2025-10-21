@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { LoginTour } from "@/components/login-tour"
-import { HelpCircle } from "lucide-react"
 
 export function LoginForm() {
   const router = useRouter()
@@ -17,7 +16,6 @@ export function LoginForm() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [showTour, setShowTour] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,33 +35,12 @@ export function LoginForm() {
     }
   }
 
-  const handleStartTour = () => {
-    setShowTour(true)
-  }
-
-  const handleTourComplete = () => {
-    setShowTour(false)
-  }
-
   return (
     <>
       <Card className="border-border bg-card">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-2xl">Đăng nhập</CardTitle>
-              <CardDescription>Nhập thông tin đăng nhập để truy cập hệ thống</CardDescription>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleStartTour}
-              className="flex items-center gap-2"
-            >
-              <HelpCircle className="h-4 w-4" />
-              Hướng dẫn
-            </Button>
-          </div>
+          <CardTitle className="text-2xl">Đăng nhập</CardTitle>
+          <CardDescription>Nhập thông tin đăng nhập để truy cập hệ thống</CardDescription>
         </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -107,7 +84,7 @@ export function LoginForm() {
       </CardContent>
     </Card>
     
-    <LoginTour isVisible={showTour} onComplete={handleTourComplete} />
+    <LoginTour />
     </>
   )
 }
