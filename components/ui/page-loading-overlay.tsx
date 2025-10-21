@@ -91,7 +91,7 @@ export function PageLoadingOverlay({ isLoading, pageType = 'customers' }: PageLo
   const config = getPageConfig()
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
+    <div className="absolute inset-0 z-40 bg-background/80 backdrop-blur-sm">
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -155,13 +155,6 @@ export function PageLoadingOverlay({ isLoading, pageType = 'customers' }: PageLo
           </div>
         </div>
 
-        {/* Loading Indicator */}
-        <div className="flex items-center justify-center py-8">
-          <div className="flex items-center space-x-3 text-muted-foreground">
-            <Spinner className="h-5 w-5" />
-            <span>Đang tải dữ liệu...</span>
-          </div>
-        </div>
       </div>
     </div>
   )
