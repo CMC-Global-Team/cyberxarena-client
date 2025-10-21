@@ -5,6 +5,7 @@ import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { NoticeProvider } from '@/components/notice-provider'
 import { LoadingProvider } from '@/components/loading-provider'
+import { ThemeProvider } from '@/components/theme-provider'
 
 export const metadata: Metadata = {
   title: 'v0 App',
@@ -18,13 +19,15 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
-        <LoadingProvider>
-          <NoticeProvider>
-            {children}
-          </NoticeProvider>
-        </LoadingProvider>
+        <ThemeProvider>
+          <LoadingProvider>
+            <NoticeProvider>
+              {children}
+            </NoticeProvider>
+          </LoadingProvider>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>
