@@ -27,6 +27,7 @@ interface CustomerTableProps {
   onDelete: (customerId: number) => void
   onManageAccount: (customer: Customer) => void
   onAddBalance: (customer: Customer) => void
+  onViewRechargeHistory: (customer: Customer) => void
 }
 
 export function CustomerTable({ 
@@ -34,7 +35,8 @@ export function CustomerTable({
   onEdit, 
   onDelete, 
   onManageAccount, 
-  onAddBalance 
+  onAddBalance,
+  onViewRechargeHistory
 }: CustomerTableProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [accountFilter, setAccountFilter] = useState<string>("all")
@@ -305,6 +307,7 @@ export function CustomerTable({
           onDelete={onDelete}
           onManageAccount={onManageAccount}
           onAddBalance={onAddBalance}
+          onViewRechargeHistory={onViewRechargeHistory}
         />
       )}
     </>
