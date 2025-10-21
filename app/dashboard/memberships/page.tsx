@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RefreshCw, Table, BarChart3 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { usePageLoading } from "@/hooks/use-page-loading"
+import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
 import { membershipsApi, type MembershipCard, type MembershipCardDTO } from "@/lib/memberships"
 import { discountsApi, type Discount } from "@/lib/discounts"
 import { MembershipTable } from "@/components/membership-management/membership-table"
@@ -14,6 +16,7 @@ import { MembershipFormSheet } from "@/components/membership-management/membersh
 
 export default function MembershipsPage() {
   const { toast } = useToast()
+  const { withPageLoading, isLoading } = usePageLoading()
   const [memberships, setMemberships] = useState<MembershipCard[]>([])
   const [discounts, setDiscounts] = useState<Discount[]>([])
   const [loading, setLoading] = useState(true)
@@ -24,10 +27,10 @@ export default function MembershipsPage() {
 
   const loadData = async () => {
     try {
-      const [m, d] = await Promise.all([
+      const [m, d] = await withPageLoading(() => Promise.all([
         membershipsApi.getAll(),
         discountsApi.getAll().catch(() => [] as Discount[]),
-      ])
+      ]))
       setMemberships(m)
       setDiscounts(d)
     } catch (e: any) {
@@ -47,7 +50,7 @@ export default function MembershipsPage() {
 
   const handleCreate = async (data: MembershipCardDTO) => {
     try {
-      await membershipsApi.create(data)
+      await withPageLoading(() => membershipsApi.create(data))
       toast({ title: "Thành công", description: "Đã tạo thẻ thành viên thành công" })
       await loadData()
     } catch (e: any) {
@@ -59,7 +62,7 @@ export default function MembershipsPage() {
   const handleUpdate = async (data: MembershipCardDTO) => {
     if (!selected) return
     try {
-      await membershipsApi.update(selected.membershipCardId, data)
+      await withPageLoading(() => membershipsApi.update(selected.membershipCardId, data))
       toast({ title: "Thành công", description: "Đã cập nhật thẻ thành viên thành công" })
       await loadData()
     } catch (e: any) {
@@ -70,7 +73,7 @@ export default function MembershipsPage() {
 
   const handleDelete = async (id: number) => {
     try {
-      await membershipsApi.delete(id)
+      await withPageLoading(() => membershipsApi.delete(id))
       toast({ title: "Thành công", description: "Đã xóa thẻ thành viên thành công" })
       await loadData()
     } catch (e: any) {
@@ -85,7 +88,8 @@ export default function MembershipsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 relative">
+      <PageLoadingOverlay isLoading={isLoading} pageType="memberships" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Quản lý thẻ thành viên</h1>
