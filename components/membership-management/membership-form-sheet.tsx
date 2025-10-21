@@ -78,12 +78,12 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
             {mode === "add" ? (
               <>
                 <Plus className="h-4 w-4 mr-2" />
-                Add membership
+                Thêm thẻ thành viên
               </>
             ) : (
               <>
                 <Edit className="h-4 w-4 mr-2" />
-                Edit membership
+                Sửa thẻ thành viên
               </>
             )}
           </Button>
@@ -91,34 +91,34 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
       </SheetTrigger>
       <SheetContent className="w-[400px] sm:w-[540px]">
         <SheetHeader>
-          <SheetTitle>{mode === "add" ? "Add membership" : "Edit membership"}</SheetTitle>
+          <SheetTitle>{mode === "add" ? "Thêm thẻ thành viên" : "Sửa thẻ thành viên"}</SheetTitle>
           <SheetDescription>
-            {mode === "add" ? "Create a new membership card" : "Update membership card details"}
+            {mode === "add" ? "Tạo thẻ thành viên mới" : "Cập nhật thông tin thẻ thành viên"}
           </SheetDescription>
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 mt-6">
           <div className="space-y-2">
-            <Label htmlFor="membership_card_name">Name</Label>
+            <Label htmlFor="membership_card_name">Tên thẻ thành viên</Label>
             <Input
               id="membership_card_name"
               value={formData.membership_card_name}
               onChange={e => handleChange("membership_card_name", e.target.value)}
-              placeholder="e.g. Silver, Gold, Platinum"
+              placeholder="Ví dụ: Bạc, Vàng, Bạch kim"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="discount_id">Discount (optional)</Label>
+            <Label htmlFor="discount_id">Giảm giá (tùy chọn)</Label>
             <Select
-              value={formData.discount_id != null ? String(formData.discount_id) : ""}
-              onValueChange={value => handleChange("discount_id", value ? Number(value) : null)}
+              value={formData.discount_id != null ? String(formData.discount_id) : "none"}
+              onValueChange={value => handleChange("discount_id", value === "none" ? null : Number(value))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Choose discount" />
+                <SelectValue placeholder="Chọn giảm giá" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="none">Không có</SelectItem>
                 {discountOptions.map(opt => (
                   <SelectItem key={opt.id} value={String(opt.id)}>{opt.label}</SelectItem>
                 ))}
@@ -127,8 +127,8 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
           </div>
 
           <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>Cancel</Button>
-            <Button type="submit" disabled={loading}>{mode === "add" ? "Create" : "Update"}</Button>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>Hủy</Button>
+            <Button type="submit" disabled={loading}>{mode === "add" ? "Tạo" : "Cập nhật"}</Button>
           </div>
         </form>
       </SheetContent>
