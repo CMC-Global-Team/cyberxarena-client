@@ -30,7 +30,7 @@ export function DashboardTour({ onComplete }: DashboardTourProps) {
             }
           },
           {
-            element: 'nav button:first-child',
+            element: 'aside nav button:first-child',
             popover: {
               title: 'Bước 2: Dashboard',
               description: 'Trang tổng quan hiện tại, hiển thị thống kê và hoạt động của hệ thống.',
@@ -39,7 +39,7 @@ export function DashboardTour({ onComplete }: DashboardTourProps) {
             }
           },
           {
-            element: 'nav button:nth-child(2)',
+            element: 'aside nav button:nth-child(2)',
             popover: {
               title: 'Bước 3: Quản lý khách hàng',
               description: 'Quản lý thông tin khách hàng, tài khoản và lịch sử giao dịch.',
@@ -48,7 +48,7 @@ export function DashboardTour({ onComplete }: DashboardTourProps) {
             }
           },
           {
-            element: 'nav button:nth-child(3)',
+            element: 'aside nav button:nth-child(3)',
             popover: {
               title: 'Bước 4: Quản lý máy tính',
               description: 'Theo dõi và quản lý trạng thái các máy tính trong hệ thống.',
@@ -57,7 +57,7 @@ export function DashboardTour({ onComplete }: DashboardTourProps) {
             }
           },
           {
-            element: 'nav button:nth-child(4)',
+            element: 'aside nav button:nth-child(4)',
             popover: {
               title: 'Bước 5: Quản lý sản phẩm',
               description: 'Quản lý menu đồ ăn, thức uống và các dịch vụ khác.',
@@ -66,7 +66,7 @@ export function DashboardTour({ onComplete }: DashboardTourProps) {
             }
           },
           {
-            element: 'nav button:nth-child(5)',
+            element: 'aside nav button:nth-child(5)',
             popover: {
               title: 'Bước 6: Quản lý giảm giá',
               description: 'Tạo và quản lý các chương trình khuyến mãi, giảm giá.',
@@ -75,7 +75,7 @@ export function DashboardTour({ onComplete }: DashboardTourProps) {
             }
           },
           {
-            element: 'nav button:nth-child(6)',
+            element: 'aside nav button:nth-child(6)',
             popover: {
               title: 'Bước 7: Gói thành viên',
               description: 'Quản lý các gói thành viên VIP và ưu đãi đặc biệt.',
@@ -84,7 +84,7 @@ export function DashboardTour({ onComplete }: DashboardTourProps) {
             }
           },
           {
-            element: 'nav button:nth-child(7)',
+            element: 'aside nav button:nth-child(7)',
             popover: {
               title: 'Bước 8: Phiên sử dụng',
               description: 'Theo dõi lịch sử và thống kê các phiên chơi của khách hàng.',
@@ -102,7 +102,7 @@ export function DashboardTour({ onComplete }: DashboardTourProps) {
             }
           },
           {
-            element: 'main .grid',
+            element: 'main .grid:first-child',
             popover: {
               title: 'Bước 10: Thống kê tổng quan',
               description: 'Các card thống kê hiển thị số liệu quan trọng: tổng máy, khách hàng, doanh thu và thời gian trung bình.',
@@ -120,7 +120,7 @@ export function DashboardTour({ onComplete }: DashboardTourProps) {
             }
           },
           {
-            element: 'aside button:last-child',
+            element: 'aside > div:last-child button:first-child',
             popover: {
               title: 'Bước 12: Chế độ giao diện',
               description: 'Chuyển đổi giữa chế độ sáng và tối để phù hợp với sở thích.',
@@ -129,7 +129,7 @@ export function DashboardTour({ onComplete }: DashboardTourProps) {
             }
           },
           {
-            element: 'aside button:nth-last-child(2)',
+            element: 'aside > div:last-child button:last-child',
             popover: {
               title: 'Bước 13: Đăng xuất',
               description: 'Nhấn nút này để đăng xuất khỏi hệ thống và quay về trang đăng nhập.',
