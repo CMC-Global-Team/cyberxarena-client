@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { gsap } from "gsap"
 
 export function BackgroundAnimations() {
@@ -132,20 +132,30 @@ export function BackgroundAnimations() {
 
 export function FloatingParticles() {
   const containerRef = useRef<HTMLDivElement>(null)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
-    if (!containerRef.current) return
+    setIsClient(true)
+  }, [])
+
+  useEffect(() => {
+    if (!containerRef.current || !isClient) return
 
     const particles = containerRef.current.children
     const tl = gsap.timeline({ repeat: -1 })
 
     Array.from(particles).forEach((particle, index) => {
-      // Random floating motion
+      // Fixed floating motion to avoid hydration mismatch
+      const baseX = (index * 13) % 200 - 100
+      const baseY = (index * 17) % 200 - 100
+      const baseRotation = (index * 23) % 360
+      const baseDuration = 3 + (index * 0.3)
+      
       tl.to(particle, {
-        x: Math.random() * 200 - 100,
-        y: Math.random() * 200 - 100,
-        rotation: Math.random() * 360,
-        duration: 3 + Math.random() * 4,
+        x: baseX,
+        y: baseY,
+        rotation: baseRotation,
+        duration: baseDuration,
         ease: "power1.inOut",
         repeat: -1,
         yoyo: true
@@ -155,20 +165,28 @@ export function FloatingParticles() {
     return () => {
       tl.kill()
     }
-  }, [])
+  }, [isClient])
+
+  if (!isClient) {
+    return null
+  }
 
   return (
     <div ref={containerRef} className="fixed inset-0 pointer-events-none overflow-hidden">
-      {Array.from({ length: 15 }, (_, i) => (
-        <div
-          key={i}
-          className="absolute w-2 h-2 bg-gradient-to-r from-blue-400/30 to-purple-400/30 rounded-full blur-sm"
-          style={{
-            top: `${Math.random() * 100}%`,
-            left: `${Math.random() * 100}%`,
-          }}
-        />
-      ))}
+      {Array.from({ length: 15 }, (_, i) => {
+        const top = (i * 7) % 100
+        const left = (i * 11) % 100
+        return (
+          <div
+            key={i}
+            className="absolute w-2 h-2 bg-gradient-to-r from-blue-400/30 to-purple-400/30 rounded-full blur-sm"
+            style={{
+              top: `${top}%`,
+              left: `${left}%`,
+            }}
+          />
+        )
+      })}
     </div>
   )
 }

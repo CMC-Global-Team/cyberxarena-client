@@ -268,12 +268,16 @@ export function CyberXTitle() {
         <span 
           ref={cyberRef}
           className="bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent inline-block"
-        />
+        >
+          CyberX
+        </span>
         <span className="mx-2" />
         <span 
           ref={arenaRef}
           className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent inline-block"
-        />
+        >
+          Arena
+        </span>
       </h1>
     </div>
   )
