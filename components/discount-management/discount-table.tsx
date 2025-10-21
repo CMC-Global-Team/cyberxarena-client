@@ -117,12 +117,13 @@ export function DiscountTable({ discounts, loading, onEdit, onDelete }: Discount
                     {formatDiscountValue(discount)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
+                    <div data-tour="discount-actions">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => onEdit(discount)}>
                           <Edit className="h-4 w-4 mr-2" />
@@ -137,6 +138,7 @@ export function DiscountTable({ discounts, loading, onEdit, onDelete }: Discount
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}

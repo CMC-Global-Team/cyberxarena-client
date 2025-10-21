@@ -12,6 +12,8 @@ import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
 import { DiscountTable } from "@/components/discount-management/discount-table"
 import { DiscountStats } from "@/components/discount-management/discount-stats"
 import { DiscountFormSheet } from "@/components/discount-management/discount-form-sheet"
+import { DiscountTour } from "@/components/discount-management/discount-tour"
+import { HelpCircle } from "lucide-react"
 
 export default function DiscountsPage() {
   const { toast } = useToast()
@@ -21,6 +23,7 @@ export default function DiscountsPage() {
   const [refreshing, setRefreshing] = useState(false)
   const [selectedDiscount, setSelectedDiscount] = useState<Discount | null>(null)
   const [editSheetOpen, setEditSheetOpen] = useState(false)
+  const [showTour, setShowTour] = useState(false)
 
   const fetchDiscounts = async () => {
     try {
@@ -118,7 +121,14 @@ export default function DiscountsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Quản lý giảm giá</h1>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-3xl font-bold tracking-tight" data-tour="page-title">Quản lý giảm giá</h1>
+            <HelpCircle 
+              className="h-6 w-6 text-red-500 cursor-pointer hover:text-red-600 transition-colors" 
+              onClick={() => setShowTour(true)}
+              title="Hướng dẫn sử dụng"
+            />
+          </div>
           <p className="text-muted-foreground">
             Quản lý các loại giảm giá trong hệ thống
           </p>
@@ -129,20 +139,23 @@ export default function DiscountsPage() {
             size="sm"
             onClick={handleRefresh}
             disabled={refreshing}
+            data-tour="refresh-btn"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Làm mới
           </Button>
-          <DiscountFormSheet 
-            mode="add" 
-            onSuccess={handleCreateDiscount}
-          />
+          <div data-tour="add-discount-btn">
+            <DiscountFormSheet 
+              mode="add" 
+              onSuccess={handleCreateDiscount}
+            />
+          </div>
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs defaultValue="table" className="space-y-4">
-        <TabsList>
+        <TabsList data-tour="tabs-navigation">
           <TabsTrigger value="table" className="flex items-center gap-2">
             <Table className="h-4 w-4" />
             Danh sách giảm giá
@@ -154,33 +167,37 @@ export default function DiscountsPage() {
         </TabsList>
 
         <TabsContent value="table" className="space-y-4">
-          <DiscountTable 
-            discounts={discounts} 
-            loading={loading}
-            onEdit={handleEdit}
-            onDelete={handleDeleteDiscount}
-          />
+          <div data-tour="discount-table">
+            <DiscountTable 
+              discounts={discounts} 
+              loading={loading}
+              onEdit={handleEdit}
+              onDelete={handleDeleteDiscount}
+            />
+          </div>
         </TabsContent>
 
         <TabsContent value="stats" className="space-y-4">
-          {loading ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[...Array(4)].map((_, i) => (
-                  <Card key={i}>
-                    <CardHeader className="pb-2">
-                      <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="h-8 w-16 bg-muted animate-pulse rounded" />
-                    </CardContent>
-                  </Card>
-                ))}
+          <div data-tour="discount-stats">
+            {loading ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[...Array(4)].map((_, i) => (
+                    <Card key={i}>
+                      <CardHeader className="pb-2">
+                        <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : (
-            <DiscountStats discounts={discounts} />
-          )}
+            ) : (
+              <DiscountStats discounts={discounts} />
+            )}
+          </div>
         </TabsContent>
       </Tabs>
 
@@ -194,6 +211,11 @@ export default function DiscountsPage() {
           onOpenChange={setEditSheetOpen}
         />
       )}
+
+      <DiscountTour 
+        isActive={showTour} 
+        onComplete={() => setShowTour(false)} 
+      />
     </div>
   )
 }
