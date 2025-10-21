@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { UserPlus } from "lucide-react"
+import { UserPlus, HelpCircle } from "lucide-react"
 import { CustomerTable } from "@/components/customer-management/customer-table"
 import { CustomerFormSheet } from "@/components/customer-management/customer-form-sheet"
 import { AccountFormSheet } from "@/components/customer-management/account-form-sheet"
@@ -10,6 +10,7 @@ import { AddBalanceSheet } from "@/components/customer-management/add-balance-sh
 import { RechargeHistorySheet } from "@/components/customer-management/recharge-history-sheet"
 import { CustomerStats } from "@/components/customer-management/customer-stats"
 import { BalanceWarningList } from "@/components/customer-management/balance-warning"
+import { CustomerTour } from "@/components/customer-management/customer-tour"
 import { CustomerApi, AccountApi, type CustomerDTO, type AccountDTO, CreateCustomerRequestDTO } from "@/lib/customers"
 import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
@@ -43,6 +44,7 @@ export default function CustomersPage() {
   const [addBalanceSheetOpen, setAddBalanceSheetOpen] = useState(false)
   const [rechargeHistorySheetOpen, setRechargeHistorySheetOpen] = useState(false)
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null)
+  const [showTour, setShowTour] = useState(false)
 
   const loadCustomers = async () => {
     try {
@@ -259,35 +261,49 @@ export default function CustomersPage() {
       <PageLoadingOverlay isLoading={isLoading} pageType="customers" />
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý khách hàng</h1>
+            <div className="flex items-center gap-2 mb-2">
+              <h1 className="text-3xl font-bold text-foreground" data-tour="page-title">Quản lý khách hàng</h1>
+              <HelpCircle 
+                className="h-6 w-6 text-red-500 cursor-pointer hover:text-red-600 transition-colors" 
+                onClick={() => setShowTour(true)}
+                title="Hướng dẫn sử dụng"
+              />
+            </div>
             <p className="text-muted-foreground">Danh sách và thông tin khách hàng, quản lý tài khoản</p>
           </div>
           <Button
             onClick={() => setAddSheetOpen(true)}
             className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            data-tour="add-customer-btn"
           >
             <UserPlus className="h-4 w-4 mr-2" />
             Thêm khách hàng
           </Button>
         </div>
 
-        <CustomerStats 
-          totalCustomers={totalCustomers}
-          activeCustomers={activeCustomers}
-          totalBalance={totalBalance}
-          newCustomersThisMonth={newCustomersThisMonth}
-        />
+        <div data-tour="customer-stats">
+          <CustomerStats 
+            totalCustomers={totalCustomers}
+            activeCustomers={activeCustomers}
+            totalBalance={totalBalance}
+            newCustomersThisMonth={newCustomersThisMonth}
+          />
+        </div>
 
-        <BalanceWarningList customers={customersWithAccounts} />
+        <div data-tour="balance-warning">
+          <BalanceWarningList customers={customersWithAccounts} />
+        </div>
 
-        <CustomerTable 
-          customers={customersWithAccounts}
-          onEdit={handleEdit}
-          onDelete={handleDeleteCustomer}
-          onManageAccount={handleManageAccount}
-          onAddBalance={handleAddBalance}
-          onViewRechargeHistory={handleViewRechargeHistory}
-        />
+        <div data-tour="customer-table">
+          <CustomerTable 
+            customers={customersWithAccounts}
+            onEdit={handleEdit}
+            onDelete={handleDeleteCustomer}
+            onManageAccount={handleManageAccount}
+            onAddBalance={handleAddBalance}
+            onViewRechargeHistory={handleViewRechargeHistory}
+          />
+        </div>
 
         <CustomerFormSheet 
           open={addSheetOpen} 
@@ -329,6 +345,11 @@ export default function CustomersPage() {
             />
           </>
         )}
+
+        <CustomerTour 
+          isActive={showTour} 
+          onComplete={() => setShowTour(false)} 
+        />
     </div>
   )
 }
