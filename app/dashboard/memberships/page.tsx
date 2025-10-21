@@ -62,7 +62,12 @@ export default function MembershipsPage() {
   const handleUpdate = async (data: MembershipCardDTO) => {
     if (!selected) return
     try {
-      await withPageLoading(() => membershipsApi.update(selected.membershipCardId, data))
+      await withPageLoading(() => membershipsApi.update(selected.membershipCardId, {
+        membershipCardName: data.membershipCardName,
+        discountId: data.discountId,
+        rechargeThreshold: data.rechargeThreshold,
+        isDefault: data.isDefault
+      }))
       toast({ title: "Thành công", description: "Đã cập nhật thẻ thành viên thành công" })
       await loadData()
     } catch (e: any) {

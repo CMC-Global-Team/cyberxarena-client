@@ -63,11 +63,16 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.membershipCardName.trim()) return
+    if (formData.rechargeThreshold < 0) {
+      alert("Ngưỡng nạp tiền không được âm")
+      return
+    }
     setLoading(true)
     try {
       await onSubmit({
         membershipCardName: formData.membershipCardName.trim(),
         discountId: formData.discountId ?? null,
+        rechargeThreshold: formData.rechargeThreshold ?? 0,
         isDefault: formData.isDefault ?? false,
       })
       setOpen(false)
