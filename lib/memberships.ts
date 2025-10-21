@@ -19,21 +19,21 @@ export interface UpdateMembershipCardRequestDTO {
 export const membershipsApi = {
   // Get all membership cards
   getAll: (): Promise<MembershipCard[]> =>
-    http.get<MembershipCard[]>("/membership-cards"),
+    http.get<MembershipCard[]>("/api/membership-cards"),
 
   // Get by ID
   getById: (id: number): Promise<MembershipCard> =>
-    http.get<MembershipCard>(`/membership-cards/${id}`),
+    http.get<MembershipCard>(`/api/membership-cards/${id}`),
 
   // Create
   create: (payload: MembershipCardDTO): Promise<MembershipCard> =>
-    http.post<MembershipCard>("/membership-cards", payload),
+    http.post<MembershipCard>("/api/membership-cards", payload),
 
   // Update
   update: (id: number, payload: UpdateMembershipCardRequestDTO): Promise<MembershipCard> =>
-    http.put<MembershipCard>(`/membership-cards/${id}`, payload),
+    http.put<MembershipCard>(`/api/membership-cards/${id}`, payload),
 
   // Delete
   delete: (id: number): Promise<void> =>
-    http.delete<void>(`/membership-cards/${id}`),
+    http.delete<void>(`/api/membership-cards/${id}`),
 };
