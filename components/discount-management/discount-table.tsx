@@ -79,94 +79,96 @@ export function DiscountTable({ discounts, loading, onEdit, onDelete }: Discount
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Danh sách giảm giá</CardTitle>
-        <CardDescription>
-          Quản lý các loại giảm giá trong hệ thống
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {discounts.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Percent className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>Chưa có discount nào</p>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Tên giảm giá</TableHead>
-                <TableHead>Loại giảm giá</TableHead>
-                <TableHead>Giá trị</TableHead>
-                <TableHead className="text-right">Thao tác</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {discounts.map((discount) => (
-                <TableRow key={discount.discountId}>
-                  <TableCell className="font-medium">
-                    #{discount.discountId}
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {discount.discountName}
-                  </TableCell>
-                  <TableCell>
-                    <Badge 
-                      variant={discount.discountType === 'Percentage' ? 'default' : 'secondary'}
-                      className="flex items-center gap-1 w-fit"
-                    >
-                      {discount.discountType === 'Percentage' ? (
-                        <Percent className="h-3 w-3" />
-                      ) : (
-                        <DollarSign className="h-3 w-3" />
-                      )}
-                      {discount.discountType === 'Percentage' ? 'Phần trăm' : 'Cố định'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {formatDiscountValue(discount)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div data-tour="discount-actions">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onEdit(discount)}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Chỉnh sửa
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => handleDeleteClick(discount)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Xóa
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    </div>
-                  </TableCell>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle>Danh sách giảm giá</CardTitle>
+          <CardDescription>
+            Quản lý các loại giảm giá trong hệ thống
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {discounts.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Percent className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>Chưa có discount nào</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Tên giảm giá</TableHead>
+                  <TableHead>Loại giảm giá</TableHead>
+                  <TableHead>Giá trị</TableHead>
+                  <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
-    </Card>
+              </TableHeader>
+              <TableBody>
+                {discounts.map((discount) => (
+                  <TableRow key={discount.discountId}>
+                    <TableCell className="font-medium">
+                      #{discount.discountId}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {discount.discountName}
+                    </TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant={discount.discountType === 'Percentage' ? 'default' : 'secondary'}
+                        className="flex items-center gap-1 w-fit"
+                      >
+                        {discount.discountType === 'Percentage' ? (
+                          <Percent className="h-3 w-3" />
+                        ) : (
+                          <DollarSign className="h-3 w-3" />
+                        )}
+                        {discount.discountType === 'Percentage' ? 'Phần trăm' : 'Cố định'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {formatDiscountValue(discount)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div data-tour="discount-actions">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => onEdit(discount)}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Chỉnh sửa
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteClick(discount)}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Xóa
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
-    {/* Delete Confirmation Modal */}
-    <DiscountDeleteConfirmationModal
-      open={deleteModalOpen}
-      onOpenChange={setDeleteModalOpen}
-      discount={selectedDiscount}
-      onConfirm={handleDeleteConfirm}
-      loading={deleting}
-    />
+      {/* Delete Confirmation Modal */}
+      <DiscountDeleteConfirmationModal
+        open={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
+        discount={selectedDiscount}
+        onConfirm={handleDeleteConfirm}
+        loading={deleting}
+      />
+    </>
   )
 }
