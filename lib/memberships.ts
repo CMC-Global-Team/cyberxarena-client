@@ -96,6 +96,7 @@ export const membershipsApi = {
     totalRecharge: number;
     currentMembershipCardId: number;
     currentMembershipCardName: string;
+    currentMembershipThreshold?: number;
   }>> => {
     return await http.get(`/membership-cards/${id}/eligible-customers`);
   },

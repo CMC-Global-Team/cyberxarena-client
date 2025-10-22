@@ -18,6 +18,7 @@ interface EligibleCustomer {
   totalRecharge: number;
   currentMembershipCardId: number;
   currentMembershipCardName: string;
+  currentMembershipThreshold?: number; // Ngưỡng của gói hiện tại
 }
 
 interface EligibleCustomersModalProps {
@@ -25,6 +26,7 @@ interface EligibleCustomersModalProps {
   onOpenChange: (open: boolean) => void
   membershipCardId: number | null
   membershipCardName: string
+  membershipCardThreshold: number // Ngưỡng của gói đang kiểm tra
   onConfirm: (selectedCustomerIds: number[]) => void
   loading?: boolean
 }
@@ -34,6 +36,7 @@ export function EligibleCustomersModal({
   onOpenChange,
   membershipCardId,
   membershipCardName,
+  membershipCardThreshold,
   onConfirm,
   loading = false
 }: EligibleCustomersModalProps) {
@@ -59,7 +62,12 @@ export function EligibleCustomersModal({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedCustomerIds(eligibleCustomers.map(c => c.customerId))
+      // Chỉ chọn những khách hàng có thể chọn được (không có gói cao hơn)
+      const selectableCustomers = eligibleCustomers.filter(customer => 
+        !customer.currentMembershipThreshold || 
+        customer.currentMembershipThreshold <= membershipCardThreshold
+      );
+      setSelectedCustomerIds(selectableCustomers.map(c => c.customerId))
     } else {
       setSelectedCustomerIds([])
     }
@@ -124,16 +132,27 @@ export function EligibleCustomersModal({
           ) : (
             <div className="space-y-4">
               {/* Select All */}
-              <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
-                <Checkbox
-                  id="select-all"
-                  checked={selectedCustomerIds.length === eligibleCustomers.length && eligibleCustomers.length > 0}
-                  onCheckedChange={handleSelectAll}
-                />
-                <label htmlFor="select-all" className="text-sm font-medium">
-                  Chọn tất cả ({eligibleCustomers.length} khách hàng)
-                </label>
-              </div>
+              {(() => {
+                const selectableCustomers = eligibleCustomers.filter(customer => 
+                  !customer.currentMembershipThreshold || 
+                  customer.currentMembershipThreshold <= membershipCardThreshold
+                );
+                const allSelectableSelected = selectableCustomers.length > 0 && 
+                  selectableCustomers.every(customer => selectedCustomerIds.includes(customer.customerId));
+                
+                return (
+                  <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-lg">
+                    <Checkbox
+                      id="select-all"
+                      checked={allSelectableSelected}
+                      onCheckedChange={handleSelectAll}
+                    />
+                    <label htmlFor="select-all" className="text-sm font-medium">
+                      Chọn tất cả có thể chọn ({selectableCustomers.length} khách hàng)
+                    </label>
+                  </div>
+                );
+              })()}
 
               {/* Customers Table */}
               <div className="border rounded-lg">
@@ -149,50 +168,110 @@ export function EligibleCustomersModal({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {eligibleCustomers.map((customer) => (
-                      <TableRow key={customer.customerId}>
-                        <TableCell>
-                          <Checkbox
-                            checked={selectedCustomerIds.includes(customer.customerId)}
-                            onCheckedChange={(checked) => handleSelectCustomer(customer.customerId, checked as boolean)}
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium">{customer.customerName}</TableCell>
-                        <TableCell>{customer.phoneNumber || "-"}</TableCell>
-                        <TableCell>
-                          {new Intl.NumberFormat('vi-VN', { 
-                            style: 'currency', 
-                            currency: 'VND' 
-                          }).format(customer.currentBalance)}
-                        </TableCell>
-                        <TableCell>
-                          <span className="font-medium">
+                    {eligibleCustomers.map((customer) => {
+                      // Kiểm tra xem khách hàng đã có gói cao hơn chưa
+                      const hasHigherMembership = customer.currentMembershipThreshold && 
+                                                customer.currentMembershipThreshold > membershipCardThreshold;
+                      
+                      return (
+                        <TableRow 
+                          key={customer.customerId}
+                          className={hasHigherMembership ? "bg-amber-50 border-amber-200" : ""}
+                        >
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedCustomerIds.includes(customer.customerId)}
+                              onCheckedChange={(checked) => handleSelectCustomer(customer.customerId, checked as boolean)}
+                              disabled={hasHigherMembership} // Không cho chọn nếu đã có gói cao hơn
+                            />
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              {customer.customerName}
+                              {hasHigherMembership && (
+                                <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
+                                  Đã có gói cao hơn
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{customer.phoneNumber || "-"}</TableCell>
+                          <TableCell>
                             {new Intl.NumberFormat('vi-VN', { 
                               style: 'currency', 
                               currency: 'VND' 
-                            }).format(customer.totalRecharge)}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">
-                            {customer.currentMembershipCardName}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                            }).format(customer.currentBalance)}
+                          </TableCell>
+                          <TableCell>
+                            <span className="font-medium">
+                              {new Intl.NumberFormat('vi-VN', { 
+                                style: 'currency', 
+                                currency: 'VND' 
+                              }).format(customer.totalRecharge)}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1">
+                              <Badge 
+                                variant={hasHigherMembership ? "default" : "secondary"}
+                                className={hasHigherMembership ? "bg-amber-100 text-amber-800" : ""}
+                              >
+                                {customer.currentMembershipCardName}
+                              </Badge>
+                              {hasHigherMembership && customer.currentMembershipThreshold && (
+                                <span className="text-xs text-amber-600">
+                                  Ngưỡng: {new Intl.NumberFormat('vi-VN', { 
+                                    style: 'currency', 
+                                    currency: 'VND' 
+                                  }).format(customer.currentMembershipThreshold)}
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
 
               {/* Summary */}
-              {selectedCustomerIds.length > 0 && (
-                <Alert className="border-green-200 bg-green-50">
-                  <CheckCircle className="h-4 w-4 text-green-600" />
-                  <AlertDescription className="text-green-800">
-                    <strong>Đã chọn {selectedCustomerIds.length} khách hàng</strong> để cập nhật lên gói "{membershipCardName}"
-                  </AlertDescription>
-                </Alert>
-              )}
+              {(() => {
+                const higherMembershipCount = eligibleCustomers.filter(customer => 
+                  customer.currentMembershipThreshold && 
+                  customer.currentMembershipThreshold > membershipCardThreshold
+                ).length;
+                
+                const selectableCount = eligibleCustomers.length - higherMembershipCount;
+                
+                return (
+                  <div className="space-y-2">
+                    {selectedCustomerIds.length > 0 && (
+                      <Alert className="border-green-200 bg-green-50">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <AlertDescription className="text-green-800">
+                          <strong>Đã chọn {selectedCustomerIds.length} khách hàng</strong> để cập nhật lên gói "{membershipCardName}"
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    
+                    {higherMembershipCount > 0 && (
+                      <Alert className="border-amber-200 bg-amber-50">
+                        <AlertDescription className="text-amber-800">
+                          <strong>Lưu ý:</strong> {higherMembershipCount} khách hàng đã có gói cao hơn "{membershipCardName}" 
+                          và không thể được cập nhật xuống gói thấp hơn.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    
+                    <div className="text-sm text-muted-foreground">
+                      Tổng: {eligibleCustomers.length} khách hàng phù hợp | 
+                      Có thể chọn: {selectableCount} | 
+                      Đã có gói cao hơn: {higherMembershipCount}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
