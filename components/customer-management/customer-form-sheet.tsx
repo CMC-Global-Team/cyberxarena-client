@@ -208,6 +208,18 @@ export function CustomerFormSheet({
             <p className="text-xs text-muted-foreground">
               Số dư không được âm
             </p>
+            {formData.balance > 0 && (
+              <Alert className="border-blue-200 bg-blue-50">
+                <AlertDescription className="text-blue-800">
+                  <strong>Lưu ý:</strong> 
+                  {mode === "add" ? "Số dư ban đầu" : "Thay đổi số dư"} sẽ được ghi vào lịch sử nạp tiền và 
+                  {formData.membershipCardId === 0 ? 
+                    " rank sẽ được tự động cập nhật dựa trên ngưỡng nạp tiền." :
+                    " rank sẽ không được tự động cập nhật vì bạn đã chọn thẻ thành viên cụ thể."
+                  }
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4">
