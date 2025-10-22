@@ -60,12 +60,17 @@ export function MembershipDeleteConfirmationModal({
     onOpenChange(false)
   }
 
+  // Reset usage info when membership changes
+  React.useEffect(() => {
+    setUsageInfo(null)
+  }, [membership])
+
   // Check usage when modal opens
   React.useEffect(() => {
     if (open && membership && !usageInfo && !checkingUsage) {
       handleCheckUsage()
     }
-  }, [open, membership])
+  }, [open, membership, usageInfo, checkingUsage])
 
   if (!membership) return null
 
