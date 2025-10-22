@@ -126,6 +126,23 @@ export default function MembershipsPage() {
     }
   }
 
+  const handleSetDefault = async (id: number) => {
+    try {
+      await membershipsApi.setDefault(id)
+      toast({ 
+        title: "Thành công", 
+        description: "Đã đặt gói thành viên làm mặc định và cập nhật tất cả khách hàng" 
+      })
+      await loadData()
+    } catch (e: any) {
+      toast({ 
+        title: "Lỗi", 
+        description: e?.message || "Không thể đặt làm mặc định", 
+        variant: "destructive" 
+      })
+    }
+  }
+
   return (
     <div className="space-y-6 p-6 relative">
       <PageLoadingOverlay isLoading={isLoading} pageType="memberships" />
@@ -172,6 +189,7 @@ export default function MembershipsPage() {
               onEdit={handleEdit}
               onDelete={handleDelete}
               onCheckEligibleCustomers={handleCheckEligibleCustomers}
+              onSetDefault={handleSetDefault}
             />
           </div>
         </TabsContent>

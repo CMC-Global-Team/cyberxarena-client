@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Edit, Trash2, IdCard, ArrowUpDown, Users } from "lucide-react"
+import { MoreHorizontal, Edit, Trash2, IdCard, ArrowUpDown, Users, Star } from "lucide-react"
 import type { MembershipCard } from "@/lib/memberships"
 import { MembershipDeleteConfirmationModal } from "./membership-delete-confirmation-modal"
 
@@ -16,9 +16,10 @@ interface MembershipTableProps {
   onEdit: (membership: MembershipCard) => void
   onDelete: (id: number) => Promise<void>
   onCheckEligibleCustomers?: (membership: MembershipCard) => void
+  onSetDefault?: (id: number) => Promise<void>
 }
 
-export function MembershipTable({ memberships, loading, onEdit, onDelete, onCheckEligibleCustomers }: MembershipTableProps) {
+export function MembershipTable({ memberships, loading, onEdit, onDelete, onCheckEligibleCustomers, onSetDefault }: MembershipTableProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedMembership, setSelectedMembership] = useState<MembershipCard | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -172,6 +173,12 @@ export function MembershipTable({ memberships, loading, onEdit, onDelete, onChec
                             <DropdownMenuItem onClick={() => onCheckEligibleCustomers(m)}>
                               <Users className="h-4 w-4 mr-2" />
                               Khách hàng phù hợp
+                            </DropdownMenuItem>
+                          )}
+                          {onSetDefault && !m.isDefault && (
+                            <DropdownMenuItem onClick={() => onSetDefault(m.membershipCardId)}>
+                              <Star className="h-4 w-4 mr-2" />
+                              Đặt làm mặc định
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuItem onClick={() => handleDeleteClick(m)} className="text-destructive">

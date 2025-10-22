@@ -106,6 +106,11 @@ export const membershipsApi = {
     return await http.post(`/membership-cards/${id}/update-eligible-customers`, customerIds);
   },
 
+  // Set membership card as default
+  setDefault: async (id: number): Promise<string> => {
+    return await http.post(`/membership-cards/${id}/set-default`);
+  },
+
   // Delete
   delete: (id: number): Promise<void> =>
     http.delete<void>(`/membership-cards/${id}`),
