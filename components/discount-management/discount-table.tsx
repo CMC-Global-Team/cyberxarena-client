@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreHorizontal, Edit, Trash2, Percent, DollarSign } from "lucide-react"
 import { Discount } from "@/lib/discounts"
 import { useToast } from "@/hooks/use-toast"
+import { DiscountDeleteConfirmationModal } from "./discount-delete-confirmation-modal"
 
 interface DiscountTableProps {
   discounts: Discount[]
@@ -19,22 +20,33 @@ interface DiscountTableProps {
 
 export function DiscountTable({ discounts, loading, onEdit, onDelete }: DiscountTableProps) {
   const { toast } = useToast()
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [selectedDiscount, setSelectedDiscount] = useState<Discount | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa discount này?")) {
-      try {
-        await onDelete(id)
-        toast({
-          title: "Thành công",
-          description: "Đã xóa discount thành công",
-        })
-      } catch (error) {
-        toast({
-          title: "Lỗi",
-          description: "Không thể xóa discount",
-          variant: "destructive",
-        })
-      }
+  const handleDeleteClick = (discount: Discount) => {
+    setSelectedDiscount(discount)
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedDiscount) return
+    
+    setDeleting(true)
+    try {
+      await onDelete(selectedDiscount.discountId)
+      toast({
+        title: "Thành công",
+        description: "Đã xóa discount thành công",
+      })
+    } catch (error) {
+      toast({
+        title: "Lỗi",
+        description: "Không thể xóa discount",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -130,7 +142,7 @@ export function DiscountTable({ discounts, loading, onEdit, onDelete }: Discount
                           Chỉnh sửa
                         </DropdownMenuItem>
                         <DropdownMenuItem 
-                          onClick={() => handleDelete(discount.discountId)}
+                          onClick={() => handleDeleteClick(discount)}
                           className="text-destructive"
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
@@ -147,5 +159,14 @@ export function DiscountTable({ discounts, loading, onEdit, onDelete }: Discount
         )}
       </CardContent>
     </Card>
+
+    {/* Delete Confirmation Modal */}
+    <DiscountDeleteConfirmationModal
+      open={deleteModalOpen}
+      onOpenChange={setDeleteModalOpen}
+      discount={selectedDiscount}
+      onConfirm={handleDeleteConfirm}
+      loading={deleting}
+    />
   )
 }

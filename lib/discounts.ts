@@ -58,6 +58,19 @@ export const discountsApi = {
     return convertServerToClient(serverDiscount);
   },
 
+  // Kiểm tra discount có đang được sử dụng không
+  checkUsage: async (id: number): Promise<{
+    isUsed: boolean;
+    usageCount: number;
+    membershipCards: Array<{
+      membershipCardId: number;
+      membershipCardName: string;
+      rechargeThreshold: number;
+    }>;
+  }> => {
+    return await http.get(`/discounts/${id}/usage`);
+  },
+
   // Xóa discount
   delete: (id: number): Promise<void> => 
     http.delete<void>(`/discounts/${id}`),
