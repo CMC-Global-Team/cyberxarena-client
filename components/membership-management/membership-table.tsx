@@ -1,12 +1,14 @@
 "use client"
 
+import { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Edit, Trash2, IdCard } from "lucide-react"
+import { MoreHorizontal, Edit, Trash2, IdCard, ArrowUpDown } from "lucide-react"
 import type { MembershipCard } from "@/lib/memberships"
+import { MembershipDeleteConfirmationModal } from "./membership-delete-confirmation-modal"
 
 interface MembershipTableProps {
   memberships: MembershipCard[]
@@ -16,9 +18,30 @@ interface MembershipTableProps {
 }
 
 export function MembershipTable({ memberships, loading, onEdit, onDelete }: MembershipTableProps) {
-  const handleDelete = async (id: number) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa thẻ thành viên này?")) {
-      await onDelete(id)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [selectedMembership, setSelectedMembership] = useState<MembershipCard | null>(null)
+  const [deleting, setDeleting] = useState(false)
+
+  // Sort memberships by recharge threshold (ascending)
+  const sortedMemberships = useMemo(() => {
+    return [...memberships].sort((a, b) => a.rechargeThreshold - b.rechargeThreshold)
+  }, [memberships])
+
+  const handleDeleteClick = (membership: MembershipCard) => {
+    setSelectedMembership(membership)
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedMembership) return
+    
+    setDeleting(true)
+    try {
+      await onDelete(selectedMembership.membershipCardId)
+    } catch (error) {
+      console.error("Error deleting membership:", error)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -43,10 +66,18 @@ export function MembershipTable({ memberships, loading, onEdit, onDelete }: Memb
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Danh sách thẻ thành viên</CardTitle>
-        <CardDescription>
-          Quản lý các gói thẻ thành viên trong hệ thống
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Danh sách thẻ thành viên</CardTitle>
+            <CardDescription>
+              Quản lý các gói thẻ thành viên trong hệ thống (đã sắp xếp theo ngưỡng nạp tiền)
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <ArrowUpDown className="h-4 w-4" />
+            <span>Sắp xếp tự động</span>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         {memberships.length === 0 ? (
@@ -69,7 +100,7 @@ export function MembershipTable({ memberships, loading, onEdit, onDelete }: Memb
               </TableRow>
             </TableHeader>
             <TableBody>
-              {memberships.map((m) => (
+              {sortedMemberships.map((m) => (
                 <TableRow key={m.membershipCardId}>
                   <TableCell className="font-medium">#{m.membershipCardId}</TableCell>
                   <TableCell className="font-medium">{m.membershipCardName}</TableCell>
@@ -135,7 +166,7 @@ export function MembershipTable({ memberships, loading, onEdit, onDelete }: Memb
                           <Edit className="h-4 w-4 mr-2" />
                           Chỉnh sửa
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDelete(m.membershipCardId)} className="text-destructive">
+                        <DropdownMenuItem onClick={() => handleDeleteClick(m)} className="text-destructive">
                           <Trash2 className="h-4 w-4 mr-2" />
                           Xóa
                         </DropdownMenuItem>
@@ -150,6 +181,15 @@ export function MembershipTable({ memberships, loading, onEdit, onDelete }: Memb
         )}
       </CardContent>
     </Card>
+
+    {/* Delete Confirmation Modal */}
+    <MembershipDeleteConfirmationModal
+      open={deleteModalOpen}
+      onOpenChange={setDeleteModalOpen}
+      membership={selectedMembership}
+      onConfirm={handleDeleteConfirm}
+      loading={deleting}
+    />
   )
 }
 

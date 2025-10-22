@@ -73,6 +73,20 @@ export const membershipsApi = {
   update: (id: number, payload: UpdateMembershipCardRequestDTO): Promise<MembershipCard> =>
     http.put<MembershipCard>(`/membership-cards/${id}`, payload),
 
+  // Kiểm tra membership card có đang được sử dụng không
+  checkUsage: async (id: number): Promise<{
+    isUsed: boolean;
+    usageCount: number;
+    customers: Array<{
+      customerId: number;
+      customerName: string;
+      phoneNumber: string;
+      balance: number;
+    }>;
+  }> => {
+    return await http.get(`/membership-cards/${id}/usage`);
+  },
+
   // Delete
   delete: (id: number): Promise<void> =>
     http.delete<void>(`/membership-cards/${id}`),
