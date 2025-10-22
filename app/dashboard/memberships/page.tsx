@@ -215,6 +215,7 @@ export default function MembershipsPage() {
           onOpenChange={setEligibleCustomersOpen}
           membershipCardId={selectedMembershipForEligible.membershipCardId}
           membershipCardName={selectedMembershipForEligible.membershipCardName}
+          membershipCardThreshold={selectedMembershipForEligible.rechargeThreshold}
           onConfirm={handleUpdateEligibleCustomers}
           loading={updatingCustomers}
         />
