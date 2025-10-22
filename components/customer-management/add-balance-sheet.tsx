@@ -14,7 +14,7 @@ interface Customer {
   customerId: number
   customerName: string
   phoneNumber: string
-  membershipCard: string
+  membershipCardId: number
   balance: number
   registrationDate: string
 }

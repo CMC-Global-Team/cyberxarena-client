@@ -13,7 +13,7 @@ interface AccountActionsSheetProps {
     username: string
     customerName: string
     phoneNumber: string
-    membershipCard: string
+    membershipCardId: number
   }
   onEdit: () => void
   onDelete: () => void

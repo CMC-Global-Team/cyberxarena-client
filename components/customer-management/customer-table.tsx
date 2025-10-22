@@ -24,7 +24,7 @@ interface Customer {
 interface CustomerTableProps {
   customers: Customer[]
   onEdit: (customer: Customer) => void
-  onDelete: (customerId: number) => void
+  onDelete: (customer: Customer) => void
   onManageAccount: (customer: Customer) => void
   onAddBalance: (customer: Customer) => void
   onViewRechargeHistory: (customer: Customer) => void
