@@ -14,6 +14,7 @@ import { MembershipTable } from "@/components/membership-management/membership-t
 import { MembershipStats } from "@/components/membership-management/membership-stats"
 import { MembershipFormSheet } from "@/components/membership-management/membership-form-sheet"
 import { MembershipTour } from "@/components/membership-management/membership-tour"
+import { EligibleCustomersModal } from "@/components/membership-management/eligible-customers-modal"
 import { HelpCircle } from "lucide-react"
 
 export default function MembershipsPage() {
@@ -26,6 +27,9 @@ export default function MembershipsPage() {
   const [selected, setSelected] = useState<MembershipCard | null>(null)
   const [editOpen, setEditOpen] = useState(false)
   const [showTour, setShowTour] = useState(false)
+  const [eligibleCustomersOpen, setEligibleCustomersOpen] = useState(false)
+  const [selectedMembershipForEligible, setSelectedMembershipForEligible] = useState<MembershipCard | null>(null)
+  const [updatingCustomers, setUpdatingCustomers] = useState(false)
 
 
   const loadData = async () => {
@@ -95,6 +99,33 @@ export default function MembershipsPage() {
     setEditOpen(true)
   }
 
+  const handleCheckEligibleCustomers = (membership: MembershipCard) => {
+    setSelectedMembershipForEligible(membership)
+    setEligibleCustomersOpen(true)
+  }
+
+  const handleUpdateEligibleCustomers = async (selectedCustomerIds: number[]) => {
+    if (!selectedMembershipForEligible) return
+
+    setUpdatingCustomers(true)
+    try {
+      await membershipsApi.updateEligibleCustomers(selectedMembershipForEligible.membershipCardId, selectedCustomerIds)
+      toast({ 
+        title: "Thành công", 
+        description: `Đã cập nhật ${selectedCustomerIds.length} khách hàng lên gói "${selectedMembershipForEligible.membershipCardName}"` 
+      })
+      await loadData()
+    } catch (e: any) {
+      toast({ 
+        title: "Lỗi", 
+        description: e?.message || "Không thể cập nhật khách hàng", 
+        variant: "destructive" 
+      })
+    } finally {
+      setUpdatingCustomers(false)
+    }
+  }
+
   return (
     <div className="space-y-6 p-6 relative">
       <PageLoadingOverlay isLoading={isLoading} pageType="memberships" />
@@ -140,6 +171,7 @@ export default function MembershipsPage() {
               loading={loading}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onCheckEligibleCustomers={handleCheckEligibleCustomers}
             />
           </div>
         </TabsContent>
@@ -176,6 +208,17 @@ export default function MembershipsPage() {
         isActive={showTour} 
         onComplete={() => setShowTour(false)} 
       />
+
+      {selectedMembershipForEligible && (
+        <EligibleCustomersModal
+          open={eligibleCustomersOpen}
+          onOpenChange={setEligibleCustomersOpen}
+          membershipCardId={selectedMembershipForEligible.membershipCardId}
+          membershipCardName={selectedMembershipForEligible.membershipCardName}
+          onConfirm={handleUpdateEligibleCustomers}
+          loading={updatingCustomers}
+        />
+      )}
     </div>
   )
 }

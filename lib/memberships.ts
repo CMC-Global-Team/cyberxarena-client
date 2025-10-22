@@ -87,6 +87,24 @@ export const membershipsApi = {
     return await http.get(`/membership-cards/${id}/usage`);
   },
 
+  // Get eligible customers for membership card
+  getEligibleCustomers: async (id: number): Promise<Array<{
+    customerId: number;
+    customerName: string;
+    phoneNumber: string;
+    currentBalance: number;
+    totalRecharge: number;
+    currentMembershipCardId: number;
+    currentMembershipCardName: string;
+  }>> => {
+    return await http.get(`/membership-cards/${id}/eligible-customers`);
+  },
+
+  // Update eligible customers to membership card
+  updateEligibleCustomers: async (id: number, customerIds: number[]): Promise<string> => {
+    return await http.post(`/membership-cards/${id}/update-eligible-customers`, customerIds);
+  },
+
   // Delete
   delete: (id: number): Promise<void> =>
     http.delete<void>(`/membership-cards/${id}`),
