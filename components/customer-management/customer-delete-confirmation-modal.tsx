@@ -1,10 +1,11 @@
 "use client"
 
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Trash2, AlertTriangle, User } from "lucide-react"
+import { membershipsApi, type MembershipCard } from "@/lib/memberships"
 
 interface CustomerDeleteConfirmationModalProps {
   open: boolean
@@ -14,7 +15,7 @@ interface CustomerDeleteConfirmationModalProps {
     customerName: string
     phoneNumber?: string
     balance: number
-    membershipCardName?: string
+    membershipCardId: number
   } | null
   onConfirm: () => void
   loading?: boolean
@@ -27,6 +28,32 @@ export function CustomerDeleteConfirmationModal({
   onConfirm,
   loading = false
 }: CustomerDeleteConfirmationModalProps) {
+  const [membershipCards, setMembershipCards] = useState<MembershipCard[]>([])
+  const [isLoadingCards, setIsLoadingCards] = useState(false)
+
+  useEffect(() => {
+    const loadMembershipCards = async () => {
+      try {
+        setIsLoadingCards(true)
+        const cards = await membershipsApi.list()
+        setMembershipCards(cards)
+      } catch (error) {
+        console.error("Error loading membership cards:", error)
+      } finally {
+        setIsLoadingCards(false)
+      }
+    }
+
+    if (open) {
+      loadMembershipCards()
+    }
+  }, [open])
+
+  const getMembershipCardName = (membershipCardId: number) => {
+    const card = membershipCards.find(c => c.membershipCardId === membershipCardId)
+    return card ? `${card.membershipCardName}${card.isDefault ? ' (Mặc định)' : ''}` : 'Không xác định'
+  }
+
   if (!customer) return null
 
   return (
@@ -71,7 +98,11 @@ export function CustomerDeleteConfirmationModal({
               <div>
                 <span className="text-muted-foreground">Gói thành viên:</span>
                 <p className="font-medium">
-                  {customer.membershipCardName || "Chưa có"}
+                  {isLoadingCards ? (
+                    <span className="text-muted-foreground">Đang tải...</span>
+                  ) : (
+                    getMembershipCardName(customer.membershipCardId)
+                  )}
                 </p>
               </div>
             </div>
