@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Edit, Trash2, IdCard, ArrowUpDown } from "lucide-react"
+import { MoreHorizontal, Edit, Trash2, IdCard, ArrowUpDown, Users } from "lucide-react"
 import type { MembershipCard } from "@/lib/memberships"
 import { MembershipDeleteConfirmationModal } from "./membership-delete-confirmation-modal"
 
@@ -15,9 +15,10 @@ interface MembershipTableProps {
   loading?: boolean
   onEdit: (membership: MembershipCard) => void
   onDelete: (id: number) => Promise<void>
+  onCheckEligibleCustomers?: (membership: MembershipCard) => void
 }
 
-export function MembershipTable({ memberships, loading, onEdit, onDelete }: MembershipTableProps) {
+export function MembershipTable({ memberships, loading, onEdit, onDelete, onCheckEligibleCustomers }: MembershipTableProps) {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedMembership, setSelectedMembership] = useState<MembershipCard | null>(null)
   const [deleting, setDeleting] = useState(false)
@@ -167,6 +168,12 @@ export function MembershipTable({ memberships, loading, onEdit, onDelete }: Memb
                             <Edit className="h-4 w-4 mr-2" />
                             Chỉnh sửa
                           </DropdownMenuItem>
+                          {onCheckEligibleCustomers && (
+                            <DropdownMenuItem onClick={() => onCheckEligibleCustomers(m)}>
+                              <Users className="h-4 w-4 mr-2" />
+                              Khách hàng phù hợp
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem onClick={() => handleDeleteClick(m)} className="text-destructive">
                             <Trash2 className="h-4 w-4 mr-2" />
                             Xóa
