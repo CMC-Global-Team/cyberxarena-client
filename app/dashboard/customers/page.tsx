@@ -49,17 +49,42 @@ export default function CustomersPage() {
   const [showTour, setShowTour] = useState(false)
   const [showRankInfo, setShowRankInfo] = useState(false)
   const [showDiscountCalculator, setShowDiscountCalculator] = useState(false)
+  const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now())
+  const [isPolling, setIsPolling] = useState(false)
 
   const loadCustomers = async () => {
     try {
       setLoading(true)
       const res = await withPageLoading(() => CustomerApi.list({ page: 0, size: 100, sortBy: "customerId", sortDir: "asc" }))
       setCustomers(res)
+      setLastUpdateTime(Date.now())
     } catch (e: any) {
       notify({ type: "error", message: `Lỗi tải danh sách khách hàng: ${e?.message || ''}` })
     } finally {
       setLoading(false)
     }
+  }
+
+  // Polling function để refresh data sau khi có thay đổi
+  const startPolling = () => {
+    if (isPolling) return
+    
+    setIsPolling(true)
+    const pollInterval = setInterval(async () => {
+      try {
+        const res = await CustomerApi.list({ page: 0, size: 100, sortBy: "customerId", sortDir: "asc" })
+        setCustomers(res)
+        setLastUpdateTime(Date.now())
+      } catch (e) {
+        console.error("Polling error:", e)
+      }
+    }, 2000) // Poll mỗi 2 giây
+
+    // Dừng polling sau 30 giây
+    setTimeout(() => {
+      clearInterval(pollInterval)
+      setIsPolling(false)
+    }, 30000)
   }
 
   const loadAccounts = async () => {
@@ -96,6 +121,11 @@ export default function CustomersPage() {
       
       setCustomers(prev => [...prev, { ...newCustomer, hasAccount: false }])
       notify({ type: "success", message: "Đã thêm khách hàng thành công" })
+      
+      // Bắt đầu polling để cập nhật rank nếu có số dư ban đầu
+      if (data.balance > 0) {
+        startPolling()
+      }
     } catch (e: any) {
       notify({ type: "error", message: `Lỗi thêm khách hàng: ${e?.message || ''}` })
       throw e
@@ -224,6 +254,9 @@ export default function CustomersPage() {
           : c
       ))
       notify({ type: "success", message: `Đã nạp ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)} thành công` })
+      
+      // Bắt đầu polling để cập nhật rank sau khi nạp tiền
+      startPolling()
     } catch (e: any) {
       notify({ type: "error", message: `Lỗi nạp tiền: ${e?.message || ''}` })
       throw e
@@ -284,6 +317,12 @@ export default function CustomersPage() {
               />
             </div>
             <p className="text-muted-foreground">Danh sách và thông tin khách hàng, quản lý tài khoản</p>
+            {isPolling && (
+              <div className="flex items-center gap-2 mt-2 text-sm text-blue-600">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                <span>Đang cập nhật thông tin rank...</span>
+              </div>
+            )}
           </div>
           <Button
             onClick={() => setAddSheetOpen(true)}
