@@ -62,11 +62,13 @@ export function EligibleCustomersModal({
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      // Chỉ chọn những khách hàng có thể chọn được (không có gói cao hơn)
-      const selectableCustomers = eligibleCustomers.filter(customer => 
-        !customer.currentMembershipThreshold || 
-        customer.currentMembershipThreshold <= membershipCardThreshold
-      );
+      // Chỉ chọn những khách hàng có thể chọn được (không có gói cao hơn và không có cùng gói)
+      const selectableCustomers = eligibleCustomers.filter(customer => {
+        const hasHigherMembership = customer.currentMembershipThreshold && 
+                                  customer.currentMembershipThreshold > membershipCardThreshold;
+        const hasSameMembership = customer.currentMembershipCardId === membershipCardId;
+        return !hasHigherMembership && !hasSameMembership;
+      });
       setSelectedCustomerIds(selectableCustomers.map(c => c.customerId))
     } else {
       setSelectedCustomerIds([])
@@ -133,10 +135,12 @@ export function EligibleCustomersModal({
             <div className="space-y-4">
               {/* Select All */}
               {(() => {
-                const selectableCustomers = eligibleCustomers.filter(customer => 
-                  !customer.currentMembershipThreshold || 
-                  customer.currentMembershipThreshold <= membershipCardThreshold
-                );
+                const selectableCustomers = eligibleCustomers.filter(customer => {
+                  const hasHigherMembership = customer.currentMembershipThreshold && 
+                                            customer.currentMembershipThreshold > membershipCardThreshold;
+                  const hasSameMembership = customer.currentMembershipCardId === membershipCardId;
+                  return !hasHigherMembership && !hasSameMembership;
+                });
                 const allSelectableSelected = selectableCustomers.length > 0 && 
                   selectableCustomers.every(customer => selectedCustomerIds.includes(customer.customerId));
                 
@@ -148,7 +152,7 @@ export function EligibleCustomersModal({
                       onCheckedChange={handleSelectAll}
                     />
                     <label htmlFor="select-all" className="text-sm font-medium">
-                      Chọn tất cả có thể chọn ({selectableCustomers.length} khách hàng)
+                      Chọn tất cả có thể nâng cấp ({selectableCustomers.length} khách hàng)
                     </label>
                   </div>
                 );
@@ -169,20 +173,27 @@ export function EligibleCustomersModal({
                   </TableHeader>
                   <TableBody>
                     {eligibleCustomers.map((customer) => {
-                      // Kiểm tra xem khách hàng đã có gói cao hơn chưa
+                      // Kiểm tra trạng thái khách hàng
                       const hasHigherMembership = customer.currentMembershipThreshold && 
                                                 customer.currentMembershipThreshold > membershipCardThreshold;
+                      const hasSameMembership = customer.currentMembershipCardId === membershipCardId;
+                      const hasLowerMembership = customer.currentMembershipThreshold && 
+                                               customer.currentMembershipThreshold < membershipCardThreshold;
                       
                       return (
                         <TableRow 
                           key={customer.customerId}
-                          className={hasHigherMembership ? "bg-amber-50 border-amber-200" : ""}
+                          className={
+                            hasHigherMembership ? "bg-amber-50 border-amber-200" :
+                            hasSameMembership ? "bg-blue-50 border-blue-200" :
+                            hasLowerMembership ? "bg-green-50 border-green-200" : ""
+                          }
                         >
                           <TableCell>
                             <Checkbox
                               checked={selectedCustomerIds.includes(customer.customerId)}
                               onCheckedChange={(checked) => handleSelectCustomer(customer.customerId, checked as boolean)}
-                              disabled={hasHigherMembership} // Không cho chọn nếu đã có gói cao hơn
+                              disabled={hasHigherMembership || hasSameMembership} // Không cho chọn nếu đã có gói cao hơn hoặc cùng gói
                             />
                           </TableCell>
                           <TableCell className="font-medium">
@@ -191,6 +202,16 @@ export function EligibleCustomersModal({
                               {hasHigherMembership && (
                                 <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">
                                   Đã có gói cao hơn
+                                </Badge>
+                              )}
+                              {hasSameMembership && (
+                                <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">
+                                  Đã có gói này
+                                </Badge>
+                              )}
+                              {hasLowerMembership && (
+                                <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+                                  Có thể nâng cấp
                                 </Badge>
                               )}
                             </div>
@@ -213,13 +234,25 @@ export function EligibleCustomersModal({
                           <TableCell>
                             <div className="flex flex-col gap-1">
                               <Badge 
-                                variant={hasHigherMembership ? "default" : "secondary"}
-                                className={hasHigherMembership ? "bg-amber-100 text-amber-800" : ""}
+                                variant={
+                                  hasHigherMembership ? "default" :
+                                  hasSameMembership ? "default" :
+                                  "secondary"
+                                }
+                                className={
+                                  hasHigherMembership ? "bg-amber-100 text-amber-800" :
+                                  hasSameMembership ? "bg-blue-100 text-blue-800" :
+                                  ""
+                                }
                               >
                                 {customer.currentMembershipCardName}
                               </Badge>
-                              {hasHigherMembership && customer.currentMembershipThreshold && (
-                                <span className="text-xs text-amber-600">
+                              {(hasHigherMembership || hasSameMembership) && customer.currentMembershipThreshold && (
+                                <span className={`text-xs ${
+                                  hasHigherMembership ? "text-amber-600" :
+                                  hasSameMembership ? "text-blue-600" :
+                                  "text-muted-foreground"
+                                }`}>
                                   Ngưỡng: {new Intl.NumberFormat('vi-VN', { 
                                     style: 'currency', 
                                     currency: 'VND' 
@@ -242,7 +275,16 @@ export function EligibleCustomersModal({
                   customer.currentMembershipThreshold > membershipCardThreshold
                 ).length;
                 
-                const selectableCount = eligibleCustomers.length - higherMembershipCount;
+                const sameMembershipCount = eligibleCustomers.filter(customer => 
+                  customer.currentMembershipCardId === membershipCardId
+                ).length;
+                
+                const lowerMembershipCount = eligibleCustomers.filter(customer => 
+                  customer.currentMembershipThreshold && 
+                  customer.currentMembershipThreshold < membershipCardThreshold
+                ).length;
+                
+                const selectableCount = lowerMembershipCount;
                 
                 return (
                   <div className="space-y-2">
@@ -264,9 +306,18 @@ export function EligibleCustomersModal({
                       </Alert>
                     )}
                     
+                    {sameMembershipCount > 0 && (
+                      <Alert className="border-blue-200 bg-blue-50">
+                        <AlertDescription className="text-blue-800">
+                          <strong>Thông tin:</strong> {sameMembershipCount} khách hàng đã có gói "{membershipCardName}" rồi.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    
                     <div className="text-sm text-muted-foreground">
                       Tổng: {eligibleCustomers.length} khách hàng phù hợp | 
-                      Có thể chọn: {selectableCount} | 
+                      Có thể nâng cấp: {selectableCount} | 
+                      Đã có gói này: {sameMembershipCount} | 
                       Đã có gói cao hơn: {higherMembershipCount}
                     </div>
                   </div>
