@@ -8,7 +8,7 @@ interface Customer {
   customerId: number
   customerName: string
   phoneNumber: string
-  membershipCard: string
+  membershipCardId: number
   balance: number
   registrationDate: string
   hasAccount?: boolean
@@ -19,7 +19,7 @@ interface CustomerActionsSheetProps {
   onOpenChange: (open: boolean) => void
   customer: Customer
   onEdit: (customer: Customer) => void
-  onDelete: (customerId: number) => void
+  onDelete: (customer: Customer) => void
   onManageAccount: (customer: Customer) => void
   onAddBalance: (customer: Customer) => void
   onViewRechargeHistory: (customer: Customer) => void
@@ -45,10 +45,8 @@ export function CustomerActionsSheet({
   }
 
   const handleDelete = () => {
-    if (confirm(`Bạn có chắc chắn muốn xóa khách hàng "${customer.customerName}"?`)) {
-      onDelete(customer.customerId)
-      onOpenChange(false)
-    }
+    onDelete(customer)
+    onOpenChange(false)
   }
 
   const handleManageAccount = () => {

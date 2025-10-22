@@ -11,7 +11,7 @@ interface CustomerActionsSheetProps {
     id: number
     customerName: string
     phoneNumber: string
-    membershipCard: string
+    membershipCardId: number
     balance: number
     hasAccount?: boolean
   }

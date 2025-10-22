@@ -13,6 +13,7 @@ import { BalanceWarningList } from "@/components/customer-management/balance-war
 import { CustomerTour } from "@/components/customer-management/customer-tour"
 import { CustomerRankInfo } from "@/components/customer-management/customer-rank-info"
 import { DiscountCalculator } from "@/components/customer-management/discount-calculator"
+import { CustomerDeleteConfirmationModal } from "@/components/customer-management/customer-delete-confirmation-modal"
 import { CustomerApi, AccountApi, type CustomerDTO, type AccountDTO, CreateCustomerRequestDTO } from "@/lib/customers"
 import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
@@ -51,6 +52,9 @@ export default function CustomersPage() {
   const [showDiscountCalculator, setShowDiscountCalculator] = useState(false)
   const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now())
   const [isPolling, setIsPolling] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const loadCustomers = async () => {
     try {
@@ -156,12 +160,22 @@ export default function CustomersPage() {
     }
   }
 
-  const handleDeleteCustomer = async (customerId: number) => {
+  const handleDeleteCustomer = (customer: Customer) => {
+    setCustomerToDelete(customer)
+    setDeleteModalOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!customerToDelete) return
+    
+    setDeleting(true)
     try {
-      await withPageLoading(() => CustomerApi.delete(customerId))
-      setCustomers(prev => prev.filter(c => c.customerId !== customerId))
-      setAccounts(prev => prev.filter(a => a.customerId !== customerId))
+      await withPageLoading(() => CustomerApi.delete(customerToDelete.customerId))
+      setCustomers(prev => prev.filter(c => c.customerId !== customerToDelete.customerId))
+      setAccounts(prev => prev.filter(a => a.customerId !== customerToDelete.customerId))
       notify({ type: "success", message: "Đã xóa khách hàng thành công" })
+      setDeleteModalOpen(false)
+      setCustomerToDelete(null)
     } catch (e: any) {
       const errorMsg = e?.message || "Lỗi không xác định"
       
@@ -178,6 +192,8 @@ export default function CustomersPage() {
       // Reload to reflect server state
       await loadCustomers()
       await loadAccounts()
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -313,7 +329,6 @@ export default function CustomersPage() {
               <HelpCircle 
                 className="h-6 w-6 text-red-500 cursor-pointer hover:text-red-600 transition-colors" 
                 onClick={() => setShowTour(true)}
-                title="Hướng dẫn sử dụng"
               />
             </div>
             <p className="text-muted-foreground">Danh sách và thông tin khách hàng, quản lý tài khoản</p>
@@ -456,6 +471,17 @@ export default function CustomersPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {customerToDelete && (
+          <CustomerDeleteConfirmationModal
+            open={deleteModalOpen}
+            onOpenChange={setDeleteModalOpen}
+            customer={customerToDelete}
+            onConfirm={handleDeleteConfirm}
+            loading={deleting}
+          />
         )}
     </div>
   )
