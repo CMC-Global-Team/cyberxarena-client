@@ -59,12 +59,17 @@ export function DiscountDeleteConfirmationModal({
     onOpenChange(false)
   }
 
+  // Reset usage info when discount changes
+  React.useEffect(() => {
+    setUsageInfo(null)
+  }, [discount])
+
   // Check usage when modal opens
   React.useEffect(() => {
     if (open && discount && !usageInfo && !checkingUsage) {
       handleCheckUsage()
     }
-  }, [open, discount])
+  }, [open, discount, usageInfo, checkingUsage])
 
   if (!discount) return null
 

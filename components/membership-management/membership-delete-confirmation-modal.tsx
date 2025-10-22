@@ -60,12 +60,17 @@ export function MembershipDeleteConfirmationModal({
     onOpenChange(false)
   }
 
+  // Reset usage info when membership changes
+  React.useEffect(() => {
+    setUsageInfo(null)
+  }, [membership])
+
   // Check usage when modal opens
   React.useEffect(() => {
     if (open && membership && !usageInfo && !checkingUsage) {
       handleCheckUsage()
     }
-  }, [open, membership])
+  }, [open, membership, usageInfo, checkingUsage])
 
   if (!membership) return null
 
@@ -194,6 +199,8 @@ export function MembershipDeleteConfirmationModal({
                   <AlertDescription className="text-blue-800">
                     <strong>Lưu ý:</strong> Sau khi xóa, hệ thống sẽ tự động cập nhật rank của tất cả khách hàng 
                     đang sử dụng gói này xuống mức rank có ngưỡng nạp tiền thấp hơn gói hiện tại.
+                    <br />
+                    <strong>Quá trình này sẽ diễn ra tự động và không cần can thiệp thủ công.</strong>
                   </AlertDescription>
                 </Alert>
               )}
