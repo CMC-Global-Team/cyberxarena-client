@@ -10,7 +10,7 @@ export interface SessionDTO {
   computerName?: string
   startTime: string
   endTime?: string
-  status: "Active" | "Ended"
+  status?: "Active" | "Ended" // Optional because server doesn't return this field
   pricePerHour?: number
   totalAmount?: number
 }
@@ -87,7 +87,9 @@ export class SessionApi {
       const enrichedSessions = sessions.map(session => ({
         ...session,
         customerName: customerMap.get(session.customerId) || 'Unknown Customer',
-        computerName: computerMap.get(session.computerId) || 'Unknown Computer'
+        computerName: computerMap.get(session.computerId) || 'Unknown Computer',
+        // Calculate status based on endTime
+        status: session.endTime ? 'Ended' : 'Active'
       }))
 
       console.log('Enriched sessions:', enrichedSessions)

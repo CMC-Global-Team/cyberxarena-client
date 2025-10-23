@@ -148,7 +148,7 @@ export default function SessionsPage() {
     setActionsSheetOpen(false)
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
     switch (status) {
       case "Active":
       case "ACTIVE":
@@ -161,7 +161,7 @@ export default function SessionsPage() {
     }
   }
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status?: string) => {
     console.log('Session status:', status, 'type:', typeof status)
     switch (status) {
       case "Active":
@@ -173,7 +173,7 @@ export default function SessionsPage() {
       case "ENDED":
         return "Đã kết thúc"
       default:
-        return `Không xác định (${status})`
+        return `Không xác định (${status || 'undefined'})`
     }
   }
 
