@@ -1,11 +1,19 @@
 import { http } from "./api"
 import { CustomerApi } from "./customers"
+import { AccountApi } from "./customers"
 import { ComputerApi } from "./computers"
+import { membershipsApi } from "./memberships"
 
 export interface SessionDTO {
   sessionId: number
   customerId: number
   customerName?: string
+  customerPhone?: string
+  customerBalance?: number
+  membershipCardId?: number
+  membershipCardName?: string
+  hasAccount?: boolean
+  accountUsername?: string
   computerId: number
   computerName?: string
   startTime: string
@@ -67,30 +75,51 @@ export class SessionApi {
       console.log('Customer IDs:', customerIds)
       console.log('Computer IDs:', computerIds)
 
-      // Fetch customer and computer data in parallel
-      const [customers, computersResponse] = await Promise.all([
+      // Fetch customer, computer, account, and membership data in parallel
+      const [customers, computersResponse, accountsResponse, memberships] = await Promise.all([
         CustomerApi.list({ page: 0, size: 1000 }),
-        ComputerApi.list({ page: 0, size: 1000 })
+        ComputerApi.list({ page: 0, size: 1000 }),
+        AccountApi.search({ page: 0, size: 1000 }),
+        membershipsApi.getAll()
       ])
 
       console.log('Customers fetched:', customers)
       console.log('Computers fetched:', computersResponse)
+      console.log('Accounts fetched:', accountsResponse)
+      console.log('Memberships fetched:', memberships)
 
       // Create lookup maps
-      const customerMap = new Map(customers.map(c => [c.customerId, c.customerName]))
-      const computerMap = new Map((computersResponse.content || []).map(c => [c.computerId, c.computerName]))
+      const customerMap = new Map(customers.map(c => [c.customerId, c]))
+      const computerMap = new Map((computersResponse.content || []).map(c => [c.computerId, c]))
+      const accountMap = new Map((accountsResponse.content || []).map(a => [a.customerId, a]))
+      const membershipMap = new Map(memberships.map(m => [m.membershipCardId, m]))
 
       console.log('Customer map:', customerMap)
       console.log('Computer map:', computerMap)
+      console.log('Account map:', accountMap)
+      console.log('Membership map:', membershipMap)
 
       // Enrich session data
-      const enrichedSessions = sessions.map(session => ({
-        ...session,
-        customerName: customerMap.get(session.customerId) || 'Unknown Customer',
-        computerName: computerMap.get(session.computerId) || 'Unknown Computer',
-        // Calculate status based on endTime
-        status: session.endTime ? 'Ended' : 'Active'
-      }))
+      const enrichedSessions = sessions.map(session => {
+        const customer = customerMap.get(session.customerId)
+        const computer = computerMap.get(session.computerId)
+        const account = accountMap.get(session.customerId)
+        const membership = customer ? membershipMap.get(customer.membershipCardId) : null
+
+        return {
+          ...session,
+          customerName: customer?.customerName || 'Unknown Customer',
+          customerPhone: customer?.phoneNumber,
+          customerBalance: customer?.balance,
+          membershipCardId: customer?.membershipCardId,
+          membershipCardName: membership?.membershipCardName,
+          hasAccount: !!account,
+          accountUsername: account?.username,
+          computerName: computer?.computerName || 'Unknown Computer',
+          // Calculate status based on endTime
+          status: (session.endTime ? 'Ended' : 'Active') as "Active" | "Ended"
+        }
+      })
 
       console.log('Enriched sessions:', enrichedSessions)
       return enrichedSessions

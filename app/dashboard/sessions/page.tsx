@@ -294,9 +294,31 @@ export default function SessionsPage() {
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="flex items-center gap-2 text-sm text-foreground">
-                        <User className="h-3 w-3 text-muted-foreground" />
-                        {session.customerName || 'N/A'}
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-sm text-foreground">
+                          <User className="h-3 w-3 text-muted-foreground" />
+                          <span className="font-medium">{session.customerName || 'N/A'}</span>
+                        </div>
+                        {session.customerPhone && (
+                          <div className="text-xs text-muted-foreground ml-5">
+                            📞 {session.customerPhone}
+                          </div>
+                        )}
+                        {session.membershipCardName && (
+                          <div className="text-xs text-muted-foreground ml-5">
+                            🎫 {session.membershipCardName}
+                          </div>
+                        )}
+                        {session.hasAccount && session.accountUsername && (
+                          <div className="text-xs text-muted-foreground ml-5">
+                            👤 @{session.accountUsername}
+                          </div>
+                        )}
+                        {session.customerBalance !== undefined && (
+                          <div className="text-xs text-muted-foreground ml-5">
+                            💰 {session.customerBalance.toLocaleString('vi-VN')}đ
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="py-4 px-4">
@@ -451,6 +473,11 @@ export default function SessionsPage() {
             session={selectedSession ? {
               id: selectedSession.sessionId,
               customerName: selectedSession.customerName,
+              customerPhone: selectedSession.customerPhone,
+              customerBalance: selectedSession.customerBalance,
+              membershipCardName: selectedSession.membershipCardName,
+              hasAccount: selectedSession.hasAccount,
+              accountUsername: selectedSession.accountUsername,
               computerName: selectedSession.computerName,
               status: selectedSession.status as string,
             } : (null as unknown as any)}

@@ -13,6 +13,11 @@ interface SessionActionsSheetProps {
   session: {
     id: number
     customerName: string
+    customerPhone?: string
+    customerBalance?: number
+    membershipCardName?: string
+    hasAccount?: boolean
+    accountUsername?: string
     computerName: string
     status: string
   } | null
@@ -87,9 +92,21 @@ export function SessionActionsSheet({
             <div className="space-y-3">
               <div className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg">
                 <User className="h-4 w-4 text-muted-foreground" />
-                <div>
+                <div className="flex-1">
                   <p className="text-sm font-medium">Khách hàng</p>
-                  <p className="text-sm text-muted-foreground">{session.customerName}</p>
+                  <p className="text-sm text-foreground font-medium">{session.customerName}</p>
+                  {session.customerPhone && (
+                    <p className="text-xs text-muted-foreground">📞 {session.customerPhone}</p>
+                  )}
+                  {session.membershipCardName && (
+                    <p className="text-xs text-muted-foreground">🎫 {session.membershipCardName}</p>
+                  )}
+                  {session.hasAccount && session.accountUsername && (
+                    <p className="text-xs text-muted-foreground">👤 @{session.accountUsername}</p>
+                  )}
+                  {session.customerBalance !== undefined && (
+                    <p className="text-xs text-muted-foreground">💰 {session.customerBalance.toLocaleString('vi-VN')}đ</p>
+                  )}
                 </div>
               </div>
 
