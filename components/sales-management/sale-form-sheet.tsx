@@ -505,9 +505,9 @@ export function SaleFormSheet({ sale, mode, onSuccess, children, open: controlle
               <div className="space-y-2">
                 <Label htmlFor="manualDiscount">Chọn giảm giá thủ công</Label>
                 <Select 
-                  value={selectedDiscount?.discountId.toString() || ""} 
+                  value={selectedDiscount?.discountId.toString() || "none"} 
                   onValueChange={(value) => {
-                    if (value) {
+                    if (value && value !== "none") {
                       const discountId = parseInt(value)
                       setFormData(prev => ({ ...prev, discountId }))
                       const discount = discounts.find(d => d.discountId === discountId)
@@ -522,7 +522,7 @@ export function SaleFormSheet({ sale, mode, onSuccess, children, open: controlle
                     <SelectValue placeholder="Chọn giảm giá thủ công" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Không chọn</SelectItem>
+                    <SelectItem value="none">Không chọn</SelectItem>
                     {discounts.map((discount) => (
                       <SelectItem key={discount.discountId} value={discount.discountId.toString()}>
                         {discount.discountName} - {discount.discountType === 'Percentage' ? `${discount.discountValue}%` : formatCurrency(discount.discountValue)}
