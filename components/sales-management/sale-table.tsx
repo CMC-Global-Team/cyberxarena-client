@@ -7,8 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { MoreHorizontal, Edit, ShoppingCart, Eye, RotateCcw, Clock, XCircle } from "lucide-react"
-import { Sale } from "@/lib/sales"
+import { MoreHorizontal, Edit, ShoppingCart, Eye, RotateCcw, Clock, XCircle, CheckCircle, AlertCircle } from "lucide-react"
+import { Sale, SaleStatus } from "@/lib/sales"
 import { useToast } from "@/hooks/use-toast"
 
 interface SaleTableProps {
@@ -17,10 +17,11 @@ interface SaleTableProps {
   onEdit: (sale: Sale) => void
   onView: (sale: Sale) => void
   onRefund: (sale: Sale) => void
+  onUpdateStatus: (sale: Sale, status: SaleStatus) => void
   refunds?: any[] // Danh sách refund để kiểm tra điều kiện
 }
 
-export function SaleTable({ sales, loading, onEdit, onView, onRefund, refunds = [] }: SaleTableProps) {
+export function SaleTable({ sales, loading, onEdit, onView, onRefund, onUpdateStatus, refunds = [] }: SaleTableProps) {
   const { toast } = useToast()
 
   // Kiểm tra xem hóa đơn có thể chỉnh sửa không (trong vòng 24h)
@@ -72,6 +73,39 @@ export function SaleTable({ sales, loading, onEdit, onView, onRefund, refunds = 
       hour: '2-digit',
       minute: '2-digit'
     })
+  }
+
+  // Render status badge
+  const renderStatusBadge = (status: SaleStatus) => {
+    switch (status) {
+      case 'Pending':
+        return (
+          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+            <Clock className="h-3 w-3 mr-1" />
+            Đang chờ thanh toán
+          </Badge>
+        )
+      case 'Paid':
+        return (
+          <Badge variant="default" className="bg-green-100 text-green-800">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Đã thanh toán
+          </Badge>
+        )
+      case 'Cancelled':
+        return (
+          <Badge variant="destructive" className="bg-red-100 text-red-800">
+            <XCircle className="h-3 w-3 mr-1" />
+            Đã hủy
+          </Badge>
+        )
+      default:
+        return (
+          <Badge variant="outline">
+            {status}
+          </Badge>
+        )
+    }
   }
 
   if (loading) {
@@ -145,16 +179,16 @@ export function SaleTable({ sales, loading, onEdit, onView, onRefund, refunds = 
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="default">
-                        Hoàn thành
-                      </Badge>
-                      {/* Hiển thị trạng thái refund nếu có */}
-                      {refunds.some(refund => refund.saleId === sale.saleId) && (
-                        <Badge variant="secondary" className="ml-2 bg-orange-100 text-orange-800">
-                          <RotateCcw className="h-3 w-3 mr-1" />
-                          Đã hoàn tiền
-                        </Badge>
-                      )}
+                      <div className="flex flex-col space-y-1">
+                        {renderStatusBadge(sale.status)}
+                        {/* Hiển thị trạng thái refund nếu có */}
+                        {refunds.some(refund => refund.saleId === sale.saleId) && (
+                          <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                            <RotateCcw className="h-3 w-3 mr-1" />
+                            Đã hoàn tiền
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div data-tour="sale-actions" className="flex items-center justify-end space-x-2">
@@ -214,6 +248,26 @@ export function SaleTable({ sales, loading, onEdit, onView, onRefund, refunds = 
                               <Edit className="h-4 w-4 mr-2" />
                               Chỉnh sửa (hết hạn)
                             </DropdownMenuItem>
+                          )}
+
+                          {/* Update Status - chỉ cho phép từ Pending sang Paid hoặc Cancelled */}
+                          {sale.status === 'Pending' && (
+                            <>
+                              <DropdownMenuItem 
+                                onClick={() => onUpdateStatus(sale, 'Paid')}
+                                className="text-green-600"
+                              >
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Đánh dấu đã thanh toán
+                              </DropdownMenuItem>
+                              <DropdownMenuItem 
+                                onClick={() => onUpdateStatus(sale, 'Cancelled')}
+                                className="text-red-600"
+                              >
+                                <XCircle className="h-4 w-4 mr-2" />
+                                Hủy hóa đơn
+                              </DropdownMenuItem>
+                            </>
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
