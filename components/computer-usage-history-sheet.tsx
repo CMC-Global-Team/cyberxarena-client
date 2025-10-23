@@ -22,6 +22,7 @@ import {
   Timer
 } from "lucide-react"
 import { ComputerApi, type ComputerUsageStats } from "@/lib/computers"
+import { SessionApi, type SessionDTO } from "@/lib/sessions"
 import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
 
@@ -37,12 +38,28 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
   const [open, setOpen] = useState(false)
   const [usageStats, setUsageStats] = useState<ComputerUsageStats | null>(null)
   const [loading, setLoading] = useState(false)
+  const [enrichedBySessionId, setEnrichedBySessionId] = useState<Map<number, SessionDTO>>(new Map())
 
   const loadUsageStats = async () => {
     try {
       setLoading(true)
       const stats = await withPageLoading(() => ComputerApi.getUsageStats(computerId))
       setUsageStats(stats)
+
+      // Enrich each recent session with full customer/account/membership info
+      if (stats?.recentSessions?.length) {
+        const sessionIds = stats.recentSessions.map(s => s.sessionId)
+        const results = await Promise.allSettled(sessionIds.map(id => SessionApi.getById(id)))
+        const map = new Map<number, SessionDTO>()
+        results.forEach((r, idx) => {
+          if (r.status === "fulfilled" && r.value) {
+            map.set(sessionIds[idx], r.value)
+          }
+        })
+        setEnrichedBySessionId(map)
+      } else {
+        setEnrichedBySessionId(new Map())
+      }
     } catch (e: any) {
       notify({ type: "error", message: `Lỗi tải lịch sử sử dụng: ${e?.message || ''}` })
     } finally {
@@ -107,7 +124,7 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-[98vw] w-[98vw] max-h-[96vh] overflow-hidden">
+      <DialogContent className="max-w-none w-[99vw] sm:max-w-[99vw] max-h-[96vh] overflow-hidden">
         <DialogHeader className="pb-4">
           <DialogTitle className="flex items-center gap-3 text-2xl">
             <History className="h-7 w-7 text-primary" />
@@ -211,7 +228,13 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
                   <ScrollArea className="h-[400px]">
                     {usageStats.recentSessions && usageStats.recentSessions.length > 0 ? (
                       <div className="space-y-4 pr-4">
-                        {usageStats.recentSessions.map((session, index) => (
+                        {usageStats.recentSessions.map((session, index) => {
+                          const enriched = enrichedBySessionId.get(session.sessionId)
+                          const displayName = enriched?.customerName || session.customerName
+                          const displayPhone = enriched?.customerPhone || session.customerPhone
+                          const displayCard = enriched?.membershipCardName || session.membershipCardName
+                          const displayAccount = enriched?.accountUsername
+                          return (
                           <div key={session.sessionId} className="border border-border rounded-lg p-4 hover:shadow-md transition-all duration-200 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
                             {/* Header với thông tin phiên */}
                             <div className="flex items-center justify-between mb-4">
@@ -220,7 +243,7 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
                                   <User className="h-6 w-6 text-primary" />
                                 </div>
                                 <div>
-                                  <h3 className="font-bold text-lg text-foreground">{session.customerName}</h3>
+                                  <h3 className="font-bold text-lg text-foreground">{displayName}</h3>
                                   <p className="text-sm text-muted-foreground">Phiên #{session.sessionId}</p>
                                 </div>
                               </div>
@@ -268,17 +291,22 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
                                   <div className="flex items-center gap-2">
                                     <User className="h-3 w-3 text-muted-foreground" />
                                     <span className="font-medium">Tên:</span>
-                                    <span className="text-foreground font-semibold">{session.customerName}</span>
+                                    <span className="text-foreground font-semibold">{displayName}</span>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <Phone className="h-3 w-3 text-muted-foreground" />
                                     <span className="font-medium">SĐT:</span>
-                                    <span className="text-foreground">{session.customerPhone || 'Chưa có'}</span>
+                                    <span className="text-foreground">{displayPhone || 'Chưa có'}</span>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <CreditCard className="h-3 w-3 text-muted-foreground" />
                                     <span className="font-medium">Thẻ:</span>
-                                    <span className="text-foreground">{session.membershipCardName || 'Chưa có'}</span>
+                                    <span className="text-foreground">{displayCard || 'Chưa có'}</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <CreditCard className="h-3 w-3 text-muted-foreground" />
+                                    <span className="font-medium">Tài khoản:</span>
+                                    <span className="text-foreground">{displayAccount ? `@${displayAccount}` : 'Chưa có'}</span>
                                   </div>
                                 </div>
                               </div>
@@ -313,7 +341,7 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
                               <Separator className="mt-4" />
                             )}
                           </div>
-                        ))}
+                        )})}
                       </div>
                     ) : (
                       <div className="text-center py-16">
