@@ -99,9 +99,11 @@ export function SessionFormSheet({
       return
     }
 
-    // Check if computer is available
+    // Check if computer is available (allow current computer in edit mode)
     const selectedComputer = computers.find(c => c.computerId.toString() === formData.computerId)
-    if (selectedComputer?.status !== "Available") {
+    const isCurrentComputer = mode === "edit" && session && selectedComputer?.computerId === session.computerId
+    
+    if (selectedComputer?.status !== "Available" && !isCurrentComputer) {
       notify({ type: "error", message: "Máy tính đã được chọn không khả dụng" })
       return
     }
@@ -120,15 +122,26 @@ export function SessionFormSheet({
         notify({ type: "success", message: "Tạo phiên sử dụng thành công" })
         onSaved?.(newSession)
       } else if (mode === "edit" && session) {
-        const requestData: SessionUpdateRequest = {
-          customerId: parseInt(formData.customerId),
-          computerId: parseInt(formData.computerId),
-          startTime: formData.startTime.toISOString(),
-        }
+        const newComputerId = parseInt(formData.computerId)
+        const isComputerChanged = newComputerId !== session.computerId
         
-        const updatedSession = await withLoading(() => SessionApi.update(session.sessionId, requestData))
-        notify({ type: "success", message: "Cập nhật phiên sử dụng thành công" })
-        onSaved?.(updatedSession)
+        if (isComputerChanged) {
+          // Use changeComputer API for active sessions
+          const updatedSession = await withLoading(() => SessionApi.changeComputer(session.sessionId, newComputerId))
+          notify({ type: "success", message: "Đổi máy tính thành công" })
+          onSaved?.(updatedSession)
+        } else {
+          // Use regular update for other changes
+          const requestData: SessionUpdateRequest = {
+            customerId: parseInt(formData.customerId),
+            computerId: parseInt(formData.computerId),
+            startTime: formData.startTime.toISOString(),
+          }
+          
+          const updatedSession = await withLoading(() => SessionApi.update(session.sessionId, requestData))
+          notify({ type: "success", message: "Cập nhật phiên sử dụng thành công" })
+          onSaved?.(updatedSession)
+        }
       }
       
       onOpenChange(false)
@@ -143,7 +156,13 @@ export function SessionFormSheet({
     }
   }
 
-  const availableComputers = computers.filter(c => c.status === "Available")
+  // For edit mode, include current computer even if it's "In Use"
+  const availableComputers = computers.filter(c => {
+    if (mode === "edit" && session && c.computerId === session.computerId) {
+      return true // Include current computer in edit mode
+    }
+    return c.status === "Available"
+  })
   const selectedCustomer = customers.find(c => c.customerId.toString() === formData.customerId)
   const selectedComputer = computers.find(c => c.computerId.toString() === formData.computerId)
 
@@ -206,11 +225,15 @@ export function SessionFormSheet({
                 <SelectValue placeholder="Chọn máy tính" />
               </SelectTrigger>
               <SelectContent>
-                {availableComputers.map((computer) => (
-                  <SelectItem key={computer.computerId} value={computer.computerId.toString()}>
-                    {computer.computerName} - Sẵn sàng
-                  </SelectItem>
-                ))}
+                {availableComputers.map((computer) => {
+                  const isCurrentComputer = mode === "edit" && session && computer.computerId === session.computerId
+                  const statusText = isCurrentComputer ? "Đang sử dụng" : "Sẵn sàng"
+                  return (
+                    <SelectItem key={computer.computerId} value={computer.computerId.toString()}>
+                      {computer.computerName} - {statusText}
+                    </SelectItem>
+                  )
+                })}
               </SelectContent>
             </Select>
             {selectedComputer && (
