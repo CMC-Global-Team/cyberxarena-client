@@ -10,7 +10,7 @@ export interface SessionDTO {
   computerName?: string
   startTime: string
   endTime?: string
-  status: "Active" | "Ended"
+  status?: "Active" | "Ended" // Optional because server doesn't return this field
   pricePerHour?: number
   totalAmount?: number
 }
@@ -59,9 +59,13 @@ export class SessionApi {
     if (!sessions || sessions.length === 0) return sessions
 
     try {
+      console.log('Enriching session data for:', sessions.length, 'sessions')
+      
       // Get all unique customer and computer IDs
       const customerIds = [...new Set(sessions.map(s => s.customerId))]
       const computerIds = [...new Set(sessions.map(s => s.computerId))]
+      console.log('Customer IDs:', customerIds)
+      console.log('Computer IDs:', computerIds)
 
       // Fetch customer and computer data in parallel
       const [customers, computersResponse] = await Promise.all([
@@ -69,16 +73,27 @@ export class SessionApi {
         ComputerApi.list({ page: 0, size: 1000 })
       ])
 
+      console.log('Customers fetched:', customers)
+      console.log('Computers fetched:', computersResponse)
+
       // Create lookup maps
       const customerMap = new Map(customers.map(c => [c.customerId, c.customerName]))
       const computerMap = new Map((computersResponse.content || []).map(c => [c.computerId, c.computerName]))
 
+      console.log('Customer map:', customerMap)
+      console.log('Computer map:', computerMap)
+
       // Enrich session data
-      return sessions.map(session => ({
+      const enrichedSessions = sessions.map(session => ({
         ...session,
         customerName: customerMap.get(session.customerId) || 'Unknown Customer',
-        computerName: computerMap.get(session.computerId) || 'Unknown Computer'
+        computerName: computerMap.get(session.computerId) || 'Unknown Computer',
+        // Calculate status based on endTime
+        status: session.endTime ? 'Ended' : 'Active'
       }))
+
+      console.log('Enriched sessions:', enrichedSessions)
+      return enrichedSessions
     } catch (error) {
       console.error('Error enriching session data:', error)
       return sessions

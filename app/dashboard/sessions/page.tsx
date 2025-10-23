@@ -33,8 +33,11 @@ export default function SessionsPage() {
     try {
       setLoading(true)
       const res = await withPageLoading(() => SessionApi.list({ page: 0, size: 100, sortBy: "sessionId", sortDir: "desc" })) as any
+      console.log("Sessions API response:", res)
+      console.log("Sessions content:", res?.content)
       setSessions(res?.content || [])
     } catch (e: any) {
+      console.error("Error loading sessions:", e)
       notify({ type: "error", message: `Lỗi tải danh sách: ${e?.message || ''}` })
       setSessions([]) // Set empty array on error
     } finally {
@@ -145,7 +148,7 @@ export default function SessionsPage() {
     setActionsSheetOpen(false)
   }
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
     switch (status) {
       case "Active":
       case "ACTIVE":
@@ -158,7 +161,8 @@ export default function SessionsPage() {
     }
   }
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status?: string) => {
+    console.log('Session status:', status, 'type:', typeof status)
     switch (status) {
       case "Active":
         return "Đang hoạt động"
@@ -169,7 +173,7 @@ export default function SessionsPage() {
       case "ENDED":
         return "Đã kết thúc"
       default:
-        return "Không xác định"
+        return `Không xác định (${status || 'undefined'})`
     }
   }
 
