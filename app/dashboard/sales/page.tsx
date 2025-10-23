@@ -270,6 +270,7 @@ export default function SalesPage() {
                 onEdit={handleEditSale}
                 onView={handleViewSale}
                 onRefund={handleRefundSale}
+                refunds={refunds}
               />
             </CardContent>
           </Card>
