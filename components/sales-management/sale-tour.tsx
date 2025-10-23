@@ -1,36 +1,53 @@
 "use client"
 
-import { useEffect } from "react"
-import { useTour } from "@reactour/tour"
+import { driver } from "driver.js"
+import "driver.js/dist/driver.css"
 
 const steps = [
   {
-    selector: '[data-tour="sale-stats"]',
-    content: "Đây là thống kê tổng quan về doanh số bán hàng, bao gồm tổng hóa đơn, doanh thu, giá trị trung bình và số sản phẩm đã bán.",
+    element: '[data-tour="sale-stats"]',
+    popover: {
+      title: "Thống kê doanh số",
+      description: "Đây là thống kê tổng quan về doanh số bán hàng, bao gồm tổng hóa đơn, doanh thu, giá trị trung bình và số sản phẩm đã bán.",
+    }
   },
   {
-    selector: '[data-tour="sale-actions"]',
-    content: "Tại đây bạn có thể xem chi tiết, chỉnh sửa hoặc xóa hóa đơn. Nhấp vào biểu tượng ba chấm để xem các tùy chọn.",
+    element: '[data-tour="sale-actions"]',
+    popover: {
+      title: "Thao tác hóa đơn",
+      description: "Tại đây bạn có thể xem chi tiết, chỉnh sửa hoặc xóa hóa đơn. Nhấp vào biểu tượng ba chấm để xem các tùy chọn.",
+    }
   },
   {
-    selector: '[data-tour="add-sale-button"]',
-    content: "Nhấp vào đây để tạo hóa đơn bán hàng mới. Bạn có thể chọn khách hàng, thêm sản phẩm và áp dụng giảm giá.",
+    element: '[data-tour="add-sale-button"]',
+    popover: {
+      title: "Tạo hóa đơn mới",
+      description: "Nhấp vào đây để tạo hóa đơn bán hàng mới. Bạn có thể chọn khách hàng, thêm sản phẩm và áp dụng giảm giá.",
+    }
   },
   {
-    selector: '[data-tour="sale-search"]',
-    content: "Sử dụng thanh tìm kiếm để lọc hóa đơn theo ID, tên khách hàng hoặc các tiêu chí khác.",
+    element: '[data-tour="sale-search"]',
+    popover: {
+      title: "Tìm kiếm hóa đơn",
+      description: "Sử dụng thanh tìm kiếm để lọc hóa đơn theo ID, tên khách hàng hoặc các tiêu chí khác.",
+    }
   },
 ]
 
 export function SaleTour() {
-  const { setIsOpen, setSteps } = useTour()
-
-  useEffect(() => {
-    setSteps(steps)
-  }, [setSteps])
-
   const startTour = () => {
-    setIsOpen(true)
+    const driverObj = driver({
+      showProgress: true,
+      steps: steps,
+      popoverClass: 'driverjs-theme',
+      onDestroyStarted: () => {
+        if (!driverObj.hasNextStep()) {
+          driverObj.destroy()
+        }
+      }
+    })
+    
+    driverObj.drive()
   }
 
   return (
