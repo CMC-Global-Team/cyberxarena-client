@@ -1,11 +1,13 @@
 import { http } from "./api"
+import { CustomerApi } from "./customers"
+import { ComputerApi } from "./computers"
 
 export interface SessionDTO {
   sessionId: number
   customerId: number
-  customerName: string
+  customerName?: string
   computerId: number
-  computerName: string
+  computerName?: string
   startTime: string
   endTime?: string
   status: "Active" | "Ended"
@@ -52,6 +54,37 @@ export interface SessionListResponse {
 }
 
 export class SessionApi {
+  // Helper function to enrich session data with customer and computer names
+  private static async enrichSessionData(sessions: SessionDTO[]): Promise<SessionDTO[]> {
+    if (!sessions || sessions.length === 0) return sessions
+
+    try {
+      // Get all unique customer and computer IDs
+      const customerIds = [...new Set(sessions.map(s => s.customerId))]
+      const computerIds = [...new Set(sessions.map(s => s.computerId))]
+
+      // Fetch customer and computer data in parallel
+      const [customers, computersResponse] = await Promise.all([
+        CustomerApi.list({ page: 0, size: 1000 }),
+        ComputerApi.list({ page: 0, size: 1000 })
+      ])
+
+      // Create lookup maps
+      const customerMap = new Map(customers.map(c => [c.customerId, c.customerName]))
+      const computerMap = new Map((computersResponse.content || []).map(c => [c.computerId, c.computerName]))
+
+      // Enrich session data
+      return sessions.map(session => ({
+        ...session,
+        customerName: customerMap.get(session.customerId) || 'Unknown Customer',
+        computerName: computerMap.get(session.computerId) || 'Unknown Computer'
+      }))
+    } catch (error) {
+      console.error('Error enriching session data:', error)
+      return sessions
+    }
+  }
+
   static async list(params: SessionListParams = {}): Promise<SessionListResponse> {
     const searchParams = new URLSearchParams()
     
@@ -61,6 +94,12 @@ export class SessionApi {
     if (params.sortDir) searchParams.append('sortDir', params.sortDir)
 
     const response = await http.get<SessionListResponse>(`/sessions?${searchParams.toString()}`)
+    
+    // Enrich the session data with customer and computer names
+    if (response.content) {
+      response.content = await this.enrichSessionData(response.content)
+    }
+    
     return response
   }
 
@@ -76,22 +115,31 @@ export class SessionApi {
     if (params.sortDir) searchParams.append('sortDir', params.sortDir)
 
     const response = await http.get<SessionListResponse>(`/sessions/search?${searchParams.toString()}`)
+    
+    // Enrich the session data with customer and computer names
+    if (response.content) {
+      response.content = await this.enrichSessionData(response.content)
+    }
+    
     return response
   }
 
   static async getById(sessionId: number): Promise<SessionDTO> {
     const response = await http.get<SessionDTO>(`/sessions/${sessionId}`)
-    return response
+    const enrichedSessions = await this.enrichSessionData([response])
+    return enrichedSessions[0]
   }
 
   static async create(data: SessionCreateRequest): Promise<SessionDTO> {
     const response = await http.post<SessionDTO>('/sessions', data)
-    return response
+    const enrichedSessions = await this.enrichSessionData([response])
+    return enrichedSessions[0]
   }
 
   static async update(sessionId: number, data: SessionUpdateRequest): Promise<SessionDTO> {
     const response = await http.put<SessionDTO>(`/sessions/${sessionId}`, data)
-    return response
+    const enrichedSessions = await this.enrichSessionData([response])
+    return enrichedSessions[0]
   }
 
   static async delete(sessionId: number): Promise<void> {
@@ -100,12 +148,13 @@ export class SessionApi {
 
   static async endSession(sessionId: number): Promise<SessionDTO> {
     const response = await http.post<SessionDTO>(`/sessions/${sessionId}/end`)
-    return response
+    const enrichedSessions = await this.enrichSessionData([response])
+    return enrichedSessions[0]
   }
 
   static async getActiveSessions(): Promise<SessionDTO[]> {
     const response = await http.get<SessionDTO[]>('/sessions/active')
-    return response
+    return await this.enrichSessionData(response)
   }
 
   static async getSessionStats(): Promise<{
