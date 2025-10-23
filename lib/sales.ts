@@ -16,6 +16,8 @@ export interface SaleItem {
 export interface Sale {
   saleId: number;
   customerId: number;
+  customerName?: string; // Tên khách hàng
+  customerPhone?: string; // Số điện thoại khách hàng
   saleDate: string; // LocalDateTime -> string
   items: SaleDetail[];
   paymentMethod: string;
