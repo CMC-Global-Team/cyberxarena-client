@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
-import { Search, Monitor, MoreVertical, Cpu, HardDrive, Wifi, Calendar } from "lucide-react"
+import { Search, Monitor, MoreVertical, Cpu, HardDrive, Wifi, Calendar, History, Clock } from "lucide-react"
 import { ComputerFormSheet } from "@/components/computer-form-sheet"
 import { ComputerActionsSheet } from "@/components/computer-actions-sheet"
 import { ComputerTour } from "@/components/computer-management/computer-tour"
-import { ComputerApi, type ComputerDTO } from "@/lib/computers"
+import { ComputerUsageHistorySheet } from "@/components/computer-usage-history-sheet"
+import { ComputerApi, type ComputerDTO, type ComputerUsageStats } from "@/lib/computers"
 import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
 import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
@@ -29,12 +30,26 @@ export default function ComputersPage() {
   const [sortBy, setSortBy] = useState<string>("computerId")
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
   const [showTour, setShowTour] = useState(false)
+  const [usageStats, setUsageStats] = useState<Map<number, ComputerUsageStats>>(new Map())
 
   const loadComputers = async () => {
     try {
       setLoading(true)
       const res = await withPageLoading(() => ComputerApi.list({ page: 0, size: 100, sortBy: "computerId", sortDir: "asc" }))
       setComputers(res.content)
+      
+      // Load usage stats for all computers
+      const statsMap = new Map<number, ComputerUsageStats>()
+      for (const computer of res.content) {
+        try {
+          const stats = await ComputerApi.getUsageStats(computer.computerId)
+          statsMap.set(computer.computerId, stats)
+        } catch (e) {
+          // Silently fail for individual computer stats
+          console.warn(`Failed to load usage stats for computer ${computer.computerId}:`, e)
+        }
+      }
+      setUsageStats(statsMap)
     } catch (e: any) {
       notify({ type: "error", message: `Lỗi tải danh sách: ${e?.message || ''}` })
     } finally {
@@ -309,11 +324,20 @@ export default function ComputersPage() {
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2 text-sm text-foreground">
                         <Calendar className="h-3 w-3 text-muted-foreground" />
-                        {/* no lastUsed in DTO */}
+                        {usageStats.get(computer.computerId)?.lastUsed ? 
+                          new Date(usageStats.get(computer.computerId)!.lastUsed).toLocaleDateString('vi-VN') : 
+                          'Chưa sử dụng'
+                        }
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      {/* no totalHours in DTO */}
+                      <div className="flex items-center gap-2 text-sm text-foreground">
+                        <Clock className="h-3 w-3 text-muted-foreground" />
+                        {usageStats.get(computer.computerId)?.totalHours ? 
+                          `${usageStats.get(computer.computerId)!.totalHours.toFixed(1)}h` : 
+                          '0h'
+                        }
+                      </div>
                     </td>
                     <td className="py-4 px-4">
                       <span className="text-sm font-medium text-foreground">{Intl.NumberFormat("vi-VN").format(Number(computer.pricePerHour))}đ/h</span>
@@ -326,15 +350,31 @@ export default function ComputersPage() {
                       </span>
                     </td>
                     <td className="py-4 px-4 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        onClick={() => handleOpenActions(computer)}
-                        data-tour="computer-actions"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-2 justify-end">
+                        <ComputerUsageHistorySheet 
+                          computerId={computer.computerId} 
+                          computerName={computer.computerName}
+                        >
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2"
+                            data-tour="computer-history"
+                          >
+                            <History className="h-4 w-4 mr-1" />
+                            Lịch sử
+                          </Button>
+                        </ComputerUsageHistorySheet>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={() => handleOpenActions(computer)}
+                          data-tour="computer-actions"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -382,10 +422,10 @@ export default function ComputersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {/* No totalHours in DTO */}
+              {Array.from(usageStats.values()).reduce((total, stats) => total + (stats.totalHours || 0), 0).toFixed(1)}h
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {/* Placeholder */}
+              {Array.from(usageStats.values()).reduce((total, stats) => total + (stats.totalSessions || 0), 0)} phiên
             </p>
           </CardContent>
         </Card>

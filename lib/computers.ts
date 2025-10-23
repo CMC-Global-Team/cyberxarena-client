@@ -8,6 +8,27 @@ export interface ComputerDTO {
   ipAddress: string;
   pricePerHour: number; // BigDecimal -> number
   status: "Available" | "In_Use" | "Broken" | string;
+  lastUsed?: string; // ISO date string
+  totalHours?: number;
+  totalSessions?: number;
+}
+
+export interface ComputerUsageStats {
+  computerId: number;
+  computerName: string;
+  lastUsed: string;
+  totalHours: number;
+  totalSessions: number;
+  recentSessions: SessionUsageHistory[];
+}
+
+export interface SessionUsageHistory {
+  sessionId: number;
+  customerName: string;
+  startTime: string;
+  endTime?: string;
+  durationHours: number;
+  status: string;
 }
 
 // Spring Page response shape
@@ -57,6 +78,7 @@ export const ComputerApi = {
   create: (data: Omit<ComputerDTO, "computerId">) => http.post<ComputerDTO>("/computers", data),
   update: (id: number, data: Omit<ComputerDTO, "computerId">) => http.put<ComputerDTO>(`/computers/${id}`, data),
   delete: (id: number) => http.delete<void>(`/computers/${id}`),
+  getUsageStats: (id: number) => http.get<ComputerUsageStats>(`/computers/${id}/usage-history`),
 };
 
 
