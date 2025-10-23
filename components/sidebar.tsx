@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Users, Monitor, Clock, DollarSign, Settings, LogOut, ChevronLeft, ChevronRight, Package, Percent, IdCard, Moon, Sun } from "lucide-react"
+import { LayoutDashboard, Users, Monitor, Clock, DollarSign, Settings, LogOut, ChevronLeft, ChevronRight, Package, Percent, IdCard, Moon, Sun, ShoppingCart } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useTheme } from "next-themes"
 
@@ -27,6 +27,11 @@ const menuItems = [
     title: "Quản lý sản phẩm",
     icon: Package,
     href: "/dashboard/products",
+  },
+  {
+    title: "Bán hàng",
+    icon: ShoppingCart,
+    href: "/dashboard/sales",
   },
   {
     title: "Quản lý giảm giá",
