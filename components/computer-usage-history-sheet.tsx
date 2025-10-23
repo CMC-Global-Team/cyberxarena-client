@@ -93,7 +93,7 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-7xl w-[95vw] max-h-[95vh] overflow-y-auto">
+      <DialogContent className="max-w-[98vw] w-[98vw] max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <History className="h-6 w-6" />

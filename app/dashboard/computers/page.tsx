@@ -279,7 +279,7 @@ export default function ComputersPage() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto" data-tour="computer-table">
-            <table className="w-full">
+            <table className="w-full min-w-[1200px]">
               <thead>
                 <tr className="border-b border-border">
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Máy tính</th>
