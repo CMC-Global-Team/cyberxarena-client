@@ -4,7 +4,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Clock, User, Monitor, Calendar, DollarSign, AlertTriangle, Edit, Trash2, Power } from "lucide-react"
+import { Clock, User, Monitor, Calendar, DollarSign, AlertTriangle, Edit, Trash2, Power, RefreshCw } from "lucide-react"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 
 interface SessionActionsSheetProps {
@@ -19,6 +19,7 @@ interface SessionActionsSheetProps {
   onEdit: () => void
   onDelete: () => void
   onEndSession: () => void
+  onChangeComputer: () => void
 }
 
 export function SessionActionsSheet({
@@ -28,6 +29,7 @@ export function SessionActionsSheet({
   onEdit,
   onDelete,
   onEndSession,
+  onChangeComputer,
 }: SessionActionsSheetProps) {
   if (!session) return null
 
@@ -109,14 +111,25 @@ export function SessionActionsSheet({
             
             <div className="space-y-3">
               {session.status === "Active" && (
-                <Button
-                  onClick={onEndSession}
-                  className="w-full justify-start"
-                  variant="outline"
-                >
-                  <Power className="h-4 w-4 mr-2" />
-                  Kết thúc phiên
-                </Button>
+                <>
+                  <Button
+                    onClick={onEndSession}
+                    className="w-full justify-start"
+                    variant="outline"
+                  >
+                    <Power className="h-4 w-4 mr-2" />
+                    Kết thúc phiên
+                  </Button>
+                  
+                  <Button
+                    onClick={onChangeComputer}
+                    className="w-full justify-start"
+                    variant="outline"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Đổi máy tính
+                  </Button>
+                </>
               )}
 
               <Button
