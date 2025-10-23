@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckCircle, AlertCircle } from "lucide-react"
 import { membershipsApi, type MembershipCard } from "@/lib/memberships"
+import { AccountApi } from "@/lib/customers"
 
 interface AccountFormSheetProps {
   open: boolean
@@ -121,9 +122,7 @@ export function AccountFormSheet({ open, onOpenChange, account, customers, mode 
 
     setIsCheckingUsername(true)
     try {
-      // Mock API call - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      const isAvailable = !["admin", "user", "test"].includes(username.toLowerCase())
+      const isAvailable = await AccountApi.checkUsernameExists(username)
       setUsernameAvailable(isAvailable)
     } catch (error) {
       console.error("Error checking username:", error)
