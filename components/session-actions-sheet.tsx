@@ -96,16 +96,16 @@ export function SessionActionsSheet({
                   <p className="text-sm font-medium">Khách hàng</p>
                   <p className="text-sm text-foreground font-medium">{session.customerName}</p>
                   {session.customerPhone && (
-                    <p className="text-xs text-muted-foreground">📞 {session.customerPhone}</p>
+                    <p className="text-xs text-muted-foreground">{session.customerPhone}</p>
                   )}
                   {session.membershipCardName && (
-                    <p className="text-xs text-muted-foreground">🎫 {session.membershipCardName}</p>
+                    <p className="text-xs text-muted-foreground">{session.membershipCardName}</p>
                   )}
                   {session.hasAccount && session.accountUsername && (
-                    <p className="text-xs text-muted-foreground">👤 @{session.accountUsername}</p>
+                    <p className="text-xs text-muted-foreground">@{session.accountUsername}</p>
                   )}
                   {session.customerBalance !== undefined && (
-                    <p className="text-xs text-muted-foreground">💰 {session.customerBalance.toLocaleString('vi-VN')}đ</p>
+                    <p className="text-xs text-muted-foreground">{session.customerBalance.toLocaleString('vi-VN')}đ</p>
                   )}
                 </div>
               </div>
