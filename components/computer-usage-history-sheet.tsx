@@ -124,7 +124,7 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-none w-[99vw] sm:max-w-[99vw] max-h-[96vh] overflow-hidden">
+      <DialogContent className="max-w-none w-[100vw] sm:max-w-[100vw] max-h-[98vh] overflow-y-auto">
         <DialogHeader className="pb-4">
           <DialogTitle className="flex items-center gap-3 text-2xl">
             <History className="h-7 w-7 text-primary" />
@@ -230,10 +230,10 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
                       <div className="space-y-4 pr-4">
                         {usageStats.recentSessions.map((session, index) => {
                           const enriched = enrichedBySessionId.get(session.sessionId)
-                          const displayName = enriched?.customerName || session.customerName
-                          const displayPhone = enriched?.customerPhone || session.customerPhone
-                          const displayCard = enriched?.membershipCardName || session.membershipCardName
-                          const displayAccount = enriched?.accountUsername
+                          const displayName = enriched?.customerName ?? session.customerName
+                          const displayPhone = enriched?.customerPhone ?? session.customerPhone
+                          const displayCard = enriched?.membershipCardName ?? session.membershipCardName
+                          const displayAccount = enriched?.accountUsername ?? undefined
                           return (
                           <div key={session.sessionId} className="border border-border rounded-lg p-4 hover:shadow-md transition-all duration-200 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
                             {/* Header với thông tin phiên */}
