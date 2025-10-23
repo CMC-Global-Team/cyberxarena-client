@@ -259,23 +259,34 @@ export function SaleTable({ sales, loading, onEdit, onView, onRefund, onUpdateSt
                           )}
 
                           {/* Update Status - chỉ cho phép từ Pending sang Paid hoặc Cancelled */}
-                          {sale.status === 'Pending' && (
+                          {sale.status === 'Pending' ? (
                             <>
                               <DropdownMenuItem 
-                                onClick={() => onUpdateStatus(sale, 'Paid')}
+                                onClick={() => {
+                                  console.log('Clicked Paid button for sale:', sale)
+                                  onUpdateStatus(sale, 'Paid')
+                                }}
                                 className="text-green-600"
                               >
                                 <CheckCircle className="h-4 w-4 mr-2" />
                                 Đánh dấu đã thanh toán
                               </DropdownMenuItem>
                               <DropdownMenuItem 
-                                onClick={() => onUpdateStatus(sale, 'Cancelled')}
+                                onClick={() => {
+                                  console.log('Clicked Cancelled button for sale:', sale)
+                                  onUpdateStatus(sale, 'Cancelled')
+                                }}
                                 className="text-red-600"
                               >
                                 <XCircle className="h-4 w-4 mr-2" />
                                 Hủy hóa đơn
                               </DropdownMenuItem>
                             </>
+                          ) : (
+                            <DropdownMenuItem disabled>
+                              <AlertCircle className="h-4 w-4 mr-2" />
+                              Không thể thay đổi trạng thái ({sale.status})
+                            </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>
                       </DropdownMenu>
