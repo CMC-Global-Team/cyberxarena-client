@@ -146,12 +146,6 @@ export class SessionApi {
     await http.delete(`/sessions/${sessionId}`)
   }
 
-  static async endSession(sessionId: number): Promise<SessionDTO> {
-    const response = await http.post<SessionDTO>(`/sessions/${sessionId}/end`)
-    const enrichedSessions = await this.enrichSessionData([response])
-    return enrichedSessions[0]
-  }
-
   static async getActiveSessions(): Promise<SessionDTO[]> {
     const response = await http.get<SessionDTO[]>('/sessions/active')
     return await this.enrichSessionData(response)
@@ -170,5 +164,21 @@ export class SessionApi {
       averageSessionDuration: number
     }>('/sessions/stats')
     return response
+  }
+
+  // End session - kết thúc phiên sử dụng
+  static async endSession(sessionId: number): Promise<SessionDTO> {
+    const response = await http.post<SessionDTO>(`/sessions/${sessionId}/end`)
+    const enrichedSessions = await this.enrichSessionData([response])
+    return enrichedSessions[0]
+  }
+
+  // Change computer - đổi máy trong phiên
+  static async changeComputer(sessionId: number, newComputerId: number): Promise<SessionDTO> {
+    const response = await http.put<SessionDTO>(`/sessions/${sessionId}/change-computer`, {
+      computerId: newComputerId
+    })
+    const enrichedSessions = await this.enrichSessionData([response])
+    return enrichedSessions[0]
   }
 }

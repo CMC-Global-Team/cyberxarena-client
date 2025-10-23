@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Search, Clock, MoreVertical, User, Monitor, Calendar, DollarSign } from "lucide-react"
 import { SessionFormSheet } from "@/components/session-form-sheet"
 import { SessionActionsSheet } from "@/components/session-actions-sheet"
+import { ChangeComputerSheet } from "@/components/change-computer-sheet"
 import { SessionApi, type SessionDTO } from "@/lib/sessions"
 import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
@@ -20,6 +21,7 @@ export default function SessionsPage() {
   const [addSheetOpen, setAddSheetOpen] = useState(false)
   const [editSheetOpen, setEditSheetOpen] = useState(false)
   const [actionsSheetOpen, setActionsSheetOpen] = useState(false)
+  const [changeComputerSheetOpen, setChangeComputerSheetOpen] = useState(false)
   const [selectedSession, setSelectedSession] = useState<SessionDTO | null>(null)
   const [sessions, setSessions] = useState<SessionDTO[]>([])
   const [loading, setLoading] = useState<boolean>(false)
@@ -132,6 +134,15 @@ export default function SessionsPage() {
     } catch (e: any) {
       notify({ type: "error", message: `Kết thúc phiên thất bại: ${e?.message || ''}` })
     }
+  }
+
+  const handleChangeComputer = () => {
+    setChangeComputerSheetOpen(true)
+  }
+
+  const handleComputerChanged = (updatedSession: SessionDTO) => {
+    setSessions((prev) => (prev || []).map((s) => s.sessionId === updatedSession.sessionId ? updatedSession : s))
+    setActionsSheetOpen(false)
   }
 
   const getStatusColor = (status: string) => {
@@ -442,8 +453,19 @@ export default function SessionsPage() {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onEndSession={handleEndSession}
+            onChangeComputer={handleChangeComputer}
           />
         </>
+      )}
+
+      {/* Change Computer Sheet */}
+      {selectedSession && (
+        <ChangeComputerSheet
+          open={changeComputerSheetOpen}
+          onOpenChange={setChangeComputerSheetOpen}
+          session={selectedSession}
+          onComputerChanged={handleComputerChanged}
+        />
       )}
     </div>
   )
