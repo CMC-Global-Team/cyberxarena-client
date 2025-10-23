@@ -8,50 +8,33 @@ import { Button } from "@/components/ui/button"
 import { Search, Monitor, MoreVertical, Cpu, HardDrive, Wifi, Calendar } from "lucide-react"
 import { ComputerFormSheet } from "@/components/computer-form-sheet"
 import { ComputerActionsSheet } from "@/components/computer-actions-sheet"
-import { ComputerUsageHistorySheet } from "@/components/computer-usage-history-sheet"
+import { ComputerTour } from "@/components/computer-management/computer-tour"
 import { ComputerApi, type ComputerDTO } from "@/lib/computers"
 import { useNotice } from "@/components/notice-provider"
-import { useLoading } from "@/components/loading-provider"
+import { usePageLoading } from "@/hooks/use-page-loading"
+import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
+import { HelpCircle } from "lucide-react"
 
 export default function ComputersPage() {
   const { notify } = useNotice()
-  const { withLoading } = useLoading()
+  const { withPageLoading, isLoading } = usePageLoading()
   const [searchQuery, setSearchQuery] = useState("")
   const [addSheetOpen, setAddSheetOpen] = useState(false)
   const [editSheetOpen, setEditSheetOpen] = useState(false)
   const [actionsSheetOpen, setActionsSheetOpen] = useState(false)
-  const [usageHistorySheetOpen, setUsageHistorySheetOpen] = useState(false)
   const [selectedComputer, setSelectedComputer] = useState<ComputerDTO | null>(null)
   const [computers, setComputers] = useState<ComputerDTO[]>([])
   const [loading, setLoading] = useState<boolean>(false)
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("computerId")
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
+  const [showTour, setShowTour] = useState(false)
 
   const loadComputers = async () => {
     try {
       setLoading(true)
-      const res = await withLoading(() => ComputerApi.list({ page: 0, size: 100, sortBy: "computerId", sortDir: "asc" }))
-      
-      // Enrich computer data with usage stats
-      const enrichedComputers = await Promise.all(
-        res.content.map(async (computer) => {
-          try {
-            const usageStats = await ComputerApi.getUsageStats(computer.computerId)
-            return {
-              ...computer,
-              lastUsed: usageStats.lastUsed,
-              totalHours: usageStats.totalHours,
-              totalSessions: usageStats.totalSessions
-            }
-          } catch (error) {
-            console.error(`Error loading usage stats for computer ${computer.computerId}:`, error)
-            return computer
-          }
-        })
-      )
-      
-      setComputers(enrichedComputers)
+      const res = await withPageLoading(() => ComputerApi.list({ page: 0, size: 100, sortBy: "computerId", sortDir: "asc" }))
+      setComputers(res.content)
     } catch (e: any) {
       notify({ type: "error", message: `Lỗi tải danh sách: ${e?.message || ''}` })
     } finally {
@@ -69,7 +52,7 @@ export default function ComputersPage() {
     const t = setTimeout(async () => {
       try {
         setLoading(true)
-        const res = await withLoading(() =>
+        const res = await withPageLoading(() =>
           ComputerApi.search({
             name: searchQuery || undefined,
             status: statusFilter === "all" ? undefined : toApiStatus(statusFilter),
@@ -109,11 +92,6 @@ export default function ComputersPage() {
     setActionsSheetOpen(true)
   }
 
-  const handleOpenUsageHistory = (computer: ComputerDTO) => {
-    setSelectedComputer(computer)
-    setUsageHistorySheetOpen(true)
-  }
-
   const handleEdit = () => {
     setEditSheetOpen(true)
   }
@@ -128,7 +106,7 @@ export default function ComputersPage() {
     }
     
     try {
-      await withLoading(() => ComputerApi.delete(selectedComputer.computerId))
+      await withPageLoading(() => ComputerApi.delete(selectedComputer.computerId))
       setComputers((prev) => prev.filter((c) => c.computerId !== selectedComputer.computerId))
       notify({ type: "success", message: "Đã xóa máy tính thành công" })
     } catch (e: any) {
@@ -152,7 +130,7 @@ export default function ComputersPage() {
   const handleMaintenance = async () => {
     if (!selectedComputer?.computerId) return
     try {
-      const updated = await withLoading(() =>
+      const updated = await withPageLoading(() =>
         ComputerApi.update(selectedComputer.computerId, {
           computerName: selectedComputer.computerName,
           ipAddress: selectedComputer.ipAddress,
@@ -208,15 +186,24 @@ export default function ComputersPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 relative">
+      <PageLoadingOverlay isLoading={isLoading} pageType="computers" />
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý máy tính</h1>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-3xl font-bold text-foreground" data-tour="page-title">Quản lý máy tính</h1>
+            <HelpCircle 
+              className="h-6 w-6 text-red-500 cursor-pointer hover:text-red-600 transition-colors" 
+              onClick={() => setShowTour(true)}
+              title="Hướng dẫn sử dụng"
+            />
+          </div>
           <p className="text-muted-foreground">Danh sách và thông tin máy tính</p>
         </div>
         <Button
           onClick={() => setAddSheetOpen(true)}
           className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          data-tour="add-computer-btn"
         >
           <Monitor className="h-4 w-4 mr-2" />
           Thêm máy tính
@@ -225,7 +212,7 @@ export default function ComputersPage() {
 
       <Card className="border-border bg-card">
         <CardHeader>
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4" data-tour="search-filter">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -276,7 +263,7 @@ export default function ComputersPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" data-tour="computer-table">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
@@ -320,29 +307,13 @@ export default function ComputersPage() {
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-sm text-foreground">
-                          <Calendar className="h-3 w-3 text-muted-foreground" />
-                          <span className="font-medium">
-                            {computer.lastUsed ? new Date(computer.lastUsed).toLocaleDateString('vi-VN') : "Chưa sử dụng"}
-                          </span>
-                        </div>
-                        {computer.lastUsed && (
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(computer.lastUsed).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                          </div>
-                        )}
+                      <div className="flex items-center gap-2 text-sm text-foreground">
+                        <Calendar className="h-3 w-3 text-muted-foreground" />
+                        {/* no lastUsed in DTO */}
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="space-y-1">
-                        <div className="text-sm font-medium text-foreground">
-                          {computer.totalHours ? `${computer.totalHours.toFixed(1)}h` : "0h"}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {computer.totalSessions || 0} phiên
-                        </div>
-                      </div>
+                      {/* no totalHours in DTO */}
                     </td>
                     <td className="py-4 px-4">
                       <span className="text-sm font-medium text-foreground">{Intl.NumberFormat("vi-VN").format(Number(computer.pricePerHour))}đ/h</span>
@@ -355,25 +326,15 @@ export default function ComputersPage() {
                       </span>
                     </td>
                     <td className="py-4 px-4 text-right">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 px-2"
-                          onClick={() => handleOpenUsageHistory(computer)}
-                        >
-                          <Calendar className="h-4 w-4 mr-1" />
-                          Lịch sử
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          onClick={() => handleOpenActions(computer)}
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => handleOpenActions(computer)}
+                        data-tour="computer-actions"
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -388,7 +349,7 @@ export default function ComputersPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-tour="computer-stats">
         <Card className="border-border bg-card">
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">Tổng máy tính</CardTitle>
@@ -421,10 +382,10 @@ export default function ComputersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {computers.reduce((total, computer) => total + (computer.totalHours || 0), 0).toFixed(1)}h
+              {/* No totalHours in DTO */}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Tổng thời gian sử dụng
+              {/* Placeholder */}
             </p>
           </CardContent>
         </Card>
@@ -478,15 +439,13 @@ export default function ComputersPage() {
             onDelete={handleDelete}
             onMaintenance={handleMaintenance}
           />
-
-          <ComputerUsageHistorySheet
-            open={usageHistorySheetOpen}
-            onOpenChange={setUsageHistorySheetOpen}
-            computerId={selectedComputer?.computerId || 0}
-            computerName={selectedComputer?.computerName || ""}
-          />
         </>
       )}
+
+      <ComputerTour 
+        isActive={showTour} 
+        onComplete={() => setShowTour(false)} 
+      />
     </div>
   )
 }
