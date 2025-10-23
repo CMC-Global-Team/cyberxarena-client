@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Search, RefreshCw, ShoppingCart, RotateCcw } from "lucide-react"
-import { Sale, SaleDTO, UpdateSaleRequestDTO } from "@/lib/sales"
+import { Sale, SaleDTO, UpdateSaleRequestDTO, SaleStatus } from "@/lib/sales"
 import { salesApi } from "@/lib/sales"
 import { useToast } from "@/hooks/use-toast"
 import { SaleTable } from "@/components/sales-management/sale-table"
@@ -118,10 +118,22 @@ export default function SalesPage() {
     }
   }
 
-  // Handle refund sale
-  const handleRefundSale = (sale: Sale) => {
-    setRefundSale(sale)
-    setRefundFormOpen(true)
+  // Handle update sale status
+  const handleUpdateSaleStatus = async (sale: Sale, status: SaleStatus) => {
+    try {
+      await salesApi.updateStatus(sale.saleId, { status })
+      toast({
+        title: "Thành công",
+        description: `Đã cập nhật trạng thái hóa đơn #${sale.saleId} thành ${status === 'Paid' ? 'Đã thanh toán' : 'Đã hủy'}`,
+      })
+      loadSales() // Reload sales data
+    } catch (error) {
+      toast({
+        title: "Lỗi",
+        description: "Không thể cập nhật trạng thái hóa đơn",
+        variant: "destructive",
+      })
+    }
   }
 
   // Handle edit sale
@@ -270,6 +282,8 @@ export default function SalesPage() {
                 onEdit={handleEditSale}
                 onView={handleViewSale}
                 onRefund={handleRefundSale}
+                onUpdateStatus={handleUpdateSaleStatus}
+                refunds={refunds}
               />
             </CardContent>
           </Card>

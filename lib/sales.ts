@@ -1,5 +1,7 @@
 import { http } from "./api";
 
+export type SaleStatus = 'Pending' | 'Paid' | 'Cancelled';
+
 export interface SaleDetail {
   saleId: number;
   itemId: number;
@@ -20,6 +22,7 @@ export interface Sale {
   totalAmount: number; // BigDecimal -> number
   discountId?: number;
   note?: string;
+  status: SaleStatus;
 }
 
 export interface SaleDTO {
@@ -30,6 +33,7 @@ export interface SaleDTO {
   totalAmount?: number;
   discountId?: number;
   note?: string;
+  status: SaleStatus;
 }
 
 export interface UpdateSaleRequestDTO {
@@ -37,6 +41,10 @@ export interface UpdateSaleRequestDTO {
   paymentMethod?: string;
   discountId?: number;
   note?: string;
+}
+
+export interface UpdateSaleStatusDTO {
+  status: SaleStatus;
 }
 
 export interface SaleSearchParams {
@@ -55,6 +63,10 @@ export const salesApi = {
   // Cập nhật sale
   update: (id: number, sale: UpdateSaleRequestDTO): Promise<Sale> => 
     http.put<Sale>(`/sale/${id}`, sale),
+
+  // Cập nhật trạng thái sale
+  updateStatus: (id: number, status: UpdateSaleStatusDTO): Promise<Sale> => 
+    http.patch<Sale>(`/sale/${id}/status`, status),
 
   // Xóa sale
   delete: (id: number): Promise<void> => 
