@@ -6,50 +6,20 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Edit, Trash2, ShoppingCart, Eye } from "lucide-react"
+import { MoreHorizontal, Edit, ShoppingCart, Eye, RotateCcw } from "lucide-react"
 import { Sale } from "@/lib/sales"
 import { useToast } from "@/hooks/use-toast"
-import { SaleDeleteConfirmationModal } from "./sale-delete-confirmation-modal"
 
 interface SaleTableProps {
   sales: Sale[]
   loading?: boolean
   onEdit: (sale: Sale) => void
-  onDelete: (id: number) => void
   onView: (sale: Sale) => void
+  onRefund: (sale: Sale) => void
 }
 
-export function SaleTable({ sales, loading, onEdit, onDelete, onView }: SaleTableProps) {
+export function SaleTable({ sales, loading, onEdit, onView, onRefund }: SaleTableProps) {
   const { toast } = useToast()
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  const [selectedSale, setSelectedSale] = useState<Sale | null>(null)
-  const [deleting, setDeleting] = useState(false)
-
-  const handleDeleteClick = (sale: Sale) => {
-    setSelectedSale(sale)
-    setDeleteModalOpen(true)
-  }
-
-  const handleDeleteConfirm = async () => {
-    if (!selectedSale) return
-    
-    setDeleting(true)
-    try {
-      await onDelete(selectedSale.saleId)
-      toast({
-        title: "Thành công",
-        description: "Đã xóa hóa đơn thành công",
-      })
-    } catch (error) {
-      toast({
-        title: "Lỗi",
-        description: "Không thể xóa hóa đơn",
-        variant: "destructive",
-      })
-    } finally {
-      setDeleting(false)
-    }
-  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { 
@@ -161,11 +131,11 @@ export function SaleTable({ sales, loading, onEdit, onDelete, onView }: SaleTabl
                             Chỉnh sửa
                           </DropdownMenuItem>
                           <DropdownMenuItem 
-                            onClick={() => handleDeleteClick(sale)}
-                            className="text-destructive"
+                            onClick={() => onRefund(sale)}
+                            className="text-orange-600"
                           >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Xóa
+                            <RotateCcw className="h-4 w-4 mr-2" />
+                            Hoàn tiền
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -179,14 +149,6 @@ export function SaleTable({ sales, loading, onEdit, onDelete, onView }: SaleTabl
         </CardContent>
       </Card>
 
-      {/* Delete Confirmation Modal */}
-      <SaleDeleteConfirmationModal
-        open={deleteModalOpen}
-        onOpenChange={setDeleteModalOpen}
-        sale={selectedSale}
-        onConfirm={handleDeleteConfirm}
-        loading={deleting}
-      />
     </>
   )
 }
