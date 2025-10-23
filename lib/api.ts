@@ -1,6 +1,6 @@
 import { withBaseUrl } from "./config";
 
-type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
+type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 interface RequestOptions extends RequestInit {
   json?: unknown;
@@ -38,6 +38,7 @@ export const http = {
   get: <T>(path: string, options?: RequestOptions) => request<T>(path, "GET", options),
   post: <T>(path: string, json?: unknown, options?: RequestOptions) => request<T>(path, "POST", { ...options, json }),
   put: <T>(path: string, json?: unknown, options?: RequestOptions) => request<T>(path, "PUT", { ...options, json }),
+  patch: <T>(path: string, json?: unknown, options?: RequestOptions) => request<T>(path, "PATCH", { ...options, json }),
   delete: <T>(path: string, options?: RequestOptions) => request<T>(path, "DELETE", options),
 };
 
