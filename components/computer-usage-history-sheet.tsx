@@ -124,13 +124,13 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-none w-[100vw] sm:max-w-[100vw] max-h-[98vh] overflow-y-auto">
-        <DialogHeader className="pb-4">
-          <DialogTitle className="flex items-center gap-3 text-2xl">
-            <History className="h-7 w-7 text-primary" />
+      <DialogContent className="max-w-[95vw] w-[95vw] max-h-[85vh] overflow-y-auto">
+        <DialogHeader className="pb-3">
+          <DialogTitle className="flex items-center gap-1 text-xl">
+            <History className="h-5 w-5 text-primary" />
             Lịch sử sử dụng máy tính
           </DialogTitle>
-          <DialogDescription className="text-lg">
+          <DialogDescription className="text-xs">
             {computerName} - Chi tiết lịch sử và thống kê sử dụng
           </DialogDescription>
         </DialogHeader>
@@ -144,72 +144,72 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
               </div>
             </div>
           ) : usageStats ? (
-            <div className="h-full flex flex-col gap-6">
+            <div className="h-full flex flex-col gap-3">
               {/* Thống kê tổng quan */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                 <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium text-blue-700 dark:text-blue-300 flex items-center gap-2">
-                      <Timer className="h-4 w-4" />
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-medium text-blue-700 dark:text-blue-300 flex items-center gap-1">
+                      <Timer className="h-2 w-2" />
                       Tổng thời gian
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                    <div className="text-lg font-bold text-blue-900 dark:text-blue-100">
                       {formatDuration(usageStats.totalHours)}
                     </div>
-                    <p className="text-sm text-blue-600 dark:text-blue-400">
+                    <p className="text-xs text-blue-600 dark:text-blue-400">
                       {usageStats.totalHours.toFixed(2)} giờ
                     </p>
                   </CardContent>
                 </Card>
 
                 <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20 border-green-200 dark:border-green-800">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium text-green-700 dark:text-green-300 flex items-center gap-2">
-                      <Users className="h-4 w-4" />
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-medium text-green-700 dark:text-green-300 flex items-center gap-1">
+                      <Users className="h-2 w-2" />
                       Tổng phiên
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-green-900 dark:text-green-100">
+                    <div className="text-lg font-bold text-green-900 dark:text-green-100">
                       {usageStats.totalSessions}
                     </div>
-                    <p className="text-sm text-green-600 dark:text-green-400">
+                    <p className="text-xs text-green-600 dark:text-green-400">
                       phiên sử dụng
                     </p>
                   </CardContent>
                 </Card>
 
                 <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20 border-purple-200 dark:border-purple-800">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium text-purple-700 dark:text-purple-300 flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-medium text-purple-700 dark:text-purple-300 flex items-center gap-1">
+                      <Calendar className="h-2 w-2" />
                       Lần cuối
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-lg font-bold text-purple-900 dark:text-purple-100">
+                    <div className="text-xs font-bold text-purple-900 dark:text-purple-100">
                       {formatDateTime(usageStats.lastUsed)}
                     </div>
-                    <p className="text-sm text-purple-600 dark:text-purple-400">
+                    <p className="text-xs text-purple-600 dark:text-purple-400">
                       {new Date(usageStats.lastUsed).toLocaleDateString('vi-VN')}
                     </p>
                   </CardContent>
                 </Card>
 
                 <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/20 dark:to-orange-900/20 border-orange-200 dark:border-orange-800">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm font-medium text-orange-700 dark:text-orange-300 flex items-center gap-2">
-                      <Monitor className="h-4 w-4" />
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xs font-medium text-orange-700 dark:text-orange-300 flex items-center gap-1">
+                      <Monitor className="h-2 w-2" />
                       Máy tính
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-lg font-bold text-orange-900 dark:text-orange-100">
+                    <div className="text-xs font-bold text-orange-900 dark:text-orange-100">
                       {usageStats.computerName}
                     </div>
-                    <p className="text-sm text-orange-600 dark:text-orange-400">
+                    <p className="text-xs text-orange-600 dark:text-orange-400">
                       ID: {usageStats.computerId}
                     </p>
                   </CardContent>
@@ -218,93 +218,98 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
 
               {/* Lịch sử chi tiết */}
               <Card className="flex-1">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                    <History className="h-5 w-5" />
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg font-medium flex items-center gap-1">
+                    <History className="h-2 w-2" />
                     Lịch sử phiên sử dụng chi tiết
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="h-full">
-                  <ScrollArea className="h-[400px]">
+                  <ScrollArea className="h-[300px]">
                     {usageStats.recentSessions && usageStats.recentSessions.length > 0 ? (
-                      <div className="space-y-4 pr-4">
+                      <div className="space-y-1 pr-4">
                         {usageStats.recentSessions.map((session, index) => {
                           const enriched = enrichedBySessionId.get(session.sessionId)
-                          const displayName = enriched?.customerName ?? session.customerName
-                          const displayPhone = enriched?.customerPhone ?? session.customerPhone
-                          const displayCard = enriched?.membershipCardName ?? session.membershipCardName
-                          const displayAccount = enriched?.accountUsername ?? undefined
+                          console.log(`Session ${session.sessionId} enriched data:`, enriched)
+                          console.log(`Session ${session.sessionId} original data:`, session)
+                          
+                          // Ưu tiên dữ liệu từ enriched, fallback về session gốc
+                          const displayName = enriched?.customerName || session.customerName || 'Không có tên'
+                          const displayPhone = enriched?.customerPhone || session.customerPhone || 'Chưa có'
+                          const displayCard = enriched?.membershipCardName || session.membershipCardName || 'Chưa có'
+                          const displayAccount = enriched?.accountUsername || 'Chưa có'
+                          
                           return (
-                          <div key={session.sessionId} className="border border-border rounded-lg p-4 hover:shadow-md transition-all duration-200 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+                          <div key={session.sessionId} className="border border-border rounded-lg p-3 hover:shadow-md transition-all duration-200 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
                             {/* Header với thông tin phiên */}
-                            <div className="flex items-center justify-between mb-4">
-                              <div className="flex items-center gap-3">
-                                <div className="h-12 w-12 bg-primary/20 rounded-full flex items-center justify-center">
-                                  <User className="h-6 w-6 text-primary" />
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-1">
+                                <div className="h-8 w-8 bg-primary/20 rounded-full flex items-center justify-center">
+                                  <User className="h-2 w-2 text-primary" />
                                 </div>
                                 <div>
-                                  <h3 className="font-bold text-lg text-foreground">{displayName}</h3>
-                                  <p className="text-sm text-muted-foreground">Phiên #{session.sessionId}</p>
+                                  <h3 className="font-medium text-base text-foreground">{displayName}</h3>
+                                  <p className="text-xs text-muted-foreground">Phiên #{session.sessionId}</p>
                                 </div>
                               </div>
-                              <Badge className={`${getStatusColor(session.status)} border text-sm px-3 py-1`}>
+                              <Badge className={`${getStatusColor(session.status)} border text-xs px-2 py-1`}>
                                 {getStatusText(session.status)}
                               </Badge>
                             </div>
 
                             {/* Thông tin chi tiết trong grid */}
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                               {/* Thông tin thời gian */}
-                              <div className="space-y-3">
-                                <h4 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
-                                  <Clock className="h-4 w-4" />
+                              <div className="space-y-1">
+                                <h4 className="font-medium text-xs text-muted-foreground flex items-center gap-1">
+                                  <Clock className="h-2 w-2" />
                                   Thời gian
                                 </h4>
-                                <div className="space-y-2 text-sm">
-                                  <div className="flex items-center gap-2">
-                                    <Calendar className="h-3 w-3 text-muted-foreground" />
+                                <div className="space-y-1 text-xs">
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="h-2 w-2 text-muted-foreground" />
                                     <span className="font-medium">Bắt đầu:</span>
                                     <span className="text-foreground">{formatDateTime(session.startTime)}</span>
                                   </div>
                                   {session.endTime && (
-                                    <div className="flex items-center gap-2">
-                                      <Calendar className="h-3 w-3 text-muted-foreground" />
+                                    <div className="flex items-center gap-1">
+                                      <Calendar className="h-2 w-2 text-muted-foreground" />
                                       <span className="font-medium">Kết thúc:</span>
                                       <span className="text-foreground">{formatDateTime(session.endTime)}</span>
                                     </div>
                                   )}
-                                  <div className="flex items-center gap-2">
-                                    <Timer className="h-3 w-3 text-muted-foreground" />
+                                  <div className="flex items-center gap-1">
+                                    <Timer className="h-2 w-2 text-muted-foreground" />
                                     <span className="font-medium">Thời lượng:</span>
-                                    <span className="text-foreground font-semibold text-primary">{formatDuration(session.durationHours)}</span>
+                                    <span className="text-foreground font-medium text-primary">{formatDuration(session.durationHours)}</span>
                                   </div>
                                 </div>
                               </div>
 
                               {/* Thông tin khách hàng */}
-                              <div className="space-y-3">
-                                <h4 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
-                                  <User className="h-4 w-4" />
+                              <div className="space-y-1">
+                                <h4 className="font-medium text-xs text-muted-foreground flex items-center gap-1">
+                                  <User className="h-2 w-2" />
                                   Thông tin khách hàng
                                 </h4>
-                                <div className="space-y-2 text-sm">
-                                  <div className="flex items-center gap-2">
-                                    <User className="h-3 w-3 text-muted-foreground" />
+                                <div className="space-y-1 text-xs">
+                                  <div className="flex items-center gap-1">
+                                    <User className="h-2 w-2 text-muted-foreground" />
                                     <span className="font-medium">Tên:</span>
-                                    <span className="text-foreground font-semibold">{displayName}</span>
+                                    <span className="text-foreground font-medium">{displayName}</span>
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    <Phone className="h-3 w-3 text-muted-foreground" />
+                                  <div className="flex items-center gap-1">
+                                    <Phone className="h-2 w-2 text-muted-foreground" />
                                     <span className="font-medium">SĐT:</span>
                                     <span className="text-foreground">{displayPhone || 'Chưa có'}</span>
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    <CreditCard className="h-3 w-3 text-muted-foreground" />
+                                  <div className="flex items-center gap-1">
+                                    <CreditCard className="h-2 w-2 text-muted-foreground" />
                                     <span className="font-medium">Thẻ:</span>
                                     <span className="text-foreground">{displayCard || 'Chưa có'}</span>
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    <CreditCard className="h-3 w-3 text-muted-foreground" />
+                                  <div className="flex items-center gap-1">
+                                    <CreditCard className="h-2 w-2 text-muted-foreground" />
                                     <span className="font-medium">Tài khoản:</span>
                                     <span className="text-foreground">{displayAccount ? `@${displayAccount}` : 'Chưa có'}</span>
                                   </div>
@@ -312,24 +317,24 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
                               </div>
 
                               {/* Thông tin phiên */}
-                              <div className="space-y-3">
-                                <h4 className="font-semibold text-sm text-muted-foreground flex items-center gap-2">
-                                  <Activity className="h-4 w-4" />
+                              <div className="space-y-1">
+                                <h4 className="font-medium text-xs text-muted-foreground flex items-center gap-1">
+                                  <Activity className="h-2 w-2" />
                                   Thông tin phiên
                                 </h4>
-                                <div className="space-y-2 text-sm">
-                                  <div className="flex items-center gap-2">
-                                    <Monitor className="h-3 w-3 text-muted-foreground" />
+                                <div className="space-y-1 text-xs">
+                                  <div className="flex items-center gap-1">
+                                    <Monitor className="h-2 w-2 text-muted-foreground" />
                                     <span className="font-medium">Máy:</span>
                                     <span className="text-foreground">{computerName}</span>
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    <DollarSign className="h-3 w-3 text-muted-foreground" />
+                                  <div className="flex items-center gap-1">
+                                    <DollarSign className="h-2 w-2 text-muted-foreground" />
                                     <span className="font-medium">Trạng thái:</span>
                                     <span className="text-foreground">{getStatusText(session.status)}</span>
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    <MapPin className="h-3 w-3 text-muted-foreground" />
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="h-2 w-2 text-muted-foreground" />
                                     <span className="font-medium">ID phiên:</span>
                                     <span className="text-foreground font-mono">#{session.sessionId}</span>
                                   </div>
@@ -347,7 +352,7 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
                       <div className="text-center py-16">
                         <History className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                         <h3 className="text-lg font-medium text-muted-foreground mb-2">Chưa có lịch sử sử dụng</h3>
-                        <p className="text-sm text-muted-foreground">Máy tính này chưa có phiên sử dụng nào</p>
+                        <p className="text-xs text-muted-foreground">Máy tính này chưa có phiên sử dụng nào</p>
                       </div>
                     )}
                   </ScrollArea>
@@ -359,7 +364,7 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
               <div className="text-center">
                 <History className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-muted-foreground mb-2">Không thể tải thông tin</h3>
-                <p className="text-sm text-muted-foreground">Vui lòng thử lại sau</p>
+                <p className="text-xs text-muted-foreground">Vui lòng thử lại sau</p>
               </div>
             </div>
           )}
