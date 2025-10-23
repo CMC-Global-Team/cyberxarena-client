@@ -46,29 +46,10 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
       const stats = await withPageLoading(() => ComputerApi.getUsageStats(computerId))
       setUsageStats(stats)
 
-      // Enrich each recent session with full customer/account/membership info
-      if (stats?.recentSessions?.length) {
-        console.log('Original usage stats sessions:', stats.recentSessions)
-        const sessionIds = stats.recentSessions.map(s => s.sessionId)
-        console.log('Session IDs to enrich:', sessionIds)
-        
-        const results = await Promise.allSettled(sessionIds.map(id => SessionApi.getById(id)))
-        const map = new Map<number, SessionDTO>()
-        
-        results.forEach((r, idx) => {
-          if (r.status === "fulfilled" && r.value) {
-            console.log(`Enriched session ${sessionIds[idx]}:`, r.value)
-            map.set(sessionIds[idx], r.value)
-          } else {
-            console.error(`Failed to enrich session ${sessionIds[idx]}:`, r.status === "rejected" ? r.reason : "Unknown error")
-          }
-        })
-        
-        console.log('Final enriched map:', map)
-        setEnrichedBySessionId(map)
-      } else {
-        setEnrichedBySessionId(new Map())
-      }
+      // Note: Server doesn't have GET /sessions/{id} endpoint, so we use data from ComputerUsageStats
+      // The recentSessions from ComputerUsageStats should already contain customer info
+      console.log('ComputerUsageStats sessions:', stats.recentSessions)
+      setEnrichedBySessionId(new Map()) // No enrichment needed, use original data
     } catch (e: any) {
       notify({ type: "error", message: `Lỗi tải lịch sử sử dụng: ${e?.message || ''}` })
     } finally {
@@ -133,7 +114,7 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-[98vw] w-[98vw] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-none w-[98vw] max-h-[90vh] overflow-y-auto" style={{ maxWidth: '98vw' }}>
         <DialogHeader className="pb-3">
           <DialogTitle className="flex items-center gap-1 text-xl">
             <History className="h-5 w-5 text-primary" />
@@ -238,24 +219,26 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
                     {usageStats.recentSessions && usageStats.recentSessions.length > 0 ? (
                       <div className="space-y-1 pr-4">
                         {usageStats.recentSessions.map((session, index) => {
-                          const enriched = enrichedBySessionId.get(session.sessionId)
-                          console.log(`Session ${session.sessionId} enriched data:`, enriched)
-                          console.log(`Session ${session.sessionId} original data:`, session)
+                          console.log(`Session ${session.sessionId} data:`, session)
                           
-                          // Ưu tiên dữ liệu từ enriched, fallback về session gốc
-                          const displayName = enriched?.customerName || session.customerName || 'Không có tên'
-                          const displayPhone = enriched?.customerPhone || session.customerPhone || 'Chưa có'
-                          const displayCard = enriched?.membershipCardName || session.membershipCardName || 'Chưa có'
-                          const displayAccount = enriched?.accountUsername || 'Chưa có'
+                          // Use data directly from ComputerUsageStats since server doesn't have GET /sessions/{id}
+                          // Note: Server currently returns customerId as string instead of customerName
+                          const displayName = session.customerName || 'Không có tên'
+                          const displayPhone = session.customerPhone || 'Chưa có'
+                          const displayCard = session.membershipCardName || 'Chưa có'
+                          const displayAccount = session.accountUsername || 'Chưa có'
                           
-                          // Debug: Kiểm tra từng field
-                          console.log(`Session ${session.sessionId} field analysis:`, {
-                            'enriched.customerName': enriched?.customerName,
-                            'session.customerName': session.customerName,
-                            'final displayName': displayName,
-                            'enriched.customerPhone': enriched?.customerPhone,
-                            'session.customerPhone': session.customerPhone,
-                            'final displayPhone': displayPhone
+                          // If customerName looks like an ID (number), show it differently
+                          const isCustomerId = /^\d+$/.test(displayName)
+                          const finalDisplayName = isCustomerId ? `Khách hàng #${displayName}` : displayName
+                          
+                          console.log(`Session ${session.sessionId} display values:`, {
+                            displayName,
+                            finalDisplayName,
+                            displayPhone,
+                            displayCard,
+                            displayAccount,
+                            isCustomerId
                           })
                           
                           return (
@@ -267,7 +250,7 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
                                   <User className="h-2 w-2 text-primary" />
                                 </div>
                                 <div>
-                                  <h3 className="font-medium text-base text-foreground">{displayName}</h3>
+                                  <h3 className="font-medium text-base text-foreground">{finalDisplayName}</h3>
                                   <p className="text-xs text-muted-foreground">Phiên #{session.sessionId}</p>
                                 </div>
                               </div>
@@ -315,7 +298,7 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
                                   <div className="flex items-center gap-1">
                                     <User className="h-2 w-2 text-muted-foreground" />
                                     <span className="font-medium">Tên:</span>
-                                    <span className="text-foreground font-medium">{displayName}</span>
+                                    <span className="text-foreground font-medium">{finalDisplayName}</span>
                                   </div>
                                   <div className="flex items-center gap-1">
                                     <Phone className="h-2 w-2 text-muted-foreground" />
