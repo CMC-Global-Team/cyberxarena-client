@@ -11,8 +11,14 @@ import { CustomerActionsSheet } from "@/components/customer-actions-sheet"
 import { AccountFormSheet } from "@/components/account-form-sheet"
 import { AccountActionsSheet } from "@/components/account-actions-sheet"
 import { membershipsApi, type MembershipCard } from "@/lib/memberships"
+import { CustomerApi, type CustomerDTO } from "@/lib/customers"
+import { AccountApi, type AccountDTO } from "@/lib/customers"
+import { useNotice } from "@/components/notice-provider"
+import { usePageLoading } from "@/hooks/use-page-loading"
 
 export function CustomerManagementTabs() {
+  const { notify } = useNotice()
+  const { withPageLoading } = usePageLoading()
   const [searchQuery, setSearchQuery] = useState("")
   const [activeTab, setActiveTab] = useState("customers")
   
@@ -20,31 +26,40 @@ export function CustomerManagementTabs() {
   const [addCustomerSheetOpen, setAddCustomerSheetOpen] = useState(false)
   const [editCustomerSheetOpen, setEditCustomerSheetOpen] = useState(false)
   const [customerActionsSheetOpen, setCustomerActionsSheetOpen] = useState(false)
-  const [selectedCustomer, setSelectedCustomer] = useState<any>(null)
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerDTO | null>(null)
+  const [customers, setCustomers] = useState<CustomerDTO[]>([])
 
   // Account states
   const [addAccountSheetOpen, setAddAccountSheetOpen] = useState(false)
   const [editAccountSheetOpen, setEditAccountSheetOpen] = useState(false)
   const [accountActionsSheetOpen, setAccountActionsSheetOpen] = useState(false)
-  const [selectedAccount, setSelectedAccount] = useState<any>(null)
+  const [selectedAccount, setSelectedAccount] = useState<AccountDTO | null>(null)
+  const [accounts, setAccounts] = useState<AccountDTO[]>([])
   const [membershipCards, setMembershipCards] = useState<MembershipCard[]>([])
   const [isLoadingCards, setIsLoadingCards] = useState(false)
 
-  // Load membership cards on component mount
+  // Load data on component mount
   useEffect(() => {
-    const loadMembershipCards = async () => {
+    const loadData = async () => {
       setIsLoadingCards(true)
       try {
-        const cards = await membershipsApi.getAll()
+        const [cards, customersData, accountsData] = await Promise.all([
+          membershipsApi.getAll(),
+          CustomerApi.list({ page: 0, size: 100 }),
+          AccountApi.search({ page: 0, size: 100 })
+        ])
         setMembershipCards(cards)
+        setCustomers(customersData)
+        setAccounts(accountsData.content || [])
       } catch (error) {
-        console.error("Failed to load membership cards:", error)
+        console.error("Failed to load data:", error)
+        notify({ type: "error", message: "Lỗi tải dữ liệu" })
       } finally {
         setIsLoadingCards(false)
       }
     }
 
-    loadMembershipCards()
+    loadData()
   }, [])
 
   const getMembershipCardName = (membershipCardId: number) => {
@@ -52,82 +67,10 @@ export function CustomerManagementTabs() {
     return card ? `${card.membershipCardName}${card.isDefault ? ' (Mặc định)' : ''}` : 'Không xác định'
   }
 
-  // Mock data for customers
-  const customers = [
-    {
-      id: 1,
-      customerName: "Nguyễn Văn A",
-      phoneNumber: "0901234567",
-      membershipCardId: 1,
-      balance: 50000,
-      registrationDate: "2024-01-15T00:00:00",
-      hasAccount: true,
-    },
-    {
-      id: 2,
-      customerName: "Trần Thị B",
-      phoneNumber: "0912345678",
-      membershipCardId: 2,
-      balance: 120000,
-      registrationDate: "2024-02-20T00:00:00",
-      hasAccount: true,
-    },
-    {
-      id: 3,
-      customerName: "Lê Văn C",
-      phoneNumber: "0923456789",
-      membershipCardId: 3,
-      balance: 0,
-      registrationDate: "2024-03-05T00:00:00",
-      hasAccount: false,
-    },
-    {
-      id: 4,
-      customerName: "Phạm Thị D",
-      phoneNumber: "0934567890",
-      membershipCardId: 4,
-      balance: 200000,
-      registrationDate: "2024-03-12T00:00:00",
-      hasAccount: true,
-    },
-    {
-      id: 5,
-      customerName: "Hoàng Văn E",
-      phoneNumber: "0945678901",
-      membershipCardId: 5,
-      balance: 75000,
-      registrationDate: "2024-04-18T00:00:00",
-      hasAccount: false,
-    },
-  ]
-
-  // Mock data for accounts
-  const accounts = [
-    {
-      accountId: 1,
-      customerId: 1,
-      username: "nguyenvana",
-      customerName: "Nguyễn Văn A",
-      phoneNumber: "0901234567",
-      membershipCardId: 1,
-    },
-    {
-      accountId: 2,
-      customerId: 2,
-      username: "tranthib",
-      customerName: "Trần Thị B",
-      phoneNumber: "0912345678",
-      membershipCardId: 2,
-    },
-    {
-      accountId: 3,
-      customerId: 4,
-      username: "phamthid",
-      customerName: "Phạm Thị D",
-      phoneNumber: "0934567890",
-      membershipCardId: 4,
-    },
-  ]
+  // Helper function to check if customer has account
+  const getCustomerHasAccount = (customerId: number) => {
+    return accounts.some(account => account.customerId === customerId)
+  }
 
   const filteredCustomers = customers.filter(
     (customer) => {
@@ -166,12 +109,28 @@ export function CustomerManagementTabs() {
     setEditAccountSheetOpen(true)
   }
 
-  const handleDeleteCustomer = () => {
-    console.log("Customer deleted")
+  const handleDeleteCustomer = async () => {
+    if (!selectedCustomer?.customerId) return
+    
+    try {
+      await withPageLoading(() => CustomerApi.delete(selectedCustomer.customerId))
+      setCustomers(prev => prev.filter(c => c.customerId !== selectedCustomer.customerId))
+      notify({ type: "success", message: "Đã xóa khách hàng thành công" })
+    } catch (error: any) {
+      notify({ type: "error", message: `Xóa khách hàng thất bại: ${error?.message || "Không xác định"}` })
+    }
   }
 
-  const handleDeleteAccount = () => {
-    console.log("Account deleted")
+  const handleDeleteAccount = async () => {
+    if (!selectedAccount?.customerId) return
+    
+    try {
+      await withPageLoading(() => AccountApi.delete(selectedAccount.customerId))
+      setAccounts(prev => prev.filter(a => a.customerId !== selectedAccount.customerId))
+      notify({ type: "success", message: "Đã xóa tài khoản thành công" })
+    } catch (error: any) {
+      notify({ type: "error", message: `Xóa tài khoản thất bại: ${error?.message || "Không xác định"}` })
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -248,7 +207,7 @@ export function CustomerManagementTabs() {
                   </thead>
                   <tbody>
                     {filteredCustomers.map((customer) => (
-                      <tr key={customer.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
+                      <tr key={customer.customerId} className="border-b border-border hover:bg-secondary/50 transition-colors">
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
                             <div className="h-10 w-10 bg-primary/20 flex items-center justify-center text-primary font-medium">
@@ -256,7 +215,7 @@ export function CustomerManagementTabs() {
                             </div>
                             <div>
                               <p className="text-sm font-medium text-foreground">{customer.customerName}</p>
-                              <p className="text-xs text-muted-foreground">ID: #{customer.id}</p>
+                              <p className="text-xs text-muted-foreground">ID: #{customer.customerId}</p>
                             </div>
                           </div>
                         </td>
@@ -284,12 +243,12 @@ export function CustomerManagementTabs() {
                         </td>
                         <td className="py-4 px-4">
                           <span className={`inline-flex items-center px-2 py-1 text-xs font-medium ${
-                            customer.hasAccount 
+                            getCustomerHasAccount(customer.customerId)
                               ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" 
                               : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
                           }`}>
                             <UserCheck className="h-3 w-3 mr-1" />
-                            {customer.hasAccount ? "Có tài khoản" : "Chưa có"}
+                            {getCustomerHasAccount(customer.customerId) ? "Có tài khoản" : "Chưa có"}
                           </span>
                         </td>
                         <td className="py-4 px-4 text-right">
@@ -490,7 +449,10 @@ export function CustomerManagementTabs() {
       <CustomerFormSheet 
         open={addCustomerSheetOpen} 
         onOpenChange={setAddCustomerSheetOpen} 
-        mode="add" 
+        mode="add"
+        onSaved={(newCustomer) => {
+          if (newCustomer) setCustomers(prev => [newCustomer, ...prev])
+        }}
       />
 
       {selectedCustomer && (
@@ -500,6 +462,9 @@ export function CustomerManagementTabs() {
             onOpenChange={setEditCustomerSheetOpen}
             customer={selectedCustomer}
             mode="edit"
+            onSaved={(updatedCustomer) => {
+              if (updatedCustomer) setCustomers(prev => prev.map(c => c.customerId === updatedCustomer.customerId ? updatedCustomer : c))
+            }}
           />
 
           <CustomerActionsSheet
@@ -516,8 +481,11 @@ export function CustomerManagementTabs() {
       <AccountFormSheet 
         open={addAccountSheetOpen} 
         onOpenChange={setAddAccountSheetOpen} 
-        mode="add" 
-        customers={customers.filter(c => !c.hasAccount)}
+        mode="add"
+        customers={customers.filter(c => !getCustomerHasAccount(c.customerId))}
+        onSaved={(newAccount) => {
+          if (newAccount) setAccounts(prev => [newAccount, ...prev])
+        }}
       />
 
       {selectedAccount && (
@@ -528,6 +496,9 @@ export function CustomerManagementTabs() {
             account={selectedAccount}
             mode="edit"
             customers={customers}
+            onSaved={(updatedAccount) => {
+              if (updatedAccount) setAccounts(prev => prev.map(a => a.customerId === updatedAccount.customerId ? updatedAccount : a))
+            }}
           />
 
           <AccountActionsSheet
