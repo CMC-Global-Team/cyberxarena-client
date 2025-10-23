@@ -93,7 +93,7 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-[98vw] w-[98vw] max-h-[95vh] overflow-y-auto">
+      <DialogContent className="max-w-[99vw] w-[99vw] max-h-[98vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <History className="h-6 w-6" />
@@ -112,157 +112,157 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
           ) : usageStats ? (
             <>
               {/* Thống kê tổng quan */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card className="border-2 hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-base font-semibold text-muted-foreground flex items-center gap-2">
-                      <Clock className="h-6 w-6" />
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                <Card className="border hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
                       Tổng giờ chạy
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-4xl font-bold text-foreground mb-2">
+                    <div className="text-2xl font-bold text-foreground mb-1">
                       {formatDuration(usageStats.totalHours)}
                     </div>
-                    <p className="text-base text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       {usageStats.totalHours.toFixed(2)} giờ
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-base font-semibold text-muted-foreground flex items-center gap-2">
-                      <User className="h-6 w-6" />
+                <Card className="border hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <User className="h-4 w-4" />
                       Tổng phiên
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-4xl font-bold text-foreground mb-2">
+                    <div className="text-2xl font-bold text-foreground mb-1">
                       {usageStats.totalSessions}
                     </div>
-                    <p className="text-base text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       phiên sử dụng
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-base font-semibold text-muted-foreground flex items-center gap-2">
-                      <Calendar className="h-6 w-6" />
+                <Card className="border hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
                       Lần sử dụng cuối
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-xl font-bold text-foreground mb-2">
+                    <div className="text-lg font-bold text-foreground mb-1">
                       {formatDateTime(usageStats.lastUsed)}
                     </div>
-                    <p className="text-base text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       {new Date(usageStats.lastUsed).toLocaleDateString('vi-VN')}
                     </p>
                   </CardContent>
                 </Card>
 
-                <Card className="border-2 hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-base font-semibold text-muted-foreground flex items-center gap-2">
-                      <Monitor className="h-6 w-6" />
+                <Card className="border hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <Monitor className="h-4 w-4" />
                       Máy tính
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-xl font-bold text-foreground mb-2">
+                    <div className="text-lg font-bold text-foreground mb-1">
                       {usageStats.computerName}
                     </div>
-                    <p className="text-base text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       ID: {usageStats.computerId}
                     </p>
                   </CardContent>
                 </Card>
               </div>
 
-              <Separator className="my-8" />
+              <Separator className="my-6" />
 
               {/* Lịch sử phiên gần đây */}
-              <Card className="border-2">
-                <CardHeader className="pb-6">
-                  <CardTitle className="text-2xl font-bold flex items-center gap-3">
-                    <Monitor className="h-7 w-7" />
+              <Card className="border">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                    <Monitor className="h-5 w-5" />
                     Lịch sử phiên sử dụng
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {usageStats.recentSessions && usageStats.recentSessions.length > 0 ? (
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                       {usageStats.recentSessions.map((session, index) => (
-                        <div key={session.sessionId} className="border-2 border-border rounded-xl p-6 hover:shadow-lg transition-all duration-200">
-                          <div className="flex items-start justify-between mb-6">
-                            <div className="flex items-center gap-4">
-                              <div className="h-14 w-14 bg-primary/20 rounded-full flex items-center justify-center">
-                                <User className="h-7 w-7 text-primary" />
+                        <div key={session.sessionId} className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 bg-primary/20 rounded-full flex items-center justify-center">
+                                <User className="h-5 w-5 text-primary" />
                               </div>
                               <div>
-                                <h3 className="font-bold text-xl text-foreground mb-1">{session.customerName}</h3>
-                                <p className="text-base text-muted-foreground">Phiên #{session.sessionId}</p>
+                                <h3 className="font-semibold text-lg text-foreground mb-1">{session.customerName}</h3>
+                                <p className="text-sm text-muted-foreground">Phiên #{session.sessionId}</p>
                               </div>
                             </div>
-                            <Badge className={`${getStatusColor(session.status)} text-base px-4 py-2`}>
+                            <Badge className={`${getStatusColor(session.status)} text-sm px-3 py-1`}>
                               {getStatusText(session.status)}
                             </Badge>
                           </div>
                           
-                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-3 text-base">
-                                <Calendar className="h-5 w-5 text-muted-foreground" />
-                                <span className="font-semibold">Bắt đầu:</span>
-                                <span className="text-foreground font-medium">{formatDateTime(session.startTime)}</span>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 text-sm">
+                                <Calendar className="h-4 w-4 text-muted-foreground" />
+                                <span className="font-medium">Bắt đầu:</span>
+                                <span className="text-foreground">{formatDateTime(session.startTime)}</span>
                               </div>
                               {session.endTime && (
-                                <div className="flex items-center gap-3 text-base">
-                                  <Calendar className="h-5 w-5 text-muted-foreground" />
-                                  <span className="font-semibold">Kết thúc:</span>
-                                  <span className="text-foreground font-medium">{formatDateTime(session.endTime)}</span>
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                                  <span className="font-medium">Kết thúc:</span>
+                                  <span className="text-foreground">{formatDateTime(session.endTime)}</span>
                                 </div>
                               )}
                             </div>
                             
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-3 text-base">
-                                <Clock className="h-5 w-5 text-muted-foreground" />
-                                <span className="font-semibold">Thời gian:</span>
-                                <span className="text-foreground font-bold text-lg">{formatDuration(session.durationHours)}</span>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 text-sm">
+                                <Clock className="h-4 w-4 text-muted-foreground" />
+                                <span className="font-medium">Thời gian:</span>
+                                <span className="text-foreground font-semibold">{formatDuration(session.durationHours)}</span>
                               </div>
-                              <div className="flex items-center gap-3 text-base">
-                                <CreditCard className="h-5 w-5 text-muted-foreground" />
-                                <span className="font-semibold">Trạng thái:</span>
-                                <span className="text-foreground font-medium">{getStatusText(session.status)}</span>
+                              <div className="flex items-center gap-2 text-sm">
+                                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                                <span className="font-medium">Trạng thái:</span>
+                                <span className="text-foreground">{getStatusText(session.status)}</span>
                               </div>
                             </div>
                           </div>
                           
                           {index < usageStats.recentSessions.length - 1 && (
-                            <Separator className="mt-6" />
+                            <Separator className="mt-4" />
                           )}
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-16">
-                      <Monitor className="h-20 w-20 text-muted-foreground mx-auto mb-6" />
-                      <h3 className="text-xl font-semibold text-muted-foreground mb-3">Chưa có phiên sử dụng</h3>
-                      <p className="text-base text-muted-foreground">Máy tính này chưa có lịch sử sử dụng nào</p>
+                    <div className="text-center py-12">
+                      <Monitor className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-muted-foreground mb-2">Chưa có phiên sử dụng</h3>
+                      <p className="text-sm text-muted-foreground">Máy tính này chưa có lịch sử sử dụng nào</p>
                     </div>
                   )}
                 </CardContent>
               </Card>
             </>
           ) : (
-            <div className="text-center py-16">
-              <History className="h-20 w-20 text-muted-foreground mx-auto mb-6" />
-              <h3 className="text-xl font-semibold text-muted-foreground mb-3">Không thể tải thông tin</h3>
-              <p className="text-base text-muted-foreground">Vui lòng thử lại sau</p>
+            <div className="text-center py-12">
+              <History className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-muted-foreground mb-2">Không thể tải thông tin</h3>
+              <p className="text-sm text-muted-foreground">Vui lòng thử lại sau</p>
             </div>
           )}
         </div>

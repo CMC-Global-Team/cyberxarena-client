@@ -294,83 +294,62 @@ export default function SessionsPage() {
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="space-y-2">
+                      <div className="space-y-1">
                         {/* Tên khách hàng */}
-                        <div className="bg-primary/5 border border-primary/20 rounded-md p-2">
-                          <div className="text-xs font-medium text-primary mb-1">Khách hàng</div>
-                          <div className="text-sm font-semibold text-foreground">
-                            {session.customerName || 'Chưa có tên'}
-                          </div>
+                        <div className="text-sm font-semibold text-foreground">
+                          {session.customerName || 'Chưa có tên'}
                         </div>
 
                         {/* Thông tin liên hệ và tài khoản */}
-                        <div className="space-y-1">
+                        <div className="space-y-0.5 text-xs text-muted-foreground">
                           {session.customerPhone && (
-                            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded p-1.5">
-                              <div className="text-xs font-medium text-blue-600 dark:text-blue-400">SĐT</div>
-                              <div className="text-xs font-mono text-blue-900 dark:text-blue-100">
-                                {session.customerPhone}
-                              </div>
-                            </div>
+                            <div>SĐT: {session.customerPhone}</div>
                           )}
 
                           {session.membershipCardName && (
-                            <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded p-1.5">
-                              <div className="text-xs font-medium text-green-600 dark:text-green-400">Thẻ</div>
-                              <div className="text-xs font-semibold text-green-900 dark:text-green-100">
-                                {session.membershipCardName}
-                              </div>
-                            </div>
+                            <div>Thẻ: {session.membershipCardName}</div>
                           )}
 
                           {session.hasAccount && session.accountUsername && (
-                            <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded p-1.5">
-                              <div className="text-xs font-medium text-purple-600 dark:text-purple-400">TK</div>
-                              <div className="text-xs font-semibold text-purple-900 dark:text-purple-100">
-                                @{session.accountUsername}
-                              </div>
-                            </div>
+                            <div>TK: @{session.accountUsername}</div>
                           )}
 
                           {session.customerBalance !== undefined && (
-                            <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded p-1.5">
-                              <div className="text-xs font-medium text-orange-600 dark:text-orange-400">Số dư</div>
-                              <div className="text-xs font-bold text-orange-900 dark:text-orange-100">
-                                {session.customerBalance.toLocaleString('vi-VN')}đ
-                              </div>
+                            <div className="font-semibold text-orange-600 dark:text-orange-400">
+                              Số dư: {session.customerBalance.toLocaleString('vi-VN')}đ
                             </div>
                           )}
                         </div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="bg-gray-50 dark:bg-gray-950/20 border border-gray-200 dark:border-gray-800 rounded p-1.5">
-                        <div className="text-xs font-medium text-gray-600 dark:text-gray-400">Máy tính</div>
-                        <div className="text-xs font-semibold text-gray-900 dark:text-gray-100">
+                      <div className="text-xs text-muted-foreground">
+                        <div className="font-medium text-gray-600 dark:text-gray-400">Máy tính</div>
+                        <div className="font-semibold text-gray-900 dark:text-gray-100">
                           {session.computerName || 'Chưa chọn máy'}
                         </div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800 rounded p-1.5">
-                        <div className="text-xs font-medium text-indigo-600 dark:text-indigo-400">Bắt đầu</div>
-                        <div className="text-xs font-semibold text-indigo-900 dark:text-indigo-100">
+                      <div className="text-xs text-muted-foreground">
+                        <div className="font-medium text-indigo-600 dark:text-indigo-400">Bắt đầu</div>
+                        <div className="font-semibold text-indigo-900 dark:text-indigo-100">
                           {session.startTime ? formatDateTime(session.startTime) : 'Chưa bắt đầu'}
                         </div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-800 rounded p-1.5">
-                        <div className="text-xs font-medium text-teal-600 dark:text-teal-400">Kết thúc</div>
-                        <div className="text-xs font-semibold text-teal-900 dark:text-teal-100">
+                      <div className="text-xs text-muted-foreground">
+                        <div className="font-medium text-teal-600 dark:text-teal-400">Kết thúc</div>
+                        <div className="font-semibold text-teal-900 dark:text-teal-100">
                           {session.endTime ? formatDateTime(session.endTime) : "Chưa kết thúc"}
                         </div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded p-1.5">
-                        <div className="text-xs font-medium text-amber-600 dark:text-amber-400">Thời lượng</div>
-                        <div className="text-xs font-bold text-amber-900 dark:text-amber-100">
+                      <div className="text-xs text-muted-foreground">
+                        <div className="font-medium text-amber-600 dark:text-amber-400">Thời lượng</div>
+                        <div className="font-bold text-amber-900 dark:text-amber-100">
                           {session.startTime ? formatDuration(session.startTime, session.endTime) : 'Chưa tính'}
                         </div>
                       </div>
