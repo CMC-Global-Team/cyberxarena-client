@@ -13,6 +13,8 @@ import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 import { SessionApi, type SessionDTO, type SessionCreateRequest, type SessionUpdateRequest } from "@/lib/sessions"
+import { CustomerApi, type CustomerDTO } from "@/lib/customers"
+import { ComputerApi, type ComputerDTO } from "@/lib/computers"
 import { useNotice } from "@/components/notice-provider"
 import { useLoading } from "@/components/loading-provider"
 
@@ -40,8 +42,8 @@ export function SessionFormSheet({
     startTime: new Date(),
   })
   
-  const [customers, setCustomers] = useState<Array<{id: number, name: string}>>([])
-  const [computers, setComputers] = useState<Array<{id: number, name: string, status: string}>>([])
+  const [customers, setCustomers] = useState<CustomerDTO[]>([])
+  const [computers, setComputers] = useState<ComputerDTO[]>([])
   const [loading, setLoading] = useState(false)
 
   // Load customers and computers
@@ -71,31 +73,21 @@ export function SessionFormSheet({
 
   const loadCustomers = async () => {
     try {
-      // Mock data - replace with actual API call
-      setCustomers([
-        { id: 1, name: "Nguyễn Văn A" },
-        { id: 2, name: "Trần Thị B" },
-        { id: 3, name: "Lê Văn C" },
-        { id: 4, name: "Phạm Thị D" },
-        { id: 5, name: "Hoàng Văn E" },
-      ])
+      const response = await CustomerApi.list({ page: 0, size: 100 })
+      setCustomers(response)
     } catch (error) {
       console.error("Error loading customers:", error)
+      notify({ type: "error", message: "Lỗi tải danh sách khách hàng" })
     }
   }
 
   const loadComputers = async () => {
     try {
-      // Mock data - replace with actual API call
-      setComputers([
-        { id: 1, name: "Máy #01", status: "Available" },
-        { id: 2, name: "Máy #02", status: "Available" },
-        { id: 3, name: "Máy #03", status: "In Use" },
-        { id: 4, name: "Máy #04", status: "Available" },
-        { id: 5, name: "Máy #05", status: "Broken" },
-      ])
+      const response = await ComputerApi.list({ page: 0, size: 100 })
+      setComputers(response.content || [])
     } catch (error) {
       console.error("Error loading computers:", error)
+      notify({ type: "error", message: "Lỗi tải danh sách máy tính" })
     }
   }
 
@@ -108,7 +100,7 @@ export function SessionFormSheet({
     }
 
     // Check if computer is available
-    const selectedComputer = computers.find(c => c.id.toString() === formData.computerId)
+    const selectedComputer = computers.find(c => c.computerId.toString() === formData.computerId)
     if (selectedComputer?.status !== "Available") {
       notify({ type: "error", message: "Máy tính đã được chọn không khả dụng" })
       return
@@ -152,8 +144,8 @@ export function SessionFormSheet({
   }
 
   const availableComputers = computers.filter(c => c.status === "Available")
-  const selectedCustomer = customers.find(c => c.id.toString() === formData.customerId)
-  const selectedComputer = computers.find(c => c.id.toString() === formData.computerId)
+  const selectedCustomer = customers.find(c => c.customerId.toString() === formData.customerId)
+  const selectedComputer = computers.find(c => c.computerId.toString() === formData.computerId)
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -187,15 +179,15 @@ export function SessionFormSheet({
               </SelectTrigger>
               <SelectContent>
                 {customers.map((customer) => (
-                  <SelectItem key={customer.id} value={customer.id.toString()}>
-                    {customer.name}
+                  <SelectItem key={customer.customerId} value={customer.customerId.toString()}>
+                    {customer.customerName}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {selectedCustomer && (
               <p className="text-sm text-muted-foreground">
-                Đã chọn: {selectedCustomer.name}
+                Đã chọn: {selectedCustomer.customerName}
               </p>
             )}
           </div>
@@ -215,15 +207,15 @@ export function SessionFormSheet({
               </SelectTrigger>
               <SelectContent>
                 {availableComputers.map((computer) => (
-                  <SelectItem key={computer.id} value={computer.id.toString()}>
-                    {computer.name} - Sẵn sàng
+                  <SelectItem key={computer.computerId} value={computer.computerId.toString()}>
+                    {computer.computerName} - Sẵn sàng
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {selectedComputer && (
               <p className="text-sm text-muted-foreground">
-                Đã chọn: {selectedComputer.name}
+                Đã chọn: {selectedComputer.computerName}
               </p>
             )}
             {availableComputers.length === 0 && (
