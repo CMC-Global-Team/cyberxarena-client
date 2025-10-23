@@ -34,6 +34,9 @@ export function SaleTable({ sales, loading, onEdit, onView, onRefund, onUpdateSt
 
   // Kiểm tra xem hóa đơn có thể hoàn tiền không
   const canRefundSale = (sale: Sale) => {
+    // Chỉ cho phép hoàn tiền khi hóa đơn đã thanh toán
+    if (sale.status !== 'Paid') return false
+
     // Kiểm tra xem hóa đơn đã có refund chưa
     const hasRefund = refunds.some(refund => refund.saleId === sale.saleId)
     if (hasRefund) return false
@@ -47,6 +50,11 @@ export function SaleTable({ sales, loading, onEdit, onView, onRefund, onUpdateSt
 
   // Lấy lý do không thể hoàn tiền
   const getRefundDisabledReason = (sale: Sale) => {
+    // Kiểm tra trạng thái hóa đơn
+    if (sale.status !== 'Paid') {
+      return "Chỉ có thể hoàn tiền hóa đơn đã thanh toán"
+    }
+
     const hasRefund = refunds.some(refund => refund.saleId === sale.saleId)
     if (hasRefund) return "Hóa đơn đã có yêu cầu hoàn tiền"
 
@@ -162,7 +170,7 @@ export function SaleTable({ sales, loading, onEdit, onView, onRefund, onUpdateSt
                       #{sale.saleId}
                     </TableCell>
                     <TableCell className="font-medium">
-                      Khách hàng #{sale.customerId}
+                      {sale.customerName || `Khách hàng #${sale.customerId}`}
                     </TableCell>
                     <TableCell>
                       {formatDate(sale.saleDate)}

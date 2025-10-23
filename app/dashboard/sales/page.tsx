@@ -17,6 +17,7 @@ import { RefundFormSheet } from "@/components/refund-management/refund-form-shee
 import { RefundTable } from "@/components/refund-management/refund-table"
 import { RefundStats } from "@/components/refund-management/refund-stats"
 import { Refund, refundsApi } from "@/lib/refunds"
+import { SaleDetailDialog } from "@/components/sales-management/sale-detail-dialog"
 
 export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([])
@@ -29,6 +30,8 @@ export default function SalesPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [refundFormOpen, setRefundFormOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<"sales" | "refunds">("sales")
+  const [viewingSale, setViewingSale] = useState<Sale | undefined>()
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
   const { toast } = useToast()
 
   // Load sales data
@@ -150,11 +153,8 @@ export default function SalesPage() {
 
   // Handle view sale
   const handleViewSale = (sale: Sale) => {
-    // TODO: Implement view sale details
-    toast({
-      title: "Thông tin",
-      description: `Xem chi tiết hóa đơn #${sale.saleId}`,
-    })
+    setViewingSale(sale)
+    setDetailDialogOpen(true)
   }
 
   // Handle form close
@@ -330,6 +330,13 @@ export default function SalesPage() {
           onSuccess={handleRefundSuccess}
         />
       )}
+
+      {/* Sale Detail Dialog */}
+      <SaleDetailDialog
+        sale={viewingSale}
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+      />
     </div>
   )
 }
