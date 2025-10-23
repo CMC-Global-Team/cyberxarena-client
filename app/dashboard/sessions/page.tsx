@@ -10,11 +10,12 @@ import { SessionFormSheet } from "@/components/session-form-sheet"
 import { SessionActionsSheet } from "@/components/session-actions-sheet"
 import { SessionApi, type SessionDTO } from "@/lib/sessions"
 import { useNotice } from "@/components/notice-provider"
-import { useLoading } from "@/components/loading-provider"
+import { usePageLoading } from "@/hooks/use-page-loading"
+import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
 
 export default function SessionsPage() {
   const { notify } = useNotice()
-  const { withLoading } = useLoading()
+  const { withPageLoading, isLoading } = usePageLoading()
   const [searchQuery, setSearchQuery] = useState("")
   const [addSheetOpen, setAddSheetOpen] = useState(false)
   const [editSheetOpen, setEditSheetOpen] = useState(false)
@@ -29,10 +30,11 @@ export default function SessionsPage() {
   const loadSessions = async () => {
     try {
       setLoading(true)
-      const res = await withLoading(() => SessionApi.list({ page: 0, size: 100, sortBy: "sessionId", sortDir: "desc" })) as any
-      setSessions(res.content)
+      const res = await withPageLoading(() => SessionApi.list({ page: 0, size: 100, sortBy: "sessionId", sortDir: "desc" })) as any
+      setSessions(res?.content || [])
     } catch (e: any) {
       notify({ type: "error", message: `Lỗi tải danh sách: ${e?.message || ''}` })
+      setSessions([]) // Set empty array on error
     } finally {
       setLoading(false)
     }
@@ -47,7 +49,7 @@ export default function SessionsPage() {
     const t = setTimeout(async () => {
       try {
         setLoading(true)
-        const res = await withLoading(() =>
+        const res = await withPageLoading(() =>
           SessionApi.search({
             customerName: searchQuery || undefined,
             computerName: searchQuery || undefined,
@@ -58,9 +60,10 @@ export default function SessionsPage() {
             sortDir,
           })
         ) as any
-        setSessions(res.content)
+        setSessions(res?.content || [])
       } catch (e: any) {
         notify({ type: "error", message: `Lỗi tìm kiếm: ${e?.message || ''}` })
+        setSessions([]) // Set empty array on error
       } finally {
         setLoading(false)
       }
@@ -69,11 +72,17 @@ export default function SessionsPage() {
   }, [searchQuery, statusFilter, sortBy, sortDir])
 
   const filteredSessions = useMemo(() => {
+    if (!sessions || !Array.isArray(sessions)) return []
+    const query = searchQuery || ''
     return sessions.filter((session) => {
+      const customerName = session.customerName || ''
+      const computerName = session.computerName || ''
+      const sessionId = session.sessionId || ''
+      
       return (
-        session.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        session.computerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        session.sessionId.toString().includes(searchQuery)
+        customerName.toLowerCase().includes(query.toLowerCase()) ||
+        computerName.toLowerCase().includes(query.toLowerCase()) ||
+        sessionId.toString().includes(query)
       )
     })
   }, [sessions, searchQuery])
@@ -91,8 +100,8 @@ export default function SessionsPage() {
     if (!selectedSession?.sessionId) return
     
     try {
-      await withLoading(() => SessionApi.delete(selectedSession.sessionId))
-      setSessions((prev) => prev.filter((s) => s.sessionId !== selectedSession.sessionId))
+      await withPageLoading(() => SessionApi.delete(selectedSession.sessionId))
+      setSessions((prev) => (prev || []).filter((s) => s.sessionId !== selectedSession.sessionId))
       notify({ type: "success", message: "Đã xóa phiên sử dụng thành công" })
     } catch (e: any) {
       const errorMsg = e?.message || "Lỗi không xác định"
@@ -115,10 +124,10 @@ export default function SessionsPage() {
   const handleEndSession = async () => {
     if (!selectedSession?.sessionId) return
     try {
-      const updated = await withLoading(() =>
+      const updated = await withPageLoading(() =>
         SessionApi.endSession(selectedSession.sessionId)
       ) as any
-      setSessions((prev)=> prev.map((s)=> s.sessionId === updated.sessionId ? updated : s))
+      setSessions((prev)=> (prev || []).map((s)=> s.sessionId === updated.sessionId ? updated : s))
       notify({ type: "success", message: "Đã kết thúc phiên sử dụng" })
     } catch (e: any) {
       notify({ type: "error", message: `Kết thúc phiên thất bại: ${e?.message || ''}` })
@@ -173,7 +182,8 @@ export default function SessionsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 relative">
+      <PageLoadingOverlay isLoading={isLoading} pageType="sessions" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý phiên sử dụng</h1>
@@ -271,19 +281,19 @@ export default function SessionsPage() {
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2 text-sm text-foreground">
                         <User className="h-3 w-3 text-muted-foreground" />
-                        {session.customerName}
+                        {session.customerName || 'N/A'}
                       </div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2 text-sm text-foreground">
                         <Monitor className="h-3 w-3 text-muted-foreground" />
-                        {session.computerName}
+                        {session.computerName || 'N/A'}
                       </div>
                     </td>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2 text-sm text-foreground">
                         <Calendar className="h-3 w-3 text-muted-foreground" />
-                        {formatDateTime(session.startTime)}
+                        {session.startTime ? formatDateTime(session.startTime) : 'N/A'}
                       </div>
                     </td>
                     <td className="py-4 px-4">
@@ -294,14 +304,14 @@ export default function SessionsPage() {
                     </td>
                     <td className="py-4 px-4">
                       <span className="text-sm font-medium text-foreground">
-                        {formatDuration(session.startTime, session.endTime)}
+                        {session.startTime ? formatDuration(session.startTime, session.endTime) : 'N/A'}
                       </span>
                     </td>
                     <td className="py-4 px-4">
                       <span
-                        className={`inline-flex items-center px-2 py-1 text-xs font-medium ${getStatusColor(session.status)}`}
+                        className={`inline-flex items-center px-2 py-1 text-xs font-medium ${getStatusColor(session.status || '')}`}
                       >
-                        {getStatusText(session.status)}
+                        {getStatusText(session.status || '')}
                       </span>
                     </td>
                     <td className="py-4 px-4 text-right">
@@ -333,9 +343,9 @@ export default function SessionsPage() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Tổng phiên</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground">{sessions.length}</div>
+            <div className="text-2xl font-bold text-foreground">{sessions?.length || 0}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {sessions.filter((s) => s.status === "Active").length} đang hoạt động
+              {(sessions || []).filter((s) => s.status === "Active").length} đang hoạt động
             </p>
           </CardContent>
         </Card>
@@ -346,10 +356,10 @@ export default function SessionsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {sessions.filter((s) => s.status === "Active").length}
+              {(sessions || []).filter((s) => s.status === "Active").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {sessions.length > 0 ? Math.round((sessions.filter((s) => s.status === "Active").length / sessions.length) * 100) : 0}% tổng số
+              {(sessions || []).length > 0 ? Math.round(((sessions || []).filter((s) => s.status === "Active").length / (sessions || []).length) * 100) : 0}% tổng số
             </p>
           </CardContent>
         </Card>
@@ -360,7 +370,8 @@ export default function SessionsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {sessions.reduce((total, session) => {
+              {(sessions || []).reduce((total, session) => {
+                if (!session.startTime) return total
                 const start = new Date(session.startTime)
                 const end = session.endTime ? new Date(session.endTime) : new Date()
                 const diffMs = end.getTime() - start.getTime()
@@ -380,7 +391,8 @@ export default function SessionsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">
-              {sessions.reduce((total, session) => {
+              {(sessions || []).reduce((total, session) => {
+                if (!session.startTime) return total
                 const start = new Date(session.startTime)
                 const end = session.endTime ? new Date(session.endTime) : new Date()
                 const diffMs = end.getTime() - start.getTime()
@@ -400,7 +412,7 @@ export default function SessionsPage() {
         onOpenChange={setAddSheetOpen}
         mode="add"
         onSaved={(newSession: any)=>{
-          if (newSession) setSessions((prev)=> [newSession, ...prev])
+          if (newSession) setSessions((prev)=> [newSession, ...(prev || [])])
         }}
       />
 
@@ -414,7 +426,7 @@ export default function SessionsPage() {
             mode="edit"
             onSaved={(updated: any)=>{
               if (!updated) return
-              setSessions((prev)=> prev.map((s)=> s.sessionId === updated.sessionId ? updated : s))
+              setSessions((prev)=> (prev || []).map((s)=> s.sessionId === updated.sessionId ? updated : s))
             }}
           />
 

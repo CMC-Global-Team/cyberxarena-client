@@ -1,3 +1,5 @@
+import { DashboardLoading } from "@/components/ui/dashboard-loading"
+
 export default function Loading() {
-  return null
+  return <DashboardLoading pageType="computers" />
 }

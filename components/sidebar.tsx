@@ -3,8 +3,9 @@
 import { useState } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Users, Monitor, Clock, DollarSign, Settings, LogOut, ChevronLeft, ChevronRight } from "lucide-react"
+import { LayoutDashboard, Users, Monitor, Clock, DollarSign, Settings, LogOut, ChevronLeft, ChevronRight, Package, Percent, IdCard, Moon, Sun } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useTheme } from "next-themes"
 
 const menuItems = [
   {
@@ -21,6 +22,21 @@ const menuItems = [
     title: "Quản lý máy tính",
     icon: Monitor,
     href: "/dashboard/computers",
+  },
+  {
+    title: "Quản lý sản phẩm",
+    icon: Package,
+    href: "/dashboard/products",
+  },
+  {
+    title: "Quản lý giảm giá",
+    icon: Percent,
+    href: "/dashboard/discounts",
+  },
+  {
+    title: "Gói thành viên",
+    icon: IdCard,
+    href: "/dashboard/memberships",
   },
   {
     title: "Phiên sử dụng",
@@ -45,10 +61,15 @@ export function Sidebar() {
   const router = useRouter()
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(true)
+  const { theme, setTheme } = useTheme()
 
   const handleLogout = () => {
     localStorage.removeItem("isAuthenticated")
     router.push("/")
+  }
+
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light")
   }
 
   return (
@@ -97,11 +118,28 @@ export function Sidebar() {
           })}
         </nav>
 
-        <div className="p-2 border-t border-sidebar-border">
+        <div className="p-2 border-t border-sidebar-border space-y-1">
           <Button
             variant="ghost"
             className={cn(
               "w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+              isCollapsed && "justify-center px-2",
+            )}
+            onClick={toggleTheme}
+            title={theme === "light" ? "Chuyển sang chế độ tối" : "Chuyển sang chế độ sáng"}
+          >
+            {theme === "light" ? (
+              <Moon className={cn("h-5 w-5", !isCollapsed && "mr-3")} />
+            ) : (
+              <Sun className={cn("h-5 w-5", !isCollapsed && "mr-3")} />
+            )}
+            {!isCollapsed && <span>{theme === "light" ? "Chế độ tối" : "Chế độ sáng"}</span>}
+          </Button>
+          
+          <Button
+            variant="ghost"
+            className={cn(
+              "w-full justify-start text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300",
               isCollapsed && "justify-center px-2",
             )}
             onClick={handleLogout}

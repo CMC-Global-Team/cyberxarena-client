@@ -8,13 +8,16 @@ import { Button } from "@/components/ui/button"
 import { Search, Monitor, MoreVertical, Cpu, HardDrive, Wifi, Calendar } from "lucide-react"
 import { ComputerFormSheet } from "@/components/computer-form-sheet"
 import { ComputerActionsSheet } from "@/components/computer-actions-sheet"
+import { ComputerTour } from "@/components/computer-management/computer-tour"
 import { ComputerApi, type ComputerDTO } from "@/lib/computers"
 import { useNotice } from "@/components/notice-provider"
-import { useLoading } from "@/components/loading-provider"
+import { usePageLoading } from "@/hooks/use-page-loading"
+import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
+import { HelpCircle } from "lucide-react"
 
 export default function ComputersPage() {
   const { notify } = useNotice()
-  const { withLoading } = useLoading()
+  const { withPageLoading, isLoading } = usePageLoading()
   const [searchQuery, setSearchQuery] = useState("")
   const [addSheetOpen, setAddSheetOpen] = useState(false)
   const [editSheetOpen, setEditSheetOpen] = useState(false)
@@ -25,11 +28,12 @@ export default function ComputersPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("computerId")
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
+  const [showTour, setShowTour] = useState(false)
 
   const loadComputers = async () => {
     try {
       setLoading(true)
-      const res = await withLoading(() => ComputerApi.list({ page: 0, size: 100, sortBy: "computerId", sortDir: "asc" }))
+      const res = await withPageLoading(() => ComputerApi.list({ page: 0, size: 100, sortBy: "computerId", sortDir: "asc" }))
       setComputers(res.content)
     } catch (e: any) {
       notify({ type: "error", message: `Lỗi tải danh sách: ${e?.message || ''}` })
@@ -48,7 +52,7 @@ export default function ComputersPage() {
     const t = setTimeout(async () => {
       try {
         setLoading(true)
-        const res = await withLoading(() =>
+        const res = await withPageLoading(() =>
           ComputerApi.search({
             name: searchQuery || undefined,
             status: statusFilter === "all" ? undefined : toApiStatus(statusFilter),
@@ -102,7 +106,7 @@ export default function ComputersPage() {
     }
     
     try {
-      await withLoading(() => ComputerApi.delete(selectedComputer.computerId))
+      await withPageLoading(() => ComputerApi.delete(selectedComputer.computerId))
       setComputers((prev) => prev.filter((c) => c.computerId !== selectedComputer.computerId))
       notify({ type: "success", message: "Đã xóa máy tính thành công" })
     } catch (e: any) {
@@ -126,7 +130,7 @@ export default function ComputersPage() {
   const handleMaintenance = async () => {
     if (!selectedComputer?.computerId) return
     try {
-      const updated = await withLoading(() =>
+      const updated = await withPageLoading(() =>
         ComputerApi.update(selectedComputer.computerId, {
           computerName: selectedComputer.computerName,
           ipAddress: selectedComputer.ipAddress,
@@ -182,15 +186,24 @@ export default function ComputersPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 relative">
+      <PageLoadingOverlay isLoading={isLoading} pageType="computers" />
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý máy tính</h1>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-3xl font-bold text-foreground" data-tour="page-title">Quản lý máy tính</h1>
+            <HelpCircle 
+              className="h-6 w-6 text-red-500 cursor-pointer hover:text-red-600 transition-colors" 
+              onClick={() => setShowTour(true)}
+              title="Hướng dẫn sử dụng"
+            />
+          </div>
           <p className="text-muted-foreground">Danh sách và thông tin máy tính</p>
         </div>
         <Button
           onClick={() => setAddSheetOpen(true)}
           className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          data-tour="add-computer-btn"
         >
           <Monitor className="h-4 w-4 mr-2" />
           Thêm máy tính
@@ -199,7 +212,7 @@ export default function ComputersPage() {
 
       <Card className="border-border bg-card">
         <CardHeader>
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4" data-tour="search-filter">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -250,7 +263,7 @@ export default function ComputersPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto" data-tour="computer-table">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border">
@@ -318,6 +331,7 @@ export default function ComputersPage() {
                         size="sm"
                         className="h-8 w-8 p-0"
                         onClick={() => handleOpenActions(computer)}
+                        data-tour="computer-actions"
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
@@ -335,7 +349,7 @@ export default function ComputersPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-tour="computer-stats">
         <Card className="border-border bg-card">
           <CardHeader>
             <CardTitle className="text-sm font-medium text-muted-foreground">Tổng máy tính</CardTitle>
@@ -427,6 +441,11 @@ export default function ComputersPage() {
           />
         </>
       )}
+
+      <ComputerTour 
+        isActive={showTour} 
+        onComplete={() => setShowTour(false)} 
+      />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { api } from "./api"
+import { http } from "./api"
 
 export interface SessionDTO {
   sessionId: number
@@ -60,8 +60,8 @@ export class SessionApi {
     if (params.sortBy) searchParams.append('sortBy', params.sortBy)
     if (params.sortDir) searchParams.append('sortDir', params.sortDir)
 
-    const response = await api.get(`/sessions?${searchParams.toString()}`)
-    return response.data
+    const response = await http.get<SessionListResponse>(`/sessions?${searchParams.toString()}`)
+    return response
   }
 
   static async search(params: SessionSearchParams): Promise<SessionListResponse> {
@@ -75,37 +75,37 @@ export class SessionApi {
     if (params.sortBy) searchParams.append('sortBy', params.sortBy)
     if (params.sortDir) searchParams.append('sortDir', params.sortDir)
 
-    const response = await api.get(`/sessions/search?${searchParams.toString()}`)
-    return response.data
+    const response = await http.get<SessionListResponse>(`/sessions/search?${searchParams.toString()}`)
+    return response
   }
 
   static async getById(sessionId: number): Promise<SessionDTO> {
-    const response = await api.get(`/sessions/${sessionId}`)
-    return response.data
+    const response = await http.get<SessionDTO>(`/sessions/${sessionId}`)
+    return response
   }
 
   static async create(data: SessionCreateRequest): Promise<SessionDTO> {
-    const response = await api.post('/sessions', data)
-    return response.data
+    const response = await http.post<SessionDTO>('/sessions', data)
+    return response
   }
 
   static async update(sessionId: number, data: SessionUpdateRequest): Promise<SessionDTO> {
-    const response = await api.put(`/sessions/${sessionId}`, data)
-    return response.data
+    const response = await http.put<SessionDTO>(`/sessions/${sessionId}`, data)
+    return response
   }
 
   static async delete(sessionId: number): Promise<void> {
-    await api.delete(`/sessions/${sessionId}`)
+    await http.delete(`/sessions/${sessionId}`)
   }
 
   static async endSession(sessionId: number): Promise<SessionDTO> {
-    const response = await api.post(`/sessions/${sessionId}/end`)
-    return response.data
+    const response = await http.post<SessionDTO>(`/sessions/${sessionId}/end`)
+    return response
   }
 
   static async getActiveSessions(): Promise<SessionDTO[]> {
-    const response = await api.get('/sessions/active')
-    return response.data
+    const response = await http.get<SessionDTO[]>('/sessions/active')
+    return response
   }
 
   static async getSessionStats(): Promise<{
@@ -114,7 +114,12 @@ export class SessionApi {
     totalRevenue: number
     averageSessionDuration: number
   }> {
-    const response = await api.get('/sessions/stats')
-    return response.data
+    const response = await http.get<{
+      totalSessions: number
+      activeSessions: number
+      totalRevenue: number
+      averageSessionDuration: number
+    }>('/sessions/stats')
+    return response
   }
 }
