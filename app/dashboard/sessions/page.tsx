@@ -294,55 +294,86 @@ export default function SessionsPage() {
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-sm text-foreground">
-                          <User className="h-3 w-3 text-muted-foreground" />
-                          <span className="font-medium">{session.customerName || 'N/A'}</span>
+                      <div className="space-y-3">
+                        {/* Tên khách hàng */}
+                        <div className="bg-primary/5 border border-primary/20 rounded-lg p-3">
+                          <div className="text-sm font-semibold text-primary mb-1">Khách hàng</div>
+                          <div className="text-base font-bold text-foreground">
+                            {session.customerName || 'Chưa có tên'}
+                          </div>
                         </div>
-                        {session.customerPhone && (
-                          <div className="text-xs text-muted-foreground ml-5">
-                            {session.customerPhone}
-                          </div>
-                        )}
-                        {session.membershipCardName && (
-                          <div className="text-xs text-muted-foreground ml-5">
-                            Thẻ thành viên: {session.membershipCardName}
-                          </div>
-                        )}
-                        {session.hasAccount && session.accountUsername && (
-                          <div className="text-xs text-muted-foreground ml-5">
-                            Khách hàng: @{session.accountUsername}
-                          </div>
-                        )}
-                        {session.customerBalance !== undefined && (
-                          <div className="text-xs text-muted-foreground ml-5">
-                            Số dư: {session.customerBalance.toLocaleString('vi-VN')}đ
-                          </div>
-                        )}
+
+                        {/* Thông tin liên hệ và tài khoản */}
+                        <div className="space-y-2">
+                          {session.customerPhone && (
+                            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md p-2">
+                              <div className="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1">Số điện thoại</div>
+                              <div className="text-sm font-mono text-blue-900 dark:text-blue-100">
+                                {session.customerPhone}
+                              </div>
+                            </div>
+                          )}
+
+                          {session.membershipCardName && (
+                            <div className="bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-md p-2">
+                              <div className="text-xs font-medium text-green-600 dark:text-green-400 mb-1">Thẻ thành viên</div>
+                              <div className="text-sm font-semibold text-green-900 dark:text-green-100">
+                                {session.membershipCardName}
+                              </div>
+                            </div>
+                          )}
+
+                          {session.hasAccount && session.accountUsername && (
+                            <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-md p-2">
+                              <div className="text-xs font-medium text-purple-600 dark:text-purple-400 mb-1">Tài khoản</div>
+                              <div className="text-sm font-semibold text-purple-900 dark:text-purple-100">
+                                @{session.accountUsername}
+                              </div>
+                            </div>
+                          )}
+
+                          {session.customerBalance !== undefined && (
+                            <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-md p-2">
+                              <div className="text-xs font-medium text-orange-600 dark:text-orange-400 mb-1">Số dư</div>
+                              <div className="text-sm font-bold text-orange-900 dark:text-orange-100">
+                                {session.customerBalance.toLocaleString('vi-VN')}đ
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="flex items-center gap-2 text-sm text-foreground">
-                        <Monitor className="h-3 w-3 text-muted-foreground" />
-                        {session.computerName || 'N/A'}
+                      <div className="bg-gray-50 dark:bg-gray-950/20 border border-gray-200 dark:border-gray-800 rounded-md p-2">
+                        <div className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Máy tính</div>
+                        <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                          {session.computerName || 'Chưa chọn máy'}
+                        </div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="flex items-center gap-2 text-sm text-foreground">
-                        <Calendar className="h-3 w-3 text-muted-foreground" />
-                        {session.startTime ? formatDateTime(session.startTime) : 'N/A'}
+                      <div className="bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-800 rounded-md p-2">
+                        <div className="text-xs font-medium text-indigo-600 dark:text-indigo-400 mb-1">Thời gian bắt đầu</div>
+                        <div className="text-sm font-semibold text-indigo-900 dark:text-indigo-100">
+                          {session.startTime ? formatDateTime(session.startTime) : 'Chưa bắt đầu'}
+                        </div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <div className="flex items-center gap-2 text-sm text-foreground">
-                        <Calendar className="h-3 w-3 text-muted-foreground" />
-                        {session.endTime ? formatDateTime(session.endTime) : "Chưa kết thúc"}
+                      <div className="bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-800 rounded-md p-2">
+                        <div className="text-xs font-medium text-teal-600 dark:text-teal-400 mb-1">Thời gian kết thúc</div>
+                        <div className="text-sm font-semibold text-teal-900 dark:text-teal-100">
+                          {session.endTime ? formatDateTime(session.endTime) : "Chưa kết thúc"}
+                        </div>
                       </div>
                     </td>
                     <td className="py-4 px-4">
-                      <span className="text-sm font-medium text-foreground">
-                        {session.startTime ? formatDuration(session.startTime, session.endTime) : 'N/A'}
-                      </span>
+                      <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md p-2">
+                        <div className="text-xs font-medium text-amber-600 dark:text-amber-400 mb-1">Thời lượng</div>
+                        <div className="text-sm font-bold text-amber-900 dark:text-amber-100">
+                          {session.startTime ? formatDuration(session.startTime, session.endTime) : 'Chưa tính'}
+                        </div>
+                      </div>
                     </td>
                     <td className="py-4 px-4">
                       <span
