@@ -73,9 +73,20 @@ export function RefundFormSheet({ sale, open, onOpenChange, onSuccess }: RefundF
       return
     }
 
+    if (!formData.refundReason || formData.refundReason.trim() === '') {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng nhập lý do hoàn tiền",
+        variant: "destructive",
+      })
+      return
+    }
+
     setLoading(true)
     try {
+      console.log('Submitting refund form:', formData)
       const result = await refundsApi.create(formData)
+      console.log('Refund created successfully:', result)
       toast({
         title: "Thành công",
         description: "Đã tạo yêu cầu hoàn tiền thành công",
@@ -83,6 +94,7 @@ export function RefundFormSheet({ sale, open, onOpenChange, onSuccess }: RefundF
       onSuccess(result)
       onOpenChange(false)
     } catch (error) {
+      console.error('Error creating refund:', error)
       toast({
         title: "Lỗi",
         description: "Không thể tạo yêu cầu hoàn tiền",
@@ -124,7 +136,7 @@ export function RefundFormSheet({ sale, open, onOpenChange, onSuccess }: RefundF
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-6 max-h-[calc(100vh-200px)] overflow-y-auto">
           {/* Sale Information */}
           <Card>
             <CardHeader>
@@ -194,7 +206,7 @@ export function RefundFormSheet({ sale, open, onOpenChange, onSuccess }: RefundF
               </div>
               
               <div>
-                <Label htmlFor="refundReason">Lý do hoàn tiền</Label>
+                <Label htmlFor="refundReason">Lý do hoàn tiền *</Label>
                 <Textarea
                   id="refundReason"
                   value={formData.refundReason || ''}
@@ -204,6 +216,7 @@ export function RefundFormSheet({ sale, open, onOpenChange, onSuccess }: RefundF
                   }))}
                   placeholder="Nhập lý do hoàn tiền..."
                   rows={3}
+                  required
                 />
               </div>
             </CardContent>
@@ -283,16 +296,21 @@ export function RefundFormSheet({ sale, open, onOpenChange, onSuccess }: RefundF
           </Card>
 
           {/* Actions */}
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end space-x-2 pt-4 border-t">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
+              className="min-w-[100px]"
             >
               Hủy
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="min-w-[180px] bg-blue-600 hover:bg-blue-700"
+            >
               {loading ? "Đang xử lý..." : "Tạo yêu cầu hoàn tiền"}
             </Button>
           </div>
