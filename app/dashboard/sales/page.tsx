@@ -136,6 +136,12 @@ export default function SalesPage() {
     }
   }
 
+  // Handle refund sale
+  const handleRefundSale = (sale: Sale) => {
+    setRefundSale(sale)
+    setRefundFormOpen(true)
+  }
+
   // Handle edit sale
   const handleEditSale = (sale: Sale) => {
     setEditingSale(sale)
