@@ -306,17 +306,17 @@ export default function SessionsPage() {
                         )}
                         {session.membershipCardName && (
                           <div className="text-xs text-muted-foreground ml-5">
-                            {session.membershipCardName}
+                            Thẻ thành viên: {session.membershipCardName}
                           </div>
                         )}
                         {session.hasAccount && session.accountUsername && (
                           <div className="text-xs text-muted-foreground ml-5">
-                            @{session.accountUsername}
+                            Khách hàng: @{session.accountUsername}
                           </div>
                         )}
                         {session.customerBalance !== undefined && (
                           <div className="text-xs text-muted-foreground ml-5">
-                            {session.customerBalance.toLocaleString('vi-VN')}đ
+                            Số dư: {session.customerBalance.toLocaleString('vi-VN')}đ
                           </div>
                         )}
                       </div>
