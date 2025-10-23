@@ -123,14 +123,18 @@ export default function SalesPage() {
 
   // Handle update sale status
   const handleUpdateSaleStatus = async (sale: Sale, status: SaleStatus) => {
+    console.log('handleUpdateSaleStatus called:', { saleId: sale.saleId, status })
     try {
-      await salesApi.updateStatus(sale.saleId, { status })
+      console.log('Calling salesApi.updateStatus...')
+      const result = await salesApi.updateStatus(sale.saleId, { status })
+      console.log('API call successful:', result)
       toast({
         title: "Thành công",
         description: `Đã cập nhật trạng thái hóa đơn #${sale.saleId} thành ${status === 'Paid' ? 'Đã thanh toán' : 'Đã hủy'}`,
       })
       loadSales() // Reload sales data
     } catch (error) {
+      console.error('API call failed:', error)
       toast({
         title: "Lỗi",
         description: "Không thể cập nhật trạng thái hóa đơn",
