@@ -48,14 +48,23 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
 
       // Enrich each recent session with full customer/account/membership info
       if (stats?.recentSessions?.length) {
+        console.log('Original usage stats sessions:', stats.recentSessions)
         const sessionIds = stats.recentSessions.map(s => s.sessionId)
+        console.log('Session IDs to enrich:', sessionIds)
+        
         const results = await Promise.allSettled(sessionIds.map(id => SessionApi.getById(id)))
         const map = new Map<number, SessionDTO>()
+        
         results.forEach((r, idx) => {
           if (r.status === "fulfilled" && r.value) {
+            console.log(`Enriched session ${sessionIds[idx]}:`, r.value)
             map.set(sessionIds[idx], r.value)
+          } else {
+            console.error(`Failed to enrich session ${sessionIds[idx]}:`, r.status === "rejected" ? r.reason : "Unknown error")
           }
         })
+        
+        console.log('Final enriched map:', map)
         setEnrichedBySessionId(map)
       } else {
         setEnrichedBySessionId(new Map())
@@ -124,7 +133,7 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-[95vw] w-[95vw] max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-[98vw] w-[98vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-3">
           <DialogTitle className="flex items-center gap-1 text-xl">
             <History className="h-5 w-5 text-primary" />
@@ -238,6 +247,16 @@ export function ComputerUsageHistorySheet({ computerId, computerName, children }
                           const displayPhone = enriched?.customerPhone || session.customerPhone || 'Chưa có'
                           const displayCard = enriched?.membershipCardName || session.membershipCardName || 'Chưa có'
                           const displayAccount = enriched?.accountUsername || 'Chưa có'
+                          
+                          // Debug: Kiểm tra từng field
+                          console.log(`Session ${session.sessionId} field analysis:`, {
+                            'enriched.customerName': enriched?.customerName,
+                            'session.customerName': session.customerName,
+                            'final displayName': displayName,
+                            'enriched.customerPhone': enriched?.customerPhone,
+                            'session.customerPhone': session.customerPhone,
+                            'final displayPhone': displayPhone
+                          })
                           
                           return (
                           <div key={session.sessionId} className="border border-border rounded-lg p-3 hover:shadow-md transition-all duration-200 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
