@@ -3,7 +3,8 @@ import { http } from "./api";
 export type SaleStatus = 'Pending' | 'Paid' | 'Cancelled';
 
 export interface SaleDetail {
-  saleId: number;
+  saleDetailId: number; // ID của SaleDetail entity
+  saleId: number; // ID của Sale entity
   itemId: number;
   quantity: number;
 }

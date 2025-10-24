@@ -38,7 +38,7 @@ export function RefundFormSheet({ sale, open, onOpenChange, onSuccess }: RefundF
     if (open) {
       // Initialize refund details from sale items
       const details: RefundDetail[] = sale.items.map(item => ({
-        saleDetailId: item.saleId, // This should be saleDetailId, but we'll use saleId for now
+        saleDetailId: item.saleDetailId, // Use the correct saleDetailId
         quantity: item.quantity,
         itemName: `Sản phẩm ${item.itemId}`,
         itemPrice: 0, // This should come from item data
