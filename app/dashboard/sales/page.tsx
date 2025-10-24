@@ -248,7 +248,7 @@ export default function SalesPage() {
         <TabsContent value="sales" className="space-y-6">
           {/* Sales Stats */}
           <div data-tour="sale-stats">
-            <SaleStats sales={sales} loading={loading} />
+            <SaleStats sales={sales} loading={loading} refunds={refunds} />
           </div>
 
           {/* Sales Table */}

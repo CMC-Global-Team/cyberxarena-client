@@ -84,8 +84,20 @@ export function SaleTable({ sales, loading, onEdit, onView, onRefund, onUpdateSt
   }
 
   // Render status badge
-  const renderStatusBadge = (status: SaleStatus) => {
-    switch (status) {
+  const renderStatusBadge = (sale: Sale) => {
+    // Kiểm tra xem sale có refund không
+    const hasRefund = refunds.some(refund => refund.saleId === sale.saleId)
+    
+    if (hasRefund) {
+      return (
+        <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200">
+          <RotateCcw className="h-3 w-3 mr-1" />
+          Đã hoàn tiền
+        </Badge>
+      )
+    }
+
+    switch (sale.status) {
       case 'Pending':
         return (
           <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
@@ -110,7 +122,7 @@ export function SaleTable({ sales, loading, onEdit, onView, onRefund, onUpdateSt
       default:
         return (
           <Badge variant="outline">
-            {status}
+            {sale.status}
           </Badge>
         )
     }
@@ -187,16 +199,7 @@ export function SaleTable({ sales, loading, onEdit, onView, onRefund, onUpdateSt
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col space-y-1">
-                        {renderStatusBadge(sale.status)}
-                        {/* Hiển thị trạng thái refund nếu có */}
-                        {refunds.some(refund => refund.saleId === sale.saleId) && (
-                          <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-                            <RotateCcw className="h-3 w-3 mr-1" />
-                            Đã hoàn tiền
-                          </Badge>
-                        )}
-                      </div>
+                      {renderStatusBadge(sale)}
                     </TableCell>
                     <TableCell className="text-right">
                       <div data-tour="sale-actions" className="flex items-center justify-end space-x-2">
