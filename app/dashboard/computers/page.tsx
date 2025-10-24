@@ -14,7 +14,7 @@ import { ComputerApi, type ComputerDTO, type ComputerUsageStats } from "@/lib/co
 import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
 import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
-import { HelpCircle } from "lucide-react"
+import { TourTrigger } from "@/components/ui/tour-trigger"
 
 export default function ComputersPage() {
   const { notify } = useNotice()
@@ -207,11 +207,7 @@ export default function ComputersPage() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <h1 className="text-3xl font-bold text-foreground" data-tour="page-title">Quản lý máy tính</h1>
-            <HelpCircle 
-              className="h-6 w-6 text-red-500 cursor-pointer hover:text-red-600 transition-colors" 
-              onClick={() => setShowTour(true)}
-              title="Hướng dẫn sử dụng"
-            />
+            <TourTrigger onClick={() => setShowTour(true)} />
           </div>
           <p className="text-muted-foreground">Danh sách và thông tin máy tính</p>
         </div>
