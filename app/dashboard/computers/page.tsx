@@ -13,7 +13,7 @@ import { ComputerUsageHistorySheet } from "@/components/computer-usage-history-s
 import { ComputerApi, type ComputerDTO, type ComputerUsageStats } from "@/lib/computers"
 import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
-import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
+import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 import { TourTrigger } from "@/components/ui/tour-trigger"
 
 export default function ComputersPage() {
@@ -201,8 +201,8 @@ export default function ComputersPage() {
   }
 
   return (
-    <div className="p-6 space-y-6 relative">
-      <PageLoadingOverlay isLoading={isLoading} pageType="computers" />
+    <OptimizedPageLayout isLoading={isLoading} pageType="computers">
+      <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -482,6 +482,7 @@ export default function ComputersPage() {
         isActive={showTour} 
         onComplete={() => setShowTour(false)} 
       />
-    </div>
+      </div>
+    </OptimizedPageLayout>
   )
 }
