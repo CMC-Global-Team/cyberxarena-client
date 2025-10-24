@@ -15,7 +15,7 @@ import { MembershipStats } from "@/components/membership-management/membership-s
 import { MembershipFormSheet } from "@/components/membership-management/membership-form-sheet"
 import { MembershipTour } from "@/components/membership-management/membership-tour"
 import { EligibleCustomersModal } from "@/components/membership-management/eligible-customers-modal"
-import { HelpCircle } from "lucide-react"
+import { TourTrigger } from "@/components/ui/tour-trigger"
 
 export default function MembershipsPage() {
   const { toast } = useToast()
@@ -150,11 +150,7 @@ export default function MembershipsPage() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <h1 className="text-3xl font-bold tracking-tight" data-tour="page-title">Quản lý thẻ thành viên</h1>
-            <HelpCircle 
-              className="h-6 w-6 text-red-500 cursor-pointer hover:text-red-600 transition-colors" 
-              onClick={() => setShowTour(true)}
-              title="Hướng dẫn sử dụng"
-            />
+            <TourTrigger onClick={() => setShowTour(true)} />
           </div>
           <p className="text-muted-foreground">Quản lý các gói thẻ thành viên và giảm giá liên quan</p>
         </div>

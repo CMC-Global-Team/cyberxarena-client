@@ -13,7 +13,7 @@ import { DiscountTable } from "@/components/discount-management/discount-table"
 import { DiscountStats } from "@/components/discount-management/discount-stats"
 import { DiscountFormSheet } from "@/components/discount-management/discount-form-sheet"
 import { DiscountTour } from "@/components/discount-management/discount-tour"
-import { HelpCircle } from "lucide-react"
+import { TourTrigger } from "@/components/ui/tour-trigger"
 
 export default function DiscountsPage() {
   const { toast } = useToast()
@@ -123,11 +123,7 @@ export default function DiscountsPage() {
         <div>
           <div className="flex items-center gap-2 mb-2">
             <h1 className="text-3xl font-bold tracking-tight" data-tour="page-title">Quản lý giảm giá</h1>
-            <HelpCircle 
-              className="h-6 w-6 text-red-500 cursor-pointer hover:text-red-600 transition-colors" 
-              onClick={() => setShowTour(true)}
-              title="Hướng dẫn sử dụng"
-            />
+            <TourTrigger onClick={() => setShowTour(true)} />
           </div>
           <p className="text-muted-foreground">
             Quản lý các loại giảm giá trong hệ thống
