@@ -2,6 +2,15 @@ import { http } from "./api";
 
 export type SaleStatus = 'Pending' | 'Paid' | 'Cancelled';
 
+// Spring Page response shape
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number; // current page index
+}
+
 export interface SaleDetail {
   saleDetailId: number; // ID của SaleDetail entity
   saleId: number; // ID của Sale entity
@@ -56,6 +65,8 @@ export interface SaleSearchParams {
   saleId?: number;
   customerId?: number;
   customerName?: string;
+  page?: number;
+  size?: number;
 }
 
 export const salesApi = {
@@ -75,16 +86,18 @@ export const salesApi = {
   delete: (id: number): Promise<void> => 
     http.delete<void>(`/sale/${id}`),
 
-  // Tìm kiếm sale
-  search: (params: SaleSearchParams): Promise<Sale[]> => {
+  // Tìm kiếm sale với pagination
+  search: (params: SaleSearchParams): Promise<PageResponse<Sale>> => {
     const query = new URLSearchParams();
     if (params.sortBy) query.set("sortBy", params.sortBy);
     if (params.sortOrder) query.set("sortOrder", params.sortOrder);
     if (params.saleId) query.set("saleId", String(params.saleId));
     if (params.customerId) query.set("customerId", String(params.customerId));
     if (params.customerName) query.set("customerName", params.customerName);
+    if (params.page !== undefined) query.set("page", String(params.page));
+    if (params.size !== undefined) query.set("size", String(params.size));
     
     const path = `/sale/search${query.toString() ? `?${query.toString()}` : ""}`;
-    return http.get<Sale[]>(path);
+    return http.get<PageResponse<Sale>>(path);
   },
 };

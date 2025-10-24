@@ -15,7 +15,8 @@ import { TourTrigger } from "@/components/ui/tour-trigger"
 import { CustomerRankInfo } from "@/components/customer-management/customer-rank-info"
 import { DiscountCalculator } from "@/components/customer-management/discount-calculator"
 import { CustomerDeleteConfirmationModal } from "@/components/customer-management/customer-delete-confirmation-modal"
-import { CustomerApi, AccountApi, type CustomerDTO, type AccountDTO, CreateCustomerRequestDTO } from "@/lib/customers"
+import { DataPagination } from "@/components/ui/data-pagination"
+import { CustomerApi, AccountApi, type CustomerDTO, type AccountDTO, CreateCustomerRequestDTO, PageResponse } from "@/lib/customers"
 import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
 import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
@@ -55,12 +56,38 @@ export default function CustomersPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null)
   const [deleting, setDeleting] = useState(false)
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0)
+  const [pageSize, setPageSize] = useState(20)
+  const [totalElements, setTotalElements] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
 
-  const loadCustomers = async () => {
+  const loadCustomers = async (page: number = currentPage, size: number = pageSize) => {
     try {
       setLoading(true)
-      const res = await withPageLoading(() => CustomerApi.list({ page: 0, size: 100, sortBy: "customerId", sortDir: "asc" }))
-      setCustomers(res)
+      const res = await withPageLoading(() => CustomerApi.list({ 
+        page, 
+        size, 
+        sortBy: "customerId", 
+        sortDir: "asc" 
+      }))
+      
+      if (res && typeof res === 'object' && 'content' in res) {
+        // Handle paginated response
+        const pageResponse = res as PageResponse<CustomerDTO>
+        setCustomers(pageResponse.content)
+        setTotalElements(pageResponse.totalElements)
+        setTotalPages(pageResponse.totalPages)
+        setCurrentPage(pageResponse.number)
+      } else {
+        // Handle non-paginated response (fallback)
+        setCustomers(res as CustomerDTO[])
+        setTotalElements((res as CustomerDTO[]).length)
+        setTotalPages(1)
+        setCurrentPage(0)
+      }
+      
       setLastUpdateTime(Date.now())
     } catch (e: any) {
       notify({ type: "error", message: `Lỗi tải danh sách khách hàng: ${e?.message || ''}` })
@@ -69,11 +96,38 @@ export default function CustomersPage() {
     }
   }
 
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    loadCustomers(page, pageSize)
+  }
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size)
+    setCurrentPage(0) // Reset to first page when changing page size
+    loadCustomers(0, size)
+  }
+
   // Refresh customer data after rank update
   const refreshCustomerData = async () => {
     try {
-      const res = await CustomerApi.list({ page: 0, size: 100, sortBy: "customerId", sortDir: "asc" })
-      setCustomers(res)
+      const res = await CustomerApi.list({ 
+        page: currentPage, 
+        size: pageSize, 
+        sortBy: "customerId", 
+        sortDir: "asc" 
+      })
+      
+      if (res && typeof res === 'object' && 'content' in res) {
+        const pageResponse = res as PageResponse<CustomerDTO>
+        setCustomers(pageResponse.content)
+        setTotalElements(pageResponse.totalElements)
+        setTotalPages(pageResponse.totalPages)
+        setCurrentPage(pageResponse.number)
+      } else {
+        setCustomers(res as CustomerDTO[])
+      }
+      
       setLastUpdateTime(Date.now())
     } catch (e) {
       console.error("Error refreshing customer data:", e)
@@ -358,6 +412,20 @@ export default function CustomersPage() {
             onViewRechargeHistory={handleViewRechargeHistory}
             onViewRankInfo={handleViewRankInfo}
             onOpenDiscountCalculator={handleOpenDiscountCalculator}
+          />
+        </div>
+
+        {/* Pagination */}
+        <div className="mt-6">
+          <DataPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalElements={totalElements}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            showPageSizeSelector={true}
+            pageSizeOptions={[10, 20, 50, 100]}
           />
         </div>
 
