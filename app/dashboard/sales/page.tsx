@@ -189,7 +189,9 @@ export default function SalesPage() {
   const handleRefundStatusUpdate = async (id: number, status: 'Pending' | 'Approved' | 'Rejected' | 'Completed') => {
     try {
       await refundsApi.updateStatus(id, status)
+      // Reload both refunds and sales to update status display
       loadRefunds()
+      loadSales()
     } catch (error) {
       throw error
     }
