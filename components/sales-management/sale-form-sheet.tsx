@@ -52,6 +52,7 @@ export function SaleFormSheet({ sale, mode, onSuccess, children, open: controlle
   const [selectedDiscount, setSelectedDiscount] = useState<Discount | null>(null)
   const [membershipDiscount, setMembershipDiscount] = useState<Discount | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [filteredItems, setFilteredItems] = useState<Item[]>([])
   const [discountType, setDiscountType] = useState<'none' | 'membership' | 'manual'>('none')
   
@@ -81,18 +82,25 @@ export function SaleFormSheet({ sale, mode, onSuccess, children, open: controlle
     loadData()
   }, [toast])
 
-  // Filter items based on search term
+  // Filter items based on search term and category
   useEffect(() => {
+    let filtered = items
+
+    // Filter by category
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(item => item.itemCategory === selectedCategory)
+    }
+
+    // Filter by search term
     if (searchTerm) {
-      const filtered = items.filter(item =>
+      filtered = filtered.filter(item =>
         item.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.itemCategory?.toLowerCase().includes(searchTerm.toLowerCase())
       )
-      setFilteredItems(filtered)
-    } else {
-      setFilteredItems(items)
     }
-  }, [searchTerm, items])
+
+    setFilteredItems(filtered)
+  }, [searchTerm, selectedCategory, items])
 
   // Initialize form data
   useEffect(() => {
@@ -370,12 +378,25 @@ export function SaleFormSheet({ sale, mode, onSuccess, children, open: controlle
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label>Sản phẩm</Label>
-              <div className="w-64">
-                <Input
-                  placeholder="Tìm kiếm sản phẩm..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+              <div className="flex gap-2">
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="Danh mục" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tất cả</SelectItem>
+                    {Array.from(new Set(items.map(item => item.itemCategory).filter(Boolean))).map(category => (
+                      <SelectItem key={category} value={category!}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className="w-64">
+                  <Input
+                    placeholder="Tìm kiếm sản phẩm..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
               </div>
             </div>
             
