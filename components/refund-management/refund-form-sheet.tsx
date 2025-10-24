@@ -37,13 +37,17 @@ export function RefundFormSheet({ sale, open, onOpenChange, onSuccess }: RefundF
   useEffect(() => {
     if (open) {
       // Initialize refund details from sale items
-      const details: RefundDetail[] = sale.items.map(item => ({
-        saleDetailId: item.saleDetailId, // Use the correct saleDetailId
-        quantity: item.quantity,
-        itemName: `Sản phẩm ${item.itemId}`,
-        itemPrice: 0, // This should come from item data
-        totalAmount: 0
-      }))
+      console.log('Sale items for refund:', sale.items)
+      const details: RefundDetail[] = sale.items.map(item => {
+        console.log('Processing item:', item)
+        return {
+          saleDetailId: item.saleDetailId, // Use the correct saleDetailId
+          quantity: item.quantity,
+          itemName: `Sản phẩm ${item.itemId}`,
+          itemPrice: 0, // This should come from item data
+          totalAmount: 0
+        }
+      })
       setRefundDetails(details)
       setFormData(prev => ({
         ...prev,
