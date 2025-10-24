@@ -13,6 +13,7 @@ import { ProductFormSheet } from "@/components/product-management/product-form-s
 import { ProductTour } from "@/components/product-management/product-tour"
 import { DataPagination } from "@/components/ui/data-pagination"
 import { TourTrigger } from "@/components/ui/tour-trigger"
+import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -88,7 +89,8 @@ export default function ProductsPage() {
   }, [])
 
   return (
-    <div className="space-y-6 p-6">
+    <OptimizedPageLayout isLoading={loading} pageType="products">
+      <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -182,6 +184,7 @@ export default function ProductsPage() {
         isActive={showTour} 
         onComplete={() => setShowTour(false)} 
       />
-    </div>
+      </div>
+    </OptimizedPageLayout>
   )
 }

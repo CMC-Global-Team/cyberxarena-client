@@ -7,6 +7,7 @@ import { RecentActivities } from "@/components/dashboard/recent-activities"
 import { ComputerStatusCard } from "@/components/dashboard/computer-status"
 import { DashboardLoading } from "@/components/dashboard/dashboard-loading"
 import { DashboardError } from "@/components/dashboard/dashboard-error"
+import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
@@ -41,27 +42,25 @@ export default function DashboardPage() {
     fetchDashboardData()
   }, [])
 
-  if (loading) {
-    return <DashboardLoading />
-  }
-
   if (error) {
     return <DashboardError error={error} onRetry={() => window.location.reload()} />
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard</h1>
-        <p className="text-muted-foreground">Tổng quan hệ thống CyberX Arena</p>
-      </div>
+    <OptimizedPageLayout isLoading={loading} pageType="customers">
+      <div className="p-6 space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Dashboard</h1>
+          <p className="text-muted-foreground">Tổng quan hệ thống CyberX Arena</p>
+        </div>
 
-      {stats && <DashboardStatsComponent stats={stats} />}
+        {stats && <DashboardStatsComponent stats={stats} />}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentActivities activities={recentActivities} />
-        {computerStatus && <ComputerStatusCard status={computerStatus} />}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RecentActivities activities={recentActivities} />
+          {computerStatus && <ComputerStatusCard status={computerStatus} />}
+        </div>
       </div>
-    </div>
+    </OptimizedPageLayout>
   )
 }
