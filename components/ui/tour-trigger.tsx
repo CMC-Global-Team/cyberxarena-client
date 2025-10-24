@@ -1,6 +1,7 @@
 "use client"
 
 import { HelpCircle } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface TourTriggerProps {
   onClick: () => void
@@ -9,10 +10,18 @@ interface TourTriggerProps {
 
 export function TourTrigger({ onClick, className = "" }: TourTriggerProps) {
   return (
-    <HelpCircle 
-      className={`h-6 w-6 text-muted-foreground cursor-pointer hover:text-foreground transition-colors ${className}`}
-      onClick={onClick}
-      title="Hướng dẫn sử dụng"
-    />
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <HelpCircle 
+            className={`h-6 w-6 text-muted-foreground cursor-pointer hover:text-primary transition-colors ${className}`}
+            onClick={onClick}
+          />
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Hướng dẫn sử dụng</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
