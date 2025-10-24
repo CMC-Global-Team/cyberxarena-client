@@ -8,9 +8,10 @@ import { Sale } from "@/lib/sales"
 interface SaleStatsProps {
   sales: Sale[]
   loading?: boolean
+  refunds?: any[] // Danh sách refund để loại trừ khỏi tính toán
 }
 
-export function SaleStats({ sales, loading }: SaleStatsProps) {
+export function SaleStats({ sales, loading, refunds = [] }: SaleStatsProps) {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', { 
       style: 'currency', 
@@ -29,10 +30,16 @@ export function SaleStats({ sales, loading }: SaleStatsProps) {
       }
     }
 
-    const totalRevenue = sales.reduce((sum, sale) => sum + sale.totalAmount, 0)
+    // Lọc ra những sales đã có refund (không tính vào doanh thu)
+    const salesWithoutRefund = sales.filter(sale => {
+      const hasRefund = refunds.some(refund => refund.saleId === sale.saleId)
+      return !hasRefund
+    })
+
+    const totalRevenue = salesWithoutRefund.reduce((sum, sale) => sum + sale.totalAmount, 0)
     const totalItems = sales.reduce((sum, sale) => sum + sale.items.length, 0)
     const uniqueCustomers = new Set(sales.map(sale => sale.customerId)).size
-    const averageOrderValue = totalRevenue / sales.length
+    const averageOrderValue = salesWithoutRefund.length > 0 ? totalRevenue / salesWithoutRefund.length : 0
 
     return {
       totalSales: sales.length,
