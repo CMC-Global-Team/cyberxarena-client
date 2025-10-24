@@ -17,6 +17,7 @@ import { TourTrigger } from "@/components/ui/tour-trigger"
 import { RefundFormSheet } from "@/components/refund-management/refund-form-sheet"
 import { RefundTable } from "@/components/refund-management/refund-table"
 import { RefundStats } from "@/components/refund-management/refund-stats"
+import { RefundDetailDialog } from "@/components/refund-management/refund-detail-dialog"
 import { Refund, refundsApi } from "@/lib/refunds"
 import { SaleDetailDialog } from "@/components/sales-management/sale-detail-dialog"
 
@@ -33,6 +34,8 @@ export default function SalesPage() {
   const [activeTab, setActiveTab] = useState<"sales" | "refunds">("sales")
   const [viewingSale, setViewingSale] = useState<Sale | undefined>()
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [viewingRefund, setViewingRefund] = useState<Refund | undefined>()
+  const [refundDetailDialogOpen, setRefundDetailDialogOpen] = useState(false)
   const [showTour, setShowTour] = useState(false)
   const { toast } = useToast()
 
@@ -199,10 +202,8 @@ export default function SalesPage() {
 
   // Handle refund view
   const handleRefundView = (refund: Refund) => {
-    toast({
-      title: "Thông tin",
-      description: `Xem chi tiết hoàn tiền #${refund.refundId}`,
-    })
+    setViewingRefund(refund)
+    setRefundDetailDialogOpen(true)
   }
 
   return (
@@ -346,6 +347,14 @@ export default function SalesPage() {
         sale={viewingSale}
         open={detailDialogOpen}
         onOpenChange={setDetailDialogOpen}
+      />
+
+      {/* Refund Detail Dialog */}
+      <RefundDetailDialog
+        refund={viewingRefund}
+        open={refundDetailDialogOpen}
+        onOpenChange={setRefundDetailDialogOpen}
+        sale={viewingRefund ? sales.find(s => s.saleId === viewingRefund.saleId) : undefined}
       />
 
       {/* Tour */}
