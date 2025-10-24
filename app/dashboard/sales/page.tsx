@@ -13,6 +13,7 @@ import { SaleTable } from "@/components/sales-management/sale-table"
 import { SaleFormSheet } from "@/components/sales-management/sale-form-sheet"
 import { SaleStats } from "@/components/sales-management/sale-stats"
 import { SaleTour } from "@/components/sales-management/sale-tour"
+import { TourTrigger } from "@/components/ui/tour-trigger"
 import { RefundFormSheet } from "@/components/refund-management/refund-form-sheet"
 import { RefundTable } from "@/components/refund-management/refund-table"
 import { RefundStats } from "@/components/refund-management/refund-stats"
@@ -32,6 +33,7 @@ export default function SalesPage() {
   const [activeTab, setActiveTab] = useState<"sales" | "refunds">("sales")
   const [viewingSale, setViewingSale] = useState<Sale | undefined>()
   const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [showTour, setShowTour] = useState(false)
   const { toast } = useToast()
 
   // Load sales data
@@ -206,13 +208,15 @@ export default function SalesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Quản lý bán hàng & Hoàn tiền</h1>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-3xl font-bold tracking-tight" data-tour="page-title">Quản lý bán hàng & Hoàn tiền</h1>
+            <TourTrigger onClick={() => setShowTour(true)} />
+          </div>
           <p className="text-muted-foreground">
             Quản lý hóa đơn bán hàng và xử lý yêu cầu hoàn tiền
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <SaleTour />
           <Button
             onClick={() => {
               if (activeTab === "sales") {
@@ -340,6 +344,12 @@ export default function SalesPage() {
         sale={viewingSale}
         open={detailDialogOpen}
         onOpenChange={setDetailDialogOpen}
+      />
+
+      {/* Tour */}
+      <SaleTour 
+        isActive={showTour} 
+        onComplete={() => setShowTour(false)} 
       />
     </div>
   )

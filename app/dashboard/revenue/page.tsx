@@ -14,6 +14,7 @@ import { RevenueTable } from "@/components/revenue-management/revenue-table"
 import { RevenueChart } from "@/components/revenue-management/revenue-chart"
 import { RevenueFormSheet } from "@/components/revenue-management/revenue-form-sheet"
 import { RevenueTour } from "@/components/revenue-management/revenue-tour"
+import { TourTrigger } from "@/components/ui/tour-trigger"
 import { RevenueAnimations } from "@/components/animations/revenue-animations"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
@@ -28,6 +29,7 @@ export default function RevenuePage() {
   })
   const [activeTab, setActiveTab] = useState<"overview" | "reports" | "analytics">("overview")
   const [formOpen, setFormOpen] = useState(false)
+  const [showTour, setShowTour] = useState(false)
   const [stats, setStats] = useState({
     totalRevenue: 0,
     totalComputerUsageRevenue: 0,
@@ -140,13 +142,15 @@ export default function RevenuePage() {
         {/* Header */}
         <div data-animate="page-header" className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Quản lý doanh thu</h1>
+            <div className="flex items-center gap-2 mb-2">
+              <h1 className="text-3xl font-bold tracking-tight" data-tour="page-title">Quản lý doanh thu</h1>
+              <TourTrigger onClick={() => setShowTour(true)} />
+            </div>
             <p className="text-muted-foreground">
               Theo dõi và phân tích doanh thu từ sử dụng máy tính và bán hàng
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            <RevenueTour />
             <Button
               onClick={() => {
                 loadRevenues()
@@ -292,6 +296,12 @@ export default function RevenuePage() {
             </TabsContent>
           </Tabs>
         </div>
+
+        {/* Tour */}
+        <RevenueTour 
+          isActive={showTour} 
+          onComplete={() => setShowTour(false)} 
+        />
       </div>
     </RevenueAnimations>
   )
