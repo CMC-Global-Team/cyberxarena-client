@@ -51,7 +51,7 @@ export const revenueApi = {
     if (params.startDate) query.set("startDate", params.startDate);
     if (params.endDate) query.set("endDate", params.endDate);
     
-    const path = `/api/v1/revenue${query.toString() ? `?${query.toString()}` : ""}`;
+    const path = `/revenue${query.toString() ? `?${query.toString()}` : ""}`;
     return http.get<RevenuePageResponse>(path);
   },
 
@@ -61,15 +61,15 @@ export const revenueApi = {
     query.set("startDate", request.startDate);
     query.set("endDate", request.endDate);
     
-    return http.post<Revenue[]>(`/api/v1/revenue/generate?${query.toString()}`);
+    return http.post<Revenue[]>(`/revenue/generate?${query.toString()}`);
   },
 
   // Tính lại báo cáo doanh thu cho một ngày cụ thể
   recalculateReport: (date: string): Promise<Revenue> => {
-    return http.put<Revenue>(`/api/v1/revenue/recalculate?date=${date}`);
+    return http.put<Revenue>(`/revenue/recalculate?date=${date}`);
   },
 
-  // Lấy thống kê tổng quan
+  // Lấy thống kê tổng quan (tính từ dữ liệu getAll)
   getStats: async (startDate?: string, endDate?: string): Promise<{
     totalRevenue: number;
     totalComputerUsageRevenue: number;
@@ -77,27 +77,101 @@ export const revenueApi = {
     averageDailyRevenue: number;
     revenueGrowth: number;
   }> => {
-    const params = new URLSearchParams();
-    if (startDate) params.set("startDate", startDate);
-    if (endDate) params.set("endDate", endDate);
-    
-    const path = `/api/v1/revenue/stats${params.toString() ? `?${params.toString()}` : ""}`;
-    return http.get(path);
+    try {
+      // Lấy tất cả dữ liệu revenue
+      const data = await revenueApi.getAll({ 
+        page: 0, 
+        size: 1000, // Lấy nhiều để tính stats
+        startDate, 
+        endDate 
+      });
+      
+      const revenues = data.content || [];
+      
+      if (revenues.length === 0) {
+        return {
+          totalRevenue: 0,
+          totalComputerUsageRevenue: 0,
+          totalSalesRevenue: 0,
+          averageDailyRevenue: 0,
+          revenueGrowth: 0
+        };
+      }
+
+      // Tính toán stats
+      const totalRevenue = revenues.reduce((sum, r) => sum + r.totalRevenue, 0);
+      const totalComputerUsageRevenue = revenues.reduce((sum, r) => sum + r.computerUsageRevenue, 0);
+      const totalSalesRevenue = revenues.reduce((sum, r) => sum + r.salesRevenue, 0);
+      const averageDailyRevenue = totalRevenue / revenues.length;
+      
+      // Tính revenue growth (so với kỳ trước - giả sử)
+      const revenueGrowth = 0; // TODO: Implement proper growth calculation
+      
+      return {
+        totalRevenue,
+        totalComputerUsageRevenue,
+        totalSalesRevenue,
+        averageDailyRevenue,
+        revenueGrowth
+      };
+    } catch (error) {
+      console.error("Error calculating stats:", error);
+      return {
+        totalRevenue: 0,
+        totalComputerUsageRevenue: 0,
+        totalSalesRevenue: 0,
+        averageDailyRevenue: 0,
+        revenueGrowth: 0
+      };
+    }
   },
 
-  // Lấy dữ liệu cho biểu đồ theo thời gian
+  // Lấy dữ liệu cho biểu đồ theo thời gian (tính từ dữ liệu getAll)
   getChartData: async (startDate: string, endDate: string, interval: 'daily' | 'weekly' | 'monthly' = 'daily'): Promise<{
     labels: string[];
     computerUsageRevenue: number[];
     salesRevenue: number[];
     totalRevenue: number[];
   }> => {
-    const params = new URLSearchParams();
-    params.set("startDate", startDate);
-    params.set("endDate", endDate);
-    params.set("interval", interval);
-    
-    const path = `/api/v1/revenue/chart-data?${params.toString()}`;
-    return http.get(path);
+    try {
+      const data = await revenueApi.getAll({ 
+        page: 0, 
+        size: 1000,
+        startDate, 
+        endDate,
+        sortBy: 'date',
+        sortOrder: 'asc'
+      });
+      
+      const revenues = data.content || [];
+      
+      // Format data for charts
+      const labels = revenues.map(r => {
+        const date = new Date(r.date);
+        return date.toLocaleDateString('vi-VN', { 
+          day: '2-digit', 
+          month: '2-digit' 
+        });
+      });
+      
+      const computerUsageRevenue = revenues.map(r => r.computerUsageRevenue);
+      const salesRevenue = revenues.map(r => r.salesRevenue);
+      const totalRevenue = revenues.map(r => r.totalRevenue);
+      
+      return {
+        labels,
+        computerUsageRevenue,
+        salesRevenue,
+        totalRevenue
+      };
+    } catch (error) {
+      console.error("Error getting chart data:", error);
+      return {
+        labels: [],
+        computerUsageRevenue: [],
+        salesRevenue: [],
+        totalRevenue: []
+      };
+    }
   }
 };
