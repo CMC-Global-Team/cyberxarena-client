@@ -9,6 +9,8 @@ import { Search, Clock, MoreVertical, User, Monitor, Calendar, DollarSign } from
 import { SessionFormSheet } from "@/components/session-form-sheet"
 import { SessionActionsSheet } from "@/components/session-actions-sheet"
 import { ChangeComputerSheet } from "@/components/change-computer-sheet"
+import { SessionTour } from "@/components/session-management/session-tour"
+import { TourTrigger } from "@/components/ui/tour-trigger"
 import { SessionApi, type SessionDTO } from "@/lib/sessions"
 import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
@@ -28,6 +30,7 @@ export default function SessionsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("sessionId")
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
+  const [showTour, setShowTour] = useState(false)
 
   const loadSessions = async () => {
     try {
@@ -201,12 +204,16 @@ export default function SessionsPage() {
       <PageLoadingOverlay isLoading={isLoading} pageType="sessions" />
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Quản lý phiên sử dụng</h1>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-3xl font-bold text-foreground" data-tour="page-title">Quản lý phiên sử dụng</h1>
+            <TourTrigger onClick={() => setShowTour(true)} />
+          </div>
           <p className="text-muted-foreground">Danh sách và thông tin phiên sử dụng</p>
         </div>
         <Button
           onClick={() => setAddSheetOpen(true)}
           className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          data-tour="add-session-btn"
         >
           <Clock className="h-4 w-4 mr-2" />
           Tạo phiên mới
@@ -223,11 +230,12 @@ export default function SessionsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 bg-secondary border-border"
+                data-tour="search-input"
               />
             </div>
             <div className="w-[180px]">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="bg-secondary border-border">
+                <SelectTrigger className="bg-secondary border-border" data-tour="status-filter">
                   <SelectValue placeholder="Trạng thái" />
                 </SelectTrigger>
                 <SelectContent>
@@ -266,7 +274,7 @@ export default function SessionsPage() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1400px]">
+            <table className="w-full min-w-[1400px]" data-tour="sessions-table">
               <thead>
                 <tr className="border-b border-border">
                   <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Phiên sử dụng</th>
@@ -367,6 +375,7 @@ export default function SessionsPage() {
                         size="sm"
                         className="h-8 w-8 p-0"
                         onClick={() => handleOpenActions(session)}
+                        data-tour="session-actions"
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
@@ -508,6 +517,12 @@ export default function SessionsPage() {
           onComputerChanged={handleComputerChanged}
         />
       )}
+
+      {/* Session Tour */}
+      <SessionTour 
+        isOpen={showTour} 
+        onClose={() => setShowTour(false)} 
+      />
     </div>
   )
 }
