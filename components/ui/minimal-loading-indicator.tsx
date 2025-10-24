@@ -11,7 +11,7 @@ interface MinimalLoadingIndicatorProps {
 export function MinimalLoadingIndicator({ 
   isLoading, 
   message = "Đang tải...", 
-  position = 'top-right' 
+  position = 'center' 
 }: MinimalLoadingIndicatorProps) {
   if (!isLoading) return null
 
@@ -28,15 +28,19 @@ export function MinimalLoadingIndicator({
       case 'center':
         return 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'
       default:
-        return 'fixed top-4 right-4'
+        return 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'
     }
   }
 
   return (
     <div className={`${getPositionClasses()} z-50`}>
-      <div className="bg-background/95 backdrop-blur-sm border rounded-lg shadow-lg px-4 py-2 flex items-center space-x-2">
-        <Spinner className="h-4 w-4" />
-        <span className="text-sm text-muted-foreground">{message}</span>
+      <div className="flex flex-col items-center space-y-3">
+        <Spinner className="h-8 w-8 text-primary" />
+        {message && (
+          <span className="text-sm text-muted-foreground bg-background/80 backdrop-blur-sm px-3 py-1 rounded-full">
+            {message}
+          </span>
+        )}
       </div>
     </div>
   )

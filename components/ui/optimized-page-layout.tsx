@@ -27,7 +27,7 @@ export function OptimizedPageLayout({
       <MinimalLoadingIndicator 
         isLoading={isLoading} 
         message={loadingMessage}
-        position="top-right"
+        position="center"
       />
     </div>
   )
