@@ -167,6 +167,7 @@ export function RefundDetailDialog({ refund, open, onOpenChange, sale }: RefundD
                       <TableHead className="text-right">Số lượng gốc</TableHead>
                       <TableHead className="text-right">Số lượng hoàn</TableHead>
                       <TableHead className="text-right">Thành tiền</TableHead>
+                      <TableHead className="text-center">Trạng thái</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -179,14 +180,48 @@ export function RefundDetailDialog({ refund, open, onOpenChange, sale }: RefundD
                           {formatCurrency(detail.itemPrice || 0)}
                         </TableCell>
                         <TableCell className="text-right">
-                          {/* Số lượng gốc từ sale details */}
-                          {sale?.items?.find(item => item.saleDetailId === detail.saleDetailId)?.quantity || '-'}
+                          {/* Số lượng gốc từ sale details - tìm theo saleDetailId */}
+                          {(() => {
+                            // Tìm sale detail tương ứng với refund detail
+                            const saleDetail = sale?.items?.find(item => item.saleDetailId === detail.saleDetailId);
+                            return saleDetail?.quantity || '-';
+                          })()}
                         </TableCell>
                         <TableCell className="text-right font-medium">
                           {detail.quantity}
                         </TableCell>
                         <TableCell className="text-right font-semibold">
                           {formatCurrency(detail.totalAmount || 0)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {(() => {
+                            const saleDetail = sale?.items?.find(item => item.saleDetailId === detail.saleDetailId);
+                            const originalQuantity = saleDetail?.quantity || 0;
+                            const refundQuantity = detail.quantity || 0;
+                            
+                            if (refundQuantity > originalQuantity) {
+                              return (
+                                <Badge variant="destructive" className="text-xs">
+                                  <XCircle className="h-3 w-3 mr-1" />
+                                  Vượt quá
+                                </Badge>
+                              );
+                            } else if (refundQuantity === originalQuantity) {
+                              return (
+                                <Badge variant="default" className="text-xs bg-blue-100 text-blue-800">
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                  Hoàn đủ
+                                </Badge>
+                              );
+                            } else {
+                              return (
+                                <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
+                                  <Package className="h-3 w-3 mr-1" />
+                                  Hoàn một phần
+                                </Badge>
+                              );
+                            }
+                          })()}
                         </TableCell>
                       </TableRow>
                     ))}

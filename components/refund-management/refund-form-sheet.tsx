@@ -265,15 +265,21 @@ export function RefundFormSheet({ sale, open, onOpenChange, onSuccess }: RefundF
                         <div className="font-medium">{detail.itemName}</div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">{detail.quantity}</Badge>
+                        <Badge variant="outline">{sale.items.find(item => item.saleDetailId === detail.saleDetailId)?.quantity || 0}</Badge>
                       </TableCell>
                       <TableCell>
                         <Input
                           type="number"
                           value={detail.quantity}
-                          onChange={(e) => updateRefundDetail(index, 'quantity', parseInt(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const newQuantity = parseInt(e.target.value) || 0;
+                            const originalQuantity = sale.items.find(item => item.saleDetailId === detail.saleDetailId)?.quantity || 0;
+                            if (newQuantity <= originalQuantity) {
+                              updateRefundDetail(index, 'quantity', newQuantity);
+                            }
+                          }}
                           min={0}
-                          max={detail.quantity}
+                          max={sale.items.find(item => item.saleDetailId === detail.saleDetailId)?.quantity || 0}
                         />
                       </TableCell>
                       <TableCell>
