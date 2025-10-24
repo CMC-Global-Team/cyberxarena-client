@@ -34,8 +34,16 @@ export function RevenueChart({ revenues, loading, dateRange, showAnalytics = fal
 
   // Line Chart
   useEffect(() => {
-    if (!lineChartRef.current || loading || revenues.length === 0) return
+    if (!lineChartRef.current || loading || revenues.length === 0) {
+      console.log("RevenueChart: Skipping line chart render", { 
+        hasRef: !!lineChartRef.current, 
+        loading, 
+        revenuesLength: revenues.length 
+      })
+      return
+    }
 
+    console.log("RevenueChart: Rendering line chart with data", revenues)
     const svg = d3.select(lineChartRef.current)
     svg.selectAll("*").remove()
 
