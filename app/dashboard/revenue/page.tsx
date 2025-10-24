@@ -18,6 +18,7 @@ import { TourTrigger } from "@/components/ui/tour-trigger"
 import { RevenueAnimations } from "@/components/animations/revenue-animations"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
+import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 
 export default function RevenuePage() {
   const [revenues, setRevenues] = useState<Revenue[]>([])
@@ -137,8 +138,9 @@ export default function RevenuePage() {
   })
 
   return (
-    <RevenueAnimations>
-      <div ref={pageRef} className="space-y-6">
+    <OptimizedPageLayout isLoading={loading} pageType="revenue">
+      <RevenueAnimations>
+        <div ref={pageRef} className="space-y-6">
         {/* Header */}
         <div data-animate="page-header" className="flex items-center justify-between">
           <div>
@@ -302,7 +304,8 @@ export default function RevenuePage() {
           isActive={showTour} 
           onComplete={() => setShowTour(false)} 
         />
-      </div>
-    </RevenueAnimations>
+        </div>
+      </RevenueAnimations>
+    </OptimizedPageLayout>
   )
 }

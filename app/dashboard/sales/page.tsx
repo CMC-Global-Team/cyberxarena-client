@@ -21,6 +21,7 @@ import { RefundDetailDialog } from "@/components/refund-management/refund-detail
 import { Refund, refundsApi } from "@/lib/refunds"
 import { SaleDetailDialog } from "@/components/sales-management/sale-detail-dialog"
 import { DataPagination } from "@/components/ui/data-pagination"
+import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 
 export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([])
@@ -245,7 +246,8 @@ export default function SalesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <OptimizedPageLayout isLoading={loading} pageType="sales">
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -414,6 +416,7 @@ export default function SalesPage() {
         isActive={showTour} 
         onComplete={() => setShowTour(false)} 
       />
-    </div>
+      </div>
+    </OptimizedPageLayout>
   )
 }
