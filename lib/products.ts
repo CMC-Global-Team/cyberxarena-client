@@ -9,6 +9,15 @@ export interface Product {
   supplierName?: string;
 }
 
+// Spring Page response shape
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number; // current page index
+}
+
 export interface ProductDTO {
   itemName: string;
   itemCategory?: string;
@@ -26,9 +35,21 @@ export interface UpdateProductRequestDTO {
 }
 
 export const productsApi = {
-  // Lấy tất cả sản phẩm
-  getAll: (): Promise<Product[]> => 
-    http.get<Product[]>("/products"),
+  // Lấy tất cả sản phẩm với pagination
+  getAll: (params?: {
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDir?: "asc" | "desc";
+  }): Promise<PageResponse<Product>> => {
+    const query = new URLSearchParams();
+    if (params?.page !== undefined) query.set("page", String(params.page));
+    if (params?.size !== undefined) query.set("size", String(params.size));
+    if (params?.sortBy) query.set("sortBy", params.sortBy);
+    if (params?.sortDir) query.set("sortDir", params.sortDir);
+    const path = `/products${query.toString() ? `?${query.toString()}` : ""}`;
+    return http.get<PageResponse<Product>>(path);
+  },
 
   // Lấy sản phẩm theo ID
   getById: (id: number): Promise<Product> => 

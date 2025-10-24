@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Search, RefreshCw, ShoppingCart, RotateCcw } from "lucide-react"
-import { Sale, SaleDTO, UpdateSaleRequestDTO, SaleStatus } from "@/lib/sales"
+import { Sale, SaleDTO, UpdateSaleRequestDTO, SaleStatus, PageResponse } from "@/lib/sales"
 import { salesApi } from "@/lib/sales"
 import { useToast } from "@/hooks/use-toast"
 import { SaleTable } from "@/components/sales-management/sale-table"
@@ -20,6 +20,7 @@ import { RefundStats } from "@/components/refund-management/refund-stats"
 import { RefundDetailDialog } from "@/components/refund-management/refund-detail-dialog"
 import { Refund, refundsApi } from "@/lib/refunds"
 import { SaleDetailDialog } from "@/components/sales-management/sale-detail-dialog"
+import { DataPagination } from "@/components/ui/data-pagination"
 
 export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([])
@@ -38,13 +39,38 @@ export default function SalesPage() {
   const [refundDetailDialogOpen, setRefundDetailDialogOpen] = useState(false)
   const [showTour, setShowTour] = useState(false)
   const { toast } = useToast()
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0)
+  const [pageSize, setPageSize] = useState(20)
+  const [totalElements, setTotalElements] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
 
-  // Load sales data
-  const loadSales = async () => {
+  // Load sales data with pagination
+  const loadSales = async (page: number = currentPage, size: number = pageSize) => {
     try {
       setLoading(true)
-      const data = await salesApi.search({})
-      setSales(data)
+      const data = await salesApi.search({
+        page,
+        size,
+        sortBy: "saleId",
+        sortOrder: "desc"
+      })
+      
+      if (data && typeof data === 'object' && 'content' in data) {
+        // Handle paginated response
+        const pageResponse = data as PageResponse<Sale>
+        setSales(pageResponse.content)
+        setTotalElements(pageResponse.totalElements)
+        setTotalPages(pageResponse.totalPages)
+        setCurrentPage(pageResponse.number)
+      } else {
+        // Handle non-paginated response (fallback)
+        setSales(data as Sale[])
+        setTotalElements((data as Sale[]).length)
+        setTotalPages(1)
+        setCurrentPage(0)
+      }
     } catch (error) {
       toast({
         title: "Lỗi",
@@ -54,6 +80,18 @@ export default function SalesPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    loadSales(page, pageSize)
+  }
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size)
+    setCurrentPage(0) // Reset to first page when changing page size
+    loadSales(0, size)
   }
 
   // Load refunds data
@@ -302,6 +340,20 @@ export default function SalesPage() {
                 onUpdateStatus={handleUpdateSaleStatus}
                 refunds={refunds}
               />
+              
+              {/* Pagination */}
+              <div className="mt-6">
+                <DataPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  totalElements={totalElements}
+                  pageSize={pageSize}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={handlePageSizeChange}
+                  showPageSizeSelector={true}
+                  pageSizeOptions={[10, 20, 50, 100]}
+                />
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

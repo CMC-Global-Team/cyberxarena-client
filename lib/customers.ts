@@ -60,7 +60,7 @@ export const CustomerApi = {
     if (params?.sortBy) query.set("sortBy", params.sortBy);
     if (params?.sortDir) query.set("sortDir", params.sortDir);
     const path = `/customers${query.toString() ? `?${query.toString()}` : ""}`;
-    return http.get<CustomerDTO[]>(path);
+    return http.get<PageResponse<CustomerDTO>>(path);
   },
   
   search: (params: {

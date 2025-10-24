@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RefreshCw, Package, BarChart3, Table } from "lucide-react"
-import { Product, productsApi } from "@/lib/products"
+import { Product, productsApi, PageResponse } from "@/lib/products"
 import { useToast } from "@/hooks/use-toast"
 import { ProductTable } from "@/components/product-management/product-table"
 import { ProductStats } from "@/components/product-management/product-stats"
 import { ProductFormSheet } from "@/components/product-management/product-form-sheet"
 import { ProductTour } from "@/components/product-management/product-tour"
-import { HelpCircle } from "lucide-react"
+import { DataPagination } from "@/components/ui/data-pagination"
+import { TourTrigger } from "@/components/ui/tour-trigger"
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -19,11 +20,36 @@ export default function ProductsPage() {
   const [refreshing, setRefreshing] = useState(false)
   const [showTour, setShowTour] = useState(false)
   const { toast } = useToast()
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0)
+  const [pageSize, setPageSize] = useState(20)
+  const [totalElements, setTotalElements] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (page: number = currentPage, size: number = pageSize) => {
     try {
-      const data = await productsApi.getAll()
-      setProducts(data)
+      const data = await productsApi.getAll({ 
+        page, 
+        size, 
+        sortBy: "itemId", 
+        sortDir: "asc" 
+      })
+      
+      if (data && typeof data === 'object' && 'content' in data) {
+        // Handle paginated response
+        const pageResponse = data as PageResponse<Product>
+        setProducts(pageResponse.content)
+        setTotalElements(pageResponse.totalElements)
+        setTotalPages(pageResponse.totalPages)
+        setCurrentPage(pageResponse.number)
+      } else {
+        // Handle non-paginated response (fallback)
+        setProducts(data as Product[])
+        setTotalElements((data as Product[]).length)
+        setTotalPages(1)
+        setCurrentPage(0)
+      }
     } catch (error) {
       toast({
         title: "Lỗi",
@@ -34,6 +60,18 @@ export default function ProductsPage() {
       setLoading(false)
       setRefreshing(false)
     }
+  }
+
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    fetchProducts(page, pageSize)
+  }
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size)
+    setCurrentPage(0) // Reset to first page when changing page size
+    fetchProducts(0, size)
   }
 
   const handleRefresh = async () => {
@@ -102,6 +140,20 @@ export default function ProductsPage() {
               products={products} 
               loading={loading}
               onRefresh={handleProductSuccess}
+            />
+          </div>
+          
+          {/* Pagination */}
+          <div className="mt-6">
+            <DataPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalElements={totalElements}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              showPageSizeSelector={true}
+              pageSizeOptions={[10, 20, 50, 100]}
             />
           </div>
         </TabsContent>
