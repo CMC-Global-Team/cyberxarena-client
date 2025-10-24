@@ -30,16 +30,19 @@ export function SaleStats({ sales, loading, refunds = [] }: SaleStatsProps) {
       }
     }
 
-    // Lọc ra những sales đã có refund (không tính vào doanh thu)
-    const salesWithoutRefund = sales.filter(sale => {
-      const hasRefund = refunds.some(refund => refund.saleId === sale.saleId)
-      return !hasRefund
+    // Lọc ra những sales đã có refund được duyệt (không tính vào doanh thu)
+    const salesWithoutApprovedRefund = sales.filter(sale => {
+      const approvedRefund = refunds.find(refund => 
+        refund.saleId === sale.saleId && 
+        (refund.status === 'Approved' || refund.status === 'Completed')
+      )
+      return !approvedRefund
     })
 
-    const totalRevenue = salesWithoutRefund.reduce((sum, sale) => sum + sale.totalAmount, 0)
+    const totalRevenue = salesWithoutApprovedRefund.reduce((sum, sale) => sum + sale.totalAmount, 0)
     const totalItems = sales.reduce((sum, sale) => sum + sale.items.length, 0)
     const uniqueCustomers = new Set(sales.map(sale => sale.customerId)).size
-    const averageOrderValue = salesWithoutRefund.length > 0 ? totalRevenue / salesWithoutRefund.length : 0
+    const averageOrderValue = salesWithoutApprovedRefund.length > 0 ? totalRevenue / salesWithoutApprovedRefund.length : 0
 
     return {
       totalSales: sales.length,

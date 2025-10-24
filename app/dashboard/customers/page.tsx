@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { Button } from "@/components/ui/button"
-import { UserPlus, HelpCircle } from "lucide-react"
+import { UserPlus } from "lucide-react"
 import { CustomerTable } from "@/components/customer-management/customer-table"
 import { CustomerFormSheet } from "@/components/customer-management/customer-form-sheet"
 import { AccountFormSheet } from "@/components/customer-management/account-form-sheet"
@@ -11,6 +11,7 @@ import { RechargeHistorySheet } from "@/components/customer-management/recharge-
 import { CustomerStats } from "@/components/customer-management/customer-stats"
 import { BalanceWarningList } from "@/components/customer-management/balance-warning"
 import { CustomerTour } from "@/components/customer-management/customer-tour"
+import { TourTrigger } from "@/components/ui/tour-trigger"
 import { CustomerRankInfo } from "@/components/customer-management/customer-rank-info"
 import { DiscountCalculator } from "@/components/customer-management/discount-calculator"
 import { CustomerDeleteConfirmationModal } from "@/components/customer-management/customer-delete-confirmation-modal"
@@ -320,10 +321,7 @@ export default function CustomersPage() {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <h1 className="text-3xl font-bold text-foreground" data-tour="page-title">Quản lý khách hàng</h1>
-              <HelpCircle 
-                className="h-6 w-6 text-red-500 cursor-pointer hover:text-red-600 transition-colors" 
-                onClick={() => setShowTour(true)}
-              />
+              <TourTrigger onClick={() => setShowTour(true)} />
             </div>
             <p className="text-muted-foreground">Danh sách và thông tin khách hàng, quản lý tài khoản</p>
           </div>

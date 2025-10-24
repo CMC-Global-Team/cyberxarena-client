@@ -85,14 +85,32 @@ export function SaleTable({ sales, loading, onEdit, onView, onRefund, onUpdateSt
 
   // Render status badge
   const renderStatusBadge = (sale: Sale) => {
-    // Kiểm tra xem sale có refund không
-    const hasRefund = refunds.some(refund => refund.saleId === sale.saleId)
+    // Kiểm tra xem sale có refund được duyệt không
+    const approvedRefund = refunds.find(refund => 
+      refund.saleId === sale.saleId && 
+      (refund.status === 'Approved' || refund.status === 'Completed')
+    )
     
-    if (hasRefund) {
+    // Kiểm tra xem sale có refund bị từ chối không
+    const rejectedRefund = refunds.find(refund => 
+      refund.saleId === sale.saleId && 
+      refund.status === 'Rejected'
+    )
+    
+    if (approvedRefund) {
       return (
         <Badge variant="outline" className="bg-orange-100 text-orange-800 border-orange-200">
           <RotateCcw className="h-3 w-3 mr-1" />
           Đã hoàn tiền
+        </Badge>
+      )
+    }
+    
+    if (rejectedRefund) {
+      return (
+        <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200">
+          <XCircle className="h-3 w-3 mr-1" />
+          Hoàn tiền bị từ chối
         </Badge>
       )
     }

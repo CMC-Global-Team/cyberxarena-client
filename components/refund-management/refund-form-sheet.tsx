@@ -37,13 +37,30 @@ export function RefundFormSheet({ sale, open, onOpenChange, onSuccess }: RefundF
   useEffect(() => {
     if (open) {
       // Initialize refund details from sale items
-      const details: RefundDetail[] = sale.items.map(item => ({
-        saleDetailId: item.saleDetailId, // Use the correct saleDetailId
-        quantity: item.quantity,
-        itemName: `Sản phẩm ${item.itemId}`,
-        itemPrice: 0, // This should come from item data
-        totalAmount: 0
-      }))
+      console.log('Sale items for refund:', sale.items)
+      const details: RefundDetail[] = sale.items.map(item => {
+        console.log('Processing item:', item)
+        console.log('item.saleDetailId:', item.saleDetailId)
+        console.log('item.saleId:', item.saleId)
+        
+        if (!item.saleDetailId) {
+          console.error('saleDetailId is missing from API response!')
+          toast({
+            title: "Lỗi dữ liệu",
+            description: "Thiếu thông tin chi tiết sản phẩm. Vui lòng thử lại sau.",
+            variant: "destructive",
+          })
+          return null
+        }
+        
+        return {
+          saleDetailId: item.saleDetailId,
+          quantity: item.quantity,
+          itemName: `Sản phẩm ${item.itemId}`,
+          itemPrice: 0, // This should come from item data
+          totalAmount: 0
+        }
+      }).filter(Boolean) as RefundDetail[]
       setRefundDetails(details)
       setFormData(prev => ({
         ...prev,
