@@ -34,8 +34,18 @@ export default function DashboardLayout({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-muted-foreground">Đang tải...</div>
+      <div className="flex min-h-screen bg-background">
+        <Sidebar />
+        <main className="flex-1 overflow-auto">
+          <div className="p-6 space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-foreground">Đang tải...</h1>
+                <p className="text-muted-foreground">Vui lòng chờ trong giây lát</p>
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
     )
   }

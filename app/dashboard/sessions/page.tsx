@@ -14,7 +14,7 @@ import { TourTrigger } from "@/components/ui/tour-trigger"
 import { SessionApi, type SessionDTO } from "@/lib/sessions"
 import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
-import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
+import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 
 export default function SessionsPage() {
   const { notify } = useNotice()
@@ -200,8 +200,8 @@ export default function SessionsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6 relative">
-      <PageLoadingOverlay isLoading={isLoading} pageType="sessions" />
+    <OptimizedPageLayout isLoading={isLoading} pageType="sessions">
+      <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -523,6 +523,7 @@ export default function SessionsPage() {
         isOpen={showTour} 
         onClose={() => setShowTour(false)} 
       />
-    </div>
+      </div>
+    </OptimizedPageLayout>
   )
 }

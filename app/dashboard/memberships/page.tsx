@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { RefreshCw, Table, BarChart3 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { usePageLoading } from "@/hooks/use-page-loading"
-import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
+import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 import { membershipsApi, type MembershipCard, type MembershipCardDTO } from "@/lib/memberships"
 import { discountsApi, type Discount } from "@/lib/discounts"
 import { MembershipTable } from "@/components/membership-management/membership-table"
@@ -144,8 +144,8 @@ export default function MembershipsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6 relative">
-      <PageLoadingOverlay isLoading={isLoading} pageType="memberships" />
+    <OptimizedPageLayout isLoading={isLoading} pageType="memberships">
+      <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 mb-2">
@@ -234,7 +234,8 @@ export default function MembershipsPage() {
           loading={updatingCustomers}
         />
       )}
-    </div>
+      </div>
+    </OptimizedPageLayout>
   )
 }
 

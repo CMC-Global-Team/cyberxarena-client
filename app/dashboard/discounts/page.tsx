@@ -8,7 +8,7 @@ import { RefreshCw, Percent, BarChart3, Table } from "lucide-react"
 import { Discount, discountsApi } from "@/lib/discounts"
 import { useToast } from "@/hooks/use-toast"
 import { usePageLoading } from "@/hooks/use-page-loading"
-import { PageLoadingOverlay } from "@/components/ui/page-loading-overlay"
+import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 import { DiscountTable } from "@/components/discount-management/discount-table"
 import { DiscountStats } from "@/components/discount-management/discount-stats"
 import { DiscountFormSheet } from "@/components/discount-management/discount-form-sheet"
@@ -116,8 +116,8 @@ export default function DiscountsPage() {
   }, [])
 
   return (
-    <div className="space-y-6 p-6 relative">
-      <PageLoadingOverlay isLoading={isLoading} pageType="discounts" />
+    <OptimizedPageLayout isLoading={isLoading} pageType="discounts">
+      <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -212,6 +212,7 @@ export default function DiscountsPage() {
         isActive={showTour} 
         onComplete={() => setShowTour(false)} 
       />
-    </div>
+      </div>
+    </OptimizedPageLayout>
   )
 }
