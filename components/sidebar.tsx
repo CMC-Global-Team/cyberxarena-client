@@ -52,7 +52,6 @@ const menuItems = [
     title: "Quản lý doanh thu",
     icon: DollarSign,
     href: "/dashboard/revenue",
-    disabled: true,
   },
   {
     title: "Cài đặt",
