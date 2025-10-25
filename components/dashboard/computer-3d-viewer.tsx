@@ -37,7 +37,7 @@ function CanvasWrapper() {
   return (
     <div className="h-96 w-full overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
       <Canvas
-        camera={{ position: [-10, 8, 15], fov: 120 }}
+        camera={{ position: [-5, 12, 25], fov: 120 }}
         style={{ width: "100%", height: "100%" }}
       >
         <Suspense fallback={null}>
@@ -80,10 +80,10 @@ function CanvasWrapper() {
             zoomSpeed={0.6}
             rotateSpeed={0.5}
             panSpeed={0.8}
-            minDistance={8}
-            maxDistance={25}
-            minPolarAngle={Math.PI / 10}
-            maxPolarAngle={Math.PI - Math.PI / 10}
+            minDistance={12}
+            maxDistance={40}
+            minPolarAngle={Math.PI / 12}
+            maxPolarAngle={Math.PI - Math.PI / 12}
             target={[0, 0, 0]}
             enableDamping={true}
             dampingFactor={0.05}
