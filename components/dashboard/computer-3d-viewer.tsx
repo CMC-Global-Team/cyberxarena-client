@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useRef, useState } from "react"
+import React, { Suspense, useRef, useState } from "react"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { useGLTF, OrbitControls, Environment, PresentationControls } from "@react-three/drei"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -30,6 +30,26 @@ function ComputerModel() {
   useGLTF.preload("/Computer.glb")
 }
 
+// Component để lắng nghe event reset camera
+function CameraController() {
+  const { camera } = useThree()
+  
+  React.useEffect(() => {
+    const handleReset = () => {
+      camera.position.set(5, 3, 8)
+      camera.lookAt(0, 0, 0)
+    }
+
+    const canvas = document.querySelector('canvas')
+    if (canvas) {
+      canvas.addEventListener('resetCamera', handleReset)
+      return () => canvas.removeEventListener('resetCamera', handleReset)
+    }
+  }, [camera])
+
+  return null
+}
+
 // Loading component
 function ModelLoader() {
   return (
@@ -40,23 +60,101 @@ function ModelLoader() {
 }
 
 // Component để reset camera về vị trí ban đầu
-function ResetCamera() {
-  const { camera } = useThree()
-  
-  const resetCamera = () => {
-    camera.position.set(5, 3, 8)
-    camera.lookAt(0, 0, 0)
-  }
-
+function ResetCameraButton({ onReset }: { onReset: () => void }) {
   return (
     <Button
-      onClick={resetCamera}
+      onClick={onReset}
       size="sm"
       variant="outline"
       className="absolute top-2 right-2 z-10"
     >
       🔄 Reset View
     </Button>
+  )
+}
+
+// Component Canvas wrapper để quản lý camera
+function CanvasWrapper() {
+  const resetCamera = () => {
+    // Reset camera position
+    const canvas = document.querySelector('canvas')
+    if (canvas) {
+      // Trigger a custom event để reset camera
+      const event = new CustomEvent('resetCamera')
+      canvas.dispatchEvent(event)
+    }
+  }
+
+  return (
+    <div className="h-80 w-full rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700 relative">
+      <ResetCameraButton onReset={resetCamera} />
+      <Canvas
+        camera={{ position: [5, 3, 8], fov: 45 }}
+        style={{ width: "100%", height: "100%" }}
+      >
+        <Suspense fallback={null}>
+          <CameraController />
+          
+          {/* Cải thiện lighting */}
+          <ambientLight intensity={0.8} />
+          <directionalLight 
+            position={[10, 10, 5]} 
+            intensity={1.5} 
+            castShadow
+            shadow-mapSize={1024}
+          />
+          <directionalLight 
+            position={[-10, 5, -5]} 
+            intensity={0.8} 
+          />
+          <pointLight position={[0, 10, 0]} intensity={0.6} />
+          <spotLight 
+            position={[5, 5, 5]} 
+            angle={0.3} 
+            penumbra={1} 
+            intensity={1}
+            castShadow
+          />
+          
+          <PresentationControls
+            global
+            rotation={[0.1, 0.1, 0]}
+            polar={[-Math.PI / 3, Math.PI / 3]}
+            azimuth={[-Math.PI / 1.4, Math.PI / 1.4]}
+            snap
+          >
+            <ComputerModel />
+          </PresentationControls>
+          
+          {/* Thêm OrbitControls để dễ tương tác hơn */}
+          <OrbitControls
+            enablePan={true}
+            enableZoom={true}
+            enableRotate={true}
+            zoomSpeed={0.6}
+            rotateSpeed={0.5}
+            panSpeed={0.8}
+            minDistance={6}
+            maxDistance={20}
+            minPolarAngle={Math.PI / 8}
+            maxPolarAngle={Math.PI - Math.PI / 8}
+            target={[0, 0, 0]}
+            enableDamping={true}
+            dampingFactor={0.05}
+          />
+          
+          <Environment preset="sunset" />
+        </Suspense>
+      </Canvas>
+      <div className="mt-4 text-center">
+        <p className="text-sm text-muted-foreground">
+          🖱️ Kéo chuột trái để xoay • 🖱️ Cuộn chuột để zoom • 🖱️ Kéo chuột phải để di chuyển
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Hoặc sử dụng touch gestures trên mobile • Nhấn nút "Reset View" nếu bị kẹt
+        </p>
+      </div>
+    </div>
   )
 }
 
@@ -69,73 +167,7 @@ export function Computer3DViewer() {
         <CardDescription>Xem mô hình máy tính trong không gian 3D</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-80 w-full rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700 relative">
-          <ResetCamera />
-          <Canvas
-            camera={{ position: [5, 3, 8], fov: 45 }}
-            style={{ width: "100%", height: "100%" }}
-          >
-            <Suspense fallback={null}>
-              {/* Cải thiện lighting */}
-              <ambientLight intensity={0.8} />
-              <directionalLight 
-                position={[10, 10, 5]} 
-                intensity={1.5} 
-                castShadow
-                shadow-mapSize={1024}
-              />
-              <directionalLight 
-                position={[-10, 5, -5]} 
-                intensity={0.8} 
-              />
-              <pointLight position={[0, 10, 0]} intensity={0.6} />
-              <spotLight 
-                position={[5, 5, 5]} 
-                angle={0.3} 
-                penumbra={1} 
-                intensity={1}
-                castShadow
-              />
-              
-              <PresentationControls
-                global
-                rotation={[0.1, 0.1, 0]}
-                polar={[-Math.PI / 3, Math.PI / 3]}
-                azimuth={[-Math.PI / 1.4, Math.PI / 1.4]}
-                snap
-              >
-                <ComputerModel />
-              </PresentationControls>
-              
-              {/* Thêm OrbitControls để dễ tương tác hơn */}
-              <OrbitControls
-                enablePan={true}
-                enableZoom={true}
-                enableRotate={true}
-                zoomSpeed={0.6}
-                rotateSpeed={0.5}
-                panSpeed={0.8}
-                minDistance={6}
-                maxDistance={20}
-                minPolarAngle={Math.PI / 8}
-                maxPolarAngle={Math.PI - Math.PI / 8}
-                target={[0, 0, 0]}
-                enableDamping={true}
-                dampingFactor={0.05}
-              />
-              
-              <Environment preset="sunset" />
-            </Suspense>
-          </Canvas>
-        </div>
-        <div className="mt-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            🖱️ Kéo chuột trái để xoay • 🖱️ Cuộn chuột để zoom • 🖱️ Kéo chuột phải để di chuyển
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Hoặc sử dụng touch gestures trên mobile • Nhấn nút "Reset View" nếu bị kẹt
-          </p>
-        </div>
+        <CanvasWrapper />
       </CardContent>
     </Card>
   )
