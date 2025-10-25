@@ -11,6 +11,28 @@ export interface FieldValidation {
   [key: string]: ValidationResult
 }
 
+// Normalize phone number to standard format (0xxxxxxxxx)
+export const normalizePhoneNumber = (phone: string): string => {
+  if (!phone || phone.trim() === '') {
+    return ''
+  }
+
+  // Remove all non-digit characters except +
+  const cleaned = phone.replace(/[^\d+]/g, '')
+  
+  // Convert +84xxxxxxxxx to 0xxxxxxxxx
+  if (cleaned.startsWith('+84')) {
+    return '0' + cleaned.substring(3)
+  }
+  
+  // Return as is if already starts with 0
+  if (cleaned.startsWith('0')) {
+    return cleaned
+  }
+  
+  return cleaned
+}
+
 // Phone number validation for Vietnamese format
 export const validatePhoneNumber = (phone: string): ValidationResult => {
   if (!phone || phone.trim() === '') {
@@ -32,6 +54,37 @@ export const validatePhoneNumber = (phone: string): ValidationResult => {
     return {
       isValid: false,
       message: 'Số điện thoại không hợp lệ. Định dạng: 0xxxxxxxxx hoặc +84xxxxxxxxx'
+    }
+  }
+
+  return { isValid: true }
+}
+
+// Phone number uniqueness validation
+export const validatePhoneNumberUniqueness = async (
+  phone: string, 
+  existingCustomers: Array<{ phoneNumber?: string; customerId?: number }>,
+  currentCustomerId?: number
+): Promise<ValidationResult> => {
+  if (!phone || phone.trim() === '') {
+    return { isValid: true } // Phone is optional
+  }
+
+  const normalizedPhone = normalizePhoneNumber(phone)
+  
+  // Check if phone number already exists (excluding current customer in edit mode)
+  const duplicateCustomer = existingCustomers.find(customer => {
+    if (!customer.phoneNumber) return false
+    if (currentCustomerId && customer.customerId === currentCustomerId) return false
+    
+    const existingNormalizedPhone = normalizePhoneNumber(customer.phoneNumber)
+    return existingNormalizedPhone === normalizedPhone
+  })
+
+  if (duplicateCustomer) {
+    return {
+      isValid: false,
+      message: 'Số điện thoại này đã được sử dụng bởi khách hàng khác'
     }
   }
 
