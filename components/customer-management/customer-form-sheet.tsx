@@ -153,6 +153,38 @@ export function CustomerFormSheet({
     } else if (cleaned === '') {
       setFormData({ ...formData, phoneNumber: '' })
     }
+    
+    // Real-time validation
+    const validation = validatePhoneNumber(cleaned)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, phoneNumber: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, phoneNumber: '' }))
+    }
+  }
+
+  const handleNameChange = (value: string) => {
+    setFormData({ ...formData, customerName: value })
+    
+    // Real-time validation
+    const validation = validateName(value)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, customerName: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, customerName: '' }))
+    }
+  }
+
+  const handleBalanceChange = (value: number) => {
+    setFormData({ ...formData, balance: value })
+    
+    // Real-time validation
+    const validation = validateBalance(value)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, balance: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, balance: '' }))
+    }
   }
 
   return (
@@ -181,13 +213,7 @@ export function CustomerFormSheet({
             <Input
               id="customerName"
               value={formData.customerName}
-              onChange={(e) => {
-                setFormData({ ...formData, customerName: e.target.value })
-                // Clear validation error when user starts typing
-                if (validationErrors.customerName) {
-                  setValidationErrors(prev => ({ ...prev, customerName: '' }))
-                }
-              }}
+              onChange={(e) => handleNameChange(e.target.value)}
               placeholder="Nhập họ và tên"
               className={`bg-secondary border-border ${validationErrors.customerName ? 'border-red-500' : ''}`}
               required
@@ -206,13 +232,7 @@ export function CustomerFormSheet({
             <Input
               id="phoneNumber"
               value={formData.phoneNumber}
-              onChange={(e) => {
-                handlePhoneChange(e.target.value)
-                // Clear validation error when user starts typing
-                if (validationErrors.phoneNumber) {
-                  setValidationErrors(prev => ({ ...prev, phoneNumber: '' }))
-                }
-              }}
+              onChange={(e) => handlePhoneChange(e.target.value)}
               placeholder="0901234567 hoặc +84901234567"
               className={`bg-secondary border-border ${validationErrors.phoneNumber ? 'border-red-500' : ''}`}
             />
@@ -258,13 +278,7 @@ export function CustomerFormSheet({
               min="0"
               step="1000"
               value={formData.balance}
-              onChange={(e) => {
-                setFormData({ ...formData, balance: parseFloat(e.target.value) || 0 })
-                // Clear validation error when user starts typing
-                if (validationErrors.balance) {
-                  setValidationErrors(prev => ({ ...prev, balance: '' }))
-                }
-              }}
+              onChange={(e) => handleBalanceChange(parseFloat(e.target.value) || 0)}
               placeholder="0"
               className={`bg-secondary border-border ${validationErrors.balance ? 'border-red-500' : ''}`}
               required

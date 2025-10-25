@@ -145,9 +145,26 @@ export function AccountFormSheet({
     // Chỉ cho phép chữ cái, số và dấu gạch dưới
     const cleaned = value.replace(/[^a-zA-Z0-9_]/g, '')
     setFormData({ ...formData, username: cleaned })
-    // Clear validation error when user starts typing
-    if (validationErrors.username) {
+    
+    // Real-time validation
+    const validation = validateUsername(cleaned)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, username: validation.message! }))
+    } else {
       setValidationErrors(prev => ({ ...prev, username: '' }))
+    }
+  }
+
+  const handlePasswordChange = (value: string) => {
+    setFormData({ ...formData, password: value })
+    
+    // Real-time validation
+    const isPasswordRequired = !existingAccount
+    const validation = validatePassword(value, isPasswordRequired)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, password: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, password: '' }))
     }
   }
 
@@ -216,13 +233,7 @@ export function AccountFormSheet({
                 id="password"
                 type={showPassword ? "text" : "password"}
                 value={formData.password}
-                onChange={(e) => {
-                  setFormData({ ...formData, password: e.target.value })
-                  // Clear validation error when user starts typing
-                  if (validationErrors.password) {
-                    setValidationErrors(prev => ({ ...prev, password: '' }))
-                  }
-                }}
+                onChange={(e) => handlePasswordChange(e.target.value)}
                 placeholder="Nhập mật khẩu"
                 className={`bg-secondary border-border pr-10 ${validationErrors.password ? 'border-red-500' : ''}`}
                 required={!existingAccount}

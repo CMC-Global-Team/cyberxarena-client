@@ -38,6 +38,18 @@ export function AddBalanceSheet({
   const [error, setError] = useState("")
   const [validationError, setValidationError] = useState("")
 
+  const handleAmountChange = (value: number) => {
+    setAmount(value)
+    
+    // Real-time validation
+    const validation = validateRechargeAmount(value)
+    if (!validation.isValid && validation.message) {
+      setValidationError(validation.message)
+    } else {
+      setValidationError("")
+    }
+  }
+
   const validateAmount = (): boolean => {
     const validation = validateRechargeAmount(amount)
     if (!validation.isValid) {
@@ -114,13 +126,7 @@ export function AddBalanceSheet({
                 min="1000"
                 step="1000"
                 value={amount}
-                onChange={(e) => {
-                  setAmount(parseFloat(e.target.value) || 0)
-                  // Clear validation error when user starts typing
-                  if (validationError) {
-                    setValidationError("")
-                  }
-                }}
+                onChange={(e) => handleAmountChange(parseFloat(e.target.value) || 0)}
                 placeholder="Nhập số tiền"
                 className={`bg-secondary border-border pl-10 ${validationError ? 'border-red-500' : ''}`}
                 required
