@@ -20,7 +20,7 @@ function ComputerModel() {
 
   return (
     <group ref={groupRef}>
-      <primitive object={scene} scale={[0.8, 0.8, 0.8]} position={[0, -0.5, 0]} />
+      <primitive object={scene} scale={[0.3, 0.3, 0.3]} position={[0, -0.5, 0]} />
     </group>
   )
 
@@ -44,7 +44,7 @@ function CanvasWrapper() {
   return (
     <div className="h-screen w-full overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
       <Canvas
-        camera={{ position: [5, 3, 8], fov: 45 }}
+        camera={{ position: [8, 5, 12], fov: 50 }}
         style={{ width: "100%", height: "100%" }}
       >
         <Suspense fallback={null}>
