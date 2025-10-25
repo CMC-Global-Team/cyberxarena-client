@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, DollarSign } from "lucide-react"
 import { RechargeHistoryApi } from "@/lib/recharge-history"
+import { validateRechargeAmount } from "@/lib/validation"
 
 interface Customer {
   customerId: number
@@ -35,9 +36,25 @@ export function AddBalanceSheet({
   const [amount, setAmount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [validationError, setValidationError] = useState("")
+
+  const validateAmount = (): boolean => {
+    const validation = validateRechargeAmount(amount)
+    if (!validation.isValid) {
+      setValidationError(validation.message || "")
+      return false
+    }
+    setValidationError("")
+    return true
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!validateAmount()) {
+      return
+    }
+
     setIsLoading(true)
     setError("")
 
@@ -97,15 +114,25 @@ export function AddBalanceSheet({
                 min="1000"
                 step="1000"
                 value={amount}
-                onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+                onChange={(e) => {
+                  setAmount(parseFloat(e.target.value) || 0)
+                  // Clear validation error when user starts typing
+                  if (validationError) {
+                    setValidationError("")
+                  }
+                }}
                 placeholder="Nhập số tiền"
-                className="bg-secondary border-border pl-10"
+                className={`bg-secondary border-border pl-10 ${validationError ? 'border-red-500' : ''}`}
                 required
               />
             </div>
-            <p className="text-xs text-muted-foreground">
-              Số tiền tối thiểu: 1,000 VND
-            </p>
+            {validationError ? (
+              <p className="text-xs text-red-500">{validationError}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Số tiền tối thiểu: 1,000 VND
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
