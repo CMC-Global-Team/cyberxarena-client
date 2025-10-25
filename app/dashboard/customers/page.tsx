@@ -440,6 +440,7 @@ export default function CustomersPage() {
           onOpenChange={setAddSheetOpen} 
           mode="add" 
           onSubmit={handleCreateCustomer}
+          existingCustomers={customersWithAccounts}
         />
 
         {selectedCustomer && (
@@ -450,6 +451,7 @@ export default function CustomersPage() {
               customer={selectedCustomer}
               mode="edit"
               onSubmit={handleUpdateCustomer}
+              existingCustomers={customersWithAccounts}
             />
 
             <AccountFormSheet
