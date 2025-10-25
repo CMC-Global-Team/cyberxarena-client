@@ -9,6 +9,13 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Plus, Edit } from "lucide-react"
 import { Discount, DiscountDTO } from "@/lib/discounts"
 import { useToast } from "@/hooks/use-toast"
+import { 
+  validateDiscountName, 
+  validateDiscountValue,
+  formatNumber,
+  parseFormattedNumber,
+  type ValidationResult 
+} from "@/lib/validation"
 
 interface DiscountFormSheetProps {
   discount?: Discount
@@ -28,6 +35,8 @@ export function DiscountFormSheet({ discount, mode, onSuccess, children, open: c
     discount_type: 'Flat',
     discount_value: 0
   })
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({})
+  const [displayValue, setDisplayValue] = useState("")
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
 
@@ -38,42 +47,93 @@ export function DiscountFormSheet({ discount, mode, onSuccess, children, open: c
         discount_type: discount.discountType,
         discount_value: discount.discountValue
       })
+      if (discount.discountType === 'Flat') {
+        setDisplayValue(formatNumber(discount.discountValue))
+      } else {
+        setDisplayValue(String(discount.discountValue))
+      }
     } else {
       setFormData({
         discount_name: '',
         discount_type: 'Flat',
         discount_value: 0
       })
+      setDisplayValue("")
     }
+    setValidationErrors({})
   }, [discount, mode])
+
+  // Real-time validation handlers
+  const handleDiscountNameChange = (value: string) => {
+    setFormData({ ...formData, discount_name: value })
+    
+    const validation = validateDiscountName(value)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, discount_name: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, discount_name: '' }))
+    }
+  }
+
+  const handleDiscountTypeChange = (value: 'Flat' | 'Percentage') => {
+    setFormData({ ...formData, discount_type: value, discount_value: 0 })
+    setDisplayValue("")
+    setValidationErrors(prev => ({ ...prev, discount_value: '' }))
+  }
+
+  const handleDiscountValueChange = (value: string) => {
+    if (formData.discount_type === 'Flat') {
+      // Remove all non-digit characters to get clean number
+      const cleanValue = value.replace(/[^\d]/g, '')
+      const numericValue = parseFloat(cleanValue) || 0
+      
+      setFormData({ ...formData, discount_value: numericValue })
+      
+      // Auto-format with commas if there's a value
+      if (numericValue > 0) {
+        setDisplayValue(formatNumber(numericValue))
+      } else {
+        setDisplayValue(cleanValue) // Show what user is typing
+      }
+    } else {
+      // For percentage, allow decimal input
+      const numericValue = parseFloat(value) || 0
+      setFormData({ ...formData, discount_value: numericValue })
+      setDisplayValue(value)
+    }
+    
+    const validation = validateDiscountValue(formData.discount_value, formData.discount_type)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, discount_value: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, discount_value: '' }))
+    }
+  }
+
+  const validateFormData = (): boolean => {
+    const validations = {
+      discount_name: validateDiscountName(formData.discount_name),
+      discount_value: validateDiscountValue(formData.discount_value, formData.discount_type)
+    }
+
+    let isValid = true
+    const errorMap: {[key: string]: string} = {}
+    
+    Object.entries(validations).forEach(([field, result]) => {
+      if (!result.isValid && result.message) {
+        errorMap[field] = result.message
+        isValid = false
+      }
+    })
+    
+    setValidationErrors(errorMap)
+    return isValid
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formData.discount_name.trim()) {
-      toast({
-        title: "Lỗi",
-        description: "Tên giảm giá không được để trống",
-        variant: "destructive",
-      })
-      return
-    }
-    
-    if (formData.discount_value <= 0) {
-      toast({
-        title: "Lỗi",
-        description: "Giá trị giảm giá phải lớn hơn 0",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (formData.discount_type === 'Percentage' && formData.discount_value > 100) {
-      toast({
-        title: "Lỗi",
-        description: "Phần trăm giảm giá không được vượt quá 100%",
-        variant: "destructive",
-      })
+    if (!validateFormData()) {
       return
     }
 
@@ -143,21 +203,26 @@ export function DiscountFormSheet({ discount, mode, onSuccess, children, open: c
               id="discount_name"
               type="text"
               value={formData.discount_name}
-              onChange={(e) => handleInputChange('discount_name', e.target.value)}
+              onChange={(e) => handleDiscountNameChange(e.target.value)}
               placeholder="Nhập tên giảm giá"
               maxLength={100}
+              className={validationErrors.discount_name ? 'border-red-500' : ''}
               required
             />
-            <p className="text-sm text-muted-foreground">
-              Tên giảm giá để phân biệt các loại giảm giá khác nhau
-            </p>
+            {validationErrors.discount_name ? (
+              <p className="text-xs text-red-500">{validationErrors.discount_name}</p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Tên giảm giá để phân biệt các loại giảm giá khác nhau
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="discount_type">Loại giảm giá</Label>
             <Select 
               value={formData.discount_type} 
-              onValueChange={(value: 'Flat' | 'Percentage') => handleInputChange('discount_type', value)}
+              onValueChange={handleDiscountTypeChange}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Chọn loại giảm giá" />
@@ -176,17 +241,21 @@ export function DiscountFormSheet({ discount, mode, onSuccess, children, open: c
             </Label>
             <Input
               id="discount_value"
-              type="number"
-              min="0"
-              max={formData.discount_type === 'Percentage' ? "100" : undefined}
-              step={formData.discount_type === 'Percentage' ? "0.01" : "1000"}
-              value={formData.discount_value}
-              onChange={(e) => handleInputChange('discount_value', parseFloat(e.target.value) || 0)}
+              type="text"
+              value={displayValue}
+              onChange={(e) => handleDiscountValueChange(e.target.value)}
               placeholder={formData.discount_type === 'Percentage' ? "Nhập phần trăm (0-100)" : "Nhập số tiền"}
+              className={validationErrors.discount_value ? 'border-red-500' : ''}
             />
-            {formData.discount_type === 'Percentage' && (
+            {validationErrors.discount_value ? (
+              <p className="text-xs text-red-500">{validationErrors.discount_value}</p>
+            ) : formData.discount_type === 'Percentage' ? (
               <p className="text-sm text-muted-foreground">
-                Nhập giá trị từ 0 đến 100
+                Nhập giá trị từ 1 đến 100
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Nhập số tiền từ 1,000 VND
               </p>
             )}
           </div>
