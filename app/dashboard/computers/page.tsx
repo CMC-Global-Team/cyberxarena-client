@@ -451,6 +451,7 @@ export default function ComputersPage() {
         onSaved={(newComputer)=>{
           if (newComputer) setComputers((prev)=> [newComputer, ...prev])
         }}
+        existingComputers={computers}
       />
 
       {selectedComputer && (
@@ -465,6 +466,7 @@ export default function ComputersPage() {
               if (!updated) return
               setComputers((prev)=> prev.map((c)=> c.computerId === updated.computerId ? updated : c))
             }}
+            existingComputers={computers}
           />
 
           <ComputerActionsSheet

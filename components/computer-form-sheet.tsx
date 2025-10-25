@@ -15,6 +15,7 @@ import { useLoading } from "@/components/loading-provider"
 import { 
   validateComputerName, 
   validateIPAddress, 
+  validateIPAddressUniqueness,
   validateSpecification, 
   validatePricePerHour,
   formatNumber,
@@ -28,9 +29,10 @@ interface ComputerFormSheetProps {
   computer?: ComputerDTO
   mode: "add" | "edit"
   onSaved?: (computer?: ComputerDTO) => void
+  existingComputers?: Array<{ ipAddress?: string; computerId?: number }>
 }
 
-export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved }: ComputerFormSheetProps) {
+export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved, existingComputers = [] }: ComputerFormSheetProps) {
   const { toast } = useToast()
   const { withLoading } = useLoading()
   const { notify } = useNotice()
@@ -78,11 +80,18 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
   const handleIPChange = (value: string) => {
     setFormData({ ...formData, ipAddress: value })
     
+    // Validate IP format
     const validation = validateIPAddress(value)
     if (!validation.isValid && validation.message) {
       setValidationErrors(prev => ({ ...prev, ipAddress: validation.message! }))
     } else {
-      setValidationErrors(prev => ({ ...prev, ipAddress: '' }))
+      // Check uniqueness if IP format is valid
+      const uniquenessValidation = validateIPAddressUniqueness(value, existingComputers, computer?.computerId)
+      if (!uniquenessValidation.isValid && uniquenessValidation.message) {
+        setValidationErrors(prev => ({ ...prev, ipAddress: uniquenessValidation.message! }))
+      } else {
+        setValidationErrors(prev => ({ ...prev, ipAddress: '' }))
+      }
     }
   }
 
@@ -130,6 +139,9 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
       hourlyRate: validatePricePerHour(Number(formData.hourlyRate))
     }
 
+    // Check IP uniqueness
+    const ipUniqueness = validateIPAddressUniqueness(formData.ipAddress, existingComputers, computer?.computerId)
+
     let isValid = true
     const errorMap: {[key: string]: string} = {}
     
@@ -139,6 +151,12 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
         isValid = false
       }
     })
+
+    // Add IP uniqueness error
+    if (!ipUniqueness.isValid && ipUniqueness.message) {
+      errorMap.ipAddress = ipUniqueness.message
+      isValid = false
+    }
     
     setValidationErrors(errorMap)
     return isValid
