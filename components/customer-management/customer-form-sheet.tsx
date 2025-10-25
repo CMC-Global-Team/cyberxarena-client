@@ -9,6 +9,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2 } from "lucide-react"
 import { membershipsApi, type MembershipCard } from "@/lib/memberships"
+import { 
+  validateName, 
+  validatePhoneNumber, 
+  validateBalance, 
+  validateMembershipCard,
+  validateForm,
+  type ValidationResult 
+} from "@/lib/validation"
 
 interface Customer {
   customerId: number
@@ -51,6 +59,7 @@ export function CustomerFormSheet({
   const [error, setError] = useState("")
   const [membershipCards, setMembershipCards] = useState<MembershipCard[]>([])
   const [isLoadingCards, setIsLoadingCards] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({})
 
   useEffect(() => {
     if (customer && mode === "edit") {
@@ -89,8 +98,38 @@ export function CustomerFormSheet({
     }
   }, [open])
 
+  const validateFormData = (): boolean => {
+    const validations = {
+      customerName: validateName(formData.customerName),
+      phoneNumber: validatePhoneNumber(formData.phoneNumber),
+      balance: validateBalance(formData.balance),
+      membershipCardId: validateMembershipCard(formData.membershipCardId)
+    }
+
+    const { isValid, errors } = validateForm(validations)
+    
+    if (!isValid) {
+      const errorMap: {[key: string]: string} = {}
+      Object.entries(validations).forEach(([field, result]) => {
+        if (!result.isValid && result.message) {
+          errorMap[field] = result.message
+        }
+      })
+      setValidationErrors(errorMap)
+      return false
+    }
+
+    setValidationErrors({})
+    return true
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!validateFormData()) {
+      return
+    }
+
     setIsLoading(true)
     setError("")
 
@@ -142,13 +181,22 @@ export function CustomerFormSheet({
             <Input
               id="customerName"
               value={formData.customerName}
-              onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, customerName: e.target.value })
+                // Clear validation error when user starts typing
+                if (validationErrors.customerName) {
+                  setValidationErrors(prev => ({ ...prev, customerName: '' }))
+                }
+              }}
               placeholder="Nhập họ và tên"
-              className="bg-secondary border-border"
+              className={`bg-secondary border-border ${validationErrors.customerName ? 'border-red-500' : ''}`}
               required
               minLength={2}
               maxLength={100}
             />
+            {validationErrors.customerName && (
+              <p className="text-xs text-red-500">{validationErrors.customerName}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -158,13 +206,23 @@ export function CustomerFormSheet({
             <Input
               id="phoneNumber"
               value={formData.phoneNumber}
-              onChange={(e) => handlePhoneChange(e.target.value)}
+              onChange={(e) => {
+                handlePhoneChange(e.target.value)
+                // Clear validation error when user starts typing
+                if (validationErrors.phoneNumber) {
+                  setValidationErrors(prev => ({ ...prev, phoneNumber: '' }))
+                }
+              }}
               placeholder="0901234567 hoặc +84901234567"
-              className="bg-secondary border-border"
+              className={`bg-secondary border-border ${validationErrors.phoneNumber ? 'border-red-500' : ''}`}
             />
-            <p className="text-xs text-muted-foreground">
-              Định dạng: 0xxxxxxxxx hoặc +84xxxxxxxxx
-            </p>
+            {validationErrors.phoneNumber ? (
+              <p className="text-xs text-red-500">{validationErrors.phoneNumber}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Định dạng: 0xxxxxxxxx hoặc +84xxxxxxxxx
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -200,14 +258,24 @@ export function CustomerFormSheet({
               min="0"
               step="1000"
               value={formData.balance}
-              onChange={(e) => setFormData({ ...formData, balance: parseFloat(e.target.value) || 0 })}
+              onChange={(e) => {
+                setFormData({ ...formData, balance: parseFloat(e.target.value) || 0 })
+                // Clear validation error when user starts typing
+                if (validationErrors.balance) {
+                  setValidationErrors(prev => ({ ...prev, balance: '' }))
+                }
+              }}
               placeholder="0"
-              className="bg-secondary border-border"
+              className={`bg-secondary border-border ${validationErrors.balance ? 'border-red-500' : ''}`}
               required
             />
-            <p className="text-xs text-muted-foreground">
-              Số dư không được âm
-            </p>
+            {validationErrors.balance ? (
+              <p className="text-xs text-red-500">{validationErrors.balance}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Số dư không được âm
+              </p>
+            )}
             {formData.balance > 0 && (
               <Alert className="border-blue-200 bg-blue-50">
                 <AlertDescription className="text-blue-800">
