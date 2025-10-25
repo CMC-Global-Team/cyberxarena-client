@@ -15,6 +15,7 @@ import { DataPagination } from "@/components/ui/data-pagination"
 import { TourTrigger } from "@/components/ui/tour-trigger"
 import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 import { ProductAnimations } from "@/components/animations/product-animations"
+import { LottieInlineLoading } from "@/components/ui/lottie-loading"
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -161,6 +162,8 @@ export default function ProductsPage() {
             <TabsContent value="stats" className="space-y-4">
               <div data-animate="product-stats" data-tour="product-stats">
                 {loading ? (
+                  <LottieInlineLoading text="Đang tải thống kê sản phẩm..." />
+                ) : (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       {[...Array(4)].map((_, i) => (
@@ -177,6 +180,7 @@ export default function ProductsPage() {
                   </div>
                 ) : (
                   <ProductStats products={products} />
+                )}
                 )}
               </div>
             </TabsContent>
