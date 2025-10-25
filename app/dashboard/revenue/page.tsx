@@ -19,6 +19,7 @@ import { RevenueAnimations } from "@/components/animations/revenue-animations"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
+import { LottieInlineLoading } from "@/components/ui/lottie-loading"
 
 export default function RevenuePage() {
   const [revenues, setRevenues] = useState<Revenue[]>([])
