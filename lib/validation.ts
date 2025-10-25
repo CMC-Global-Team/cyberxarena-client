@@ -244,8 +244,8 @@ export const validateComputerName = (name: string): ValidationResult => {
     }
   }
 
-  // Allow letters, numbers, spaces, and common computer naming characters
-  const namePattern = /^[a-zA-Z0-9\s\-_\.]+$/
+  // Allow letters (including Vietnamese), numbers, spaces, and common computer naming characters
+  const namePattern = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂÂÊÔƠưăâêôơẠẢÃẦẨẪẬẮẰẲẴẶẸẺẼỀỂỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴỶỸỳỵỷỹạảãầẩẫậắằẳẵặẹẻẽềểễệỉịọỏốồổỗộớờởỡợụủứừửữự0-9\s\-_\.]+$/
   if (!namePattern.test(name.trim())) {
     return {
       isValid: false,
