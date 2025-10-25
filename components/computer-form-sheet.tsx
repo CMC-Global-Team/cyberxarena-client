@@ -12,6 +12,15 @@ import { ComputerApi, type ComputerDTO } from "@/lib/computers"
 import { useToast } from "@/components/ui/use-toast"
 import { useNotice } from "@/components/notice-provider"
 import { useLoading } from "@/components/loading-provider"
+import { 
+  validateComputerName, 
+  validateIPAddress, 
+  validateSpecification, 
+  validatePricePerHour,
+  formatNumber,
+  parseFormattedNumber,
+  type ValidationResult 
+} from "@/lib/validation"
 
 interface ComputerFormSheetProps {
   open: boolean
@@ -34,10 +43,13 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
     status: (computer?.status as string) || "Available",
     hourlyRate: computer ? String(computer.pricePerHour) : "15000",
   })
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({})
+  const [displayPrice, setDisplayPrice] = useState("")
 
   // Sync form when the selected computer changes or when sheet opens
   useEffect(() => {
     if (!open) return
+    const price = computer ? computer.pricePerHour : 15000
     setFormData({
       name: computer?.computerName || "",
       ipAddress: computer?.ipAddress || "",
@@ -45,32 +57,97 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
       ram: String(computer?.specifications?.ram ?? ""),
       gpu: String(computer?.specifications?.gpu ?? ""),
       status: (computer?.status as string) || "Available",
-      hourlyRate: computer ? String(computer.pricePerHour) : "15000",
+      hourlyRate: String(price),
     })
+    setDisplayPrice(formatNumber(price))
+    setValidationErrors({})
   }, [computer, mode, open])
+
+  // Real-time validation handlers
+  const handleNameChange = (value: string) => {
+    setFormData({ ...formData, name: value })
+    
+    const validation = validateComputerName(value)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, name: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, name: '' }))
+    }
+  }
+
+  const handleIPChange = (value: string) => {
+    setFormData({ ...formData, ipAddress: value })
+    
+    const validation = validateIPAddress(value)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, ipAddress: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, ipAddress: '' }))
+    }
+  }
+
+  const handleSpecChange = (value: string, field: 'cpu' | 'ram' | 'gpu') => {
+    setFormData({ ...formData, [field]: value })
+    
+    const fieldName = field.toUpperCase()
+    const validation = validateSpecification(value, fieldName)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, [field]: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, [field]: '' }))
+    }
+  }
+
+  const handlePriceChange = (value: string) => {
+    // Remove all non-digit characters to get clean number
+    const cleanValue = value.replace(/[^\d]/g, '')
+    const numericValue = parseFloat(cleanValue) || 0
+    
+    setFormData({ ...formData, hourlyRate: String(numericValue) })
+    
+    // Auto-format with commas if there's a value
+    if (numericValue > 0) {
+      setDisplayPrice(formatNumber(numericValue))
+    } else {
+      setDisplayPrice(cleanValue) // Show what user is typing
+    }
+    
+    const validation = validatePricePerHour(numericValue)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, hourlyRate: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, hourlyRate: '' }))
+    }
+  }
+
+  const validateFormData = (): boolean => {
+    const validations = {
+      name: validateComputerName(formData.name),
+      ipAddress: validateIPAddress(formData.ipAddress),
+      cpu: validateSpecification(formData.cpu, 'CPU'),
+      ram: validateSpecification(formData.ram, 'RAM'),
+      gpu: validateSpecification(formData.gpu, 'GPU'),
+      hourlyRate: validatePricePerHour(Number(formData.hourlyRate))
+    }
+
+    let isValid = true
+    const errorMap: {[key: string]: string} = {}
+    
+    Object.entries(validations).forEach(([field, result]) => {
+      if (!result.isValid && result.message) {
+        errorMap[field] = result.message
+        isValid = false
+      }
+    })
+    
+    setValidationErrors(errorMap)
+    return isValid
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Client-side validation (simple)
-    if (!formData.name || formData.name.trim().length === 0 || formData.name.length > 50) {
-      notify({ type: "error", message: "Tên máy tính không hợp lệ (≤ 50 ký tự)" })
-      return
-    }
-    const ipPattern = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
-    if (!ipPattern.test(formData.ipAddress)) {
-      notify({ type: "error", message: "Địa chỉ IP không hợp lệ" })
-      return
-    }
-    if (!Number.isFinite(Number(formData.hourlyRate)) || !(Number(formData.hourlyRate) > 0)) {
-      notify({ type: "error", message: "Giá/giờ phải > 0" })
-      return
-    }
-    if (!formData.status) {
-      notify({ type: "error", message: "Vui lòng chọn trạng thái" })
-      return
-    }
-    if (!formData.cpu || !formData.ram || !formData.gpu) {
-      notify({ type: "error", message: "Vui lòng nhập đủ CPU, RAM, GPU" })
+    
+    if (!validateFormData()) {
       return
     }
 
@@ -121,11 +198,14 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => handleNameChange(e.target.value)}
               placeholder="Máy tính 01"
-              className="bg-secondary border-border"
+              className={`bg-secondary border-border ${validationErrors.name ? 'border-red-500' : ''}`}
               required
             />
+            {validationErrors.name && (
+              <p className="text-xs text-red-500">{validationErrors.name}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -135,11 +215,14 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
             <Input
               id="ipAddress"
               value={formData.ipAddress}
-              onChange={(e) => setFormData({ ...formData, ipAddress: e.target.value })}
+              onChange={(e) => handleIPChange(e.target.value)}
               placeholder="192.168.1.101"
-              className="bg-secondary border-border"
+              className={`bg-secondary border-border ${validationErrors.ipAddress ? 'border-red-500' : ''}`}
               required
             />
+            {validationErrors.ipAddress && (
+              <p className="text-xs text-red-500">{validationErrors.ipAddress}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -149,11 +232,14 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
             <Input
               id="cpu"
               value={formData.cpu}
-              onChange={(e) => setFormData({ ...formData, cpu: e.target.value })}
+              onChange={(e) => handleSpecChange(e.target.value, 'cpu')}
               placeholder="Intel i5-12400F"
-              className="bg-secondary border-border"
+              className={`bg-secondary border-border ${validationErrors.cpu ? 'border-red-500' : ''}`}
               required
             />
+            {validationErrors.cpu && (
+              <p className="text-xs text-red-500">{validationErrors.cpu}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -163,11 +249,14 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
             <Input
               id="ram"
               value={formData.ram}
-              onChange={(e) => setFormData({ ...formData, ram: e.target.value })}
+              onChange={(e) => handleSpecChange(e.target.value, 'ram')}
               placeholder="16GB DDR4"
-              className="bg-secondary border-border"
+              className={`bg-secondary border-border ${validationErrors.ram ? 'border-red-500' : ''}`}
               required
             />
+            {validationErrors.ram && (
+              <p className="text-xs text-red-500">{validationErrors.ram}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -177,11 +266,14 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
             <Input
               id="gpu"
               value={formData.gpu}
-              onChange={(e) => setFormData({ ...formData, gpu: e.target.value })}
+              onChange={(e) => handleSpecChange(e.target.value, 'gpu')}
               placeholder="RTX 3060"
-              className="bg-secondary border-border"
+              className={`bg-secondary border-border ${validationErrors.gpu ? 'border-red-500' : ''}`}
               required
             />
+            {validationErrors.gpu && (
+              <p className="text-xs text-red-500">{validationErrors.gpu}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -206,15 +298,16 @@ export function ComputerFormSheet({ open, onOpenChange, computer, mode, onSaved 
             </Label>
             <Input
               id="hourlyRate"
-              type="number"
-              inputMode="decimal"
-              step="0.01"
-              value={formData.hourlyRate}
-              onChange={(e) => setFormData({ ...formData, hourlyRate: e.target.value })}
+              type="text"
+              value={displayPrice}
+              onChange={(e) => handlePriceChange(e.target.value)}
               placeholder="15,000đ/h"
-              className="bg-secondary border-border"
+              className={`bg-secondary border-border ${validationErrors.hourlyRate ? 'border-red-500' : ''}`}
               required
             />
+            {validationErrors.hourlyRate && (
+              <p className="text-xs text-red-500">{validationErrors.hourlyRate}</p>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4">
