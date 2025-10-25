@@ -1,11 +1,10 @@
 "use client"
 
-import React, { Suspense, useRef, useState } from "react"
-import { Canvas, useFrame, useThree } from "@react-three/fiber"
+import { Suspense, useRef } from "react"
+import { Canvas, useFrame } from "@react-three/fiber"
 import { useGLTF, OrbitControls, Environment, PresentationControls } from "@react-three/drei"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Group, Mesh } from "three"
+import { Card, CardContent } from "@/components/ui/card"
+import { Group } from "three"
 
 // Component để load và hiển thị model 3D
 function ComputerModel() {
@@ -30,25 +29,6 @@ function ComputerModel() {
   useGLTF.preload("/Computer.glb")
 }
 
-// Component để lắng nghe event reset camera
-function CameraController() {
-  const { camera } = useThree()
-  
-  React.useEffect(() => {
-    const handleReset = () => {
-      camera.position.set(5, 3, 8)
-      camera.lookAt(0, 0, 0)
-    }
-
-    const canvas = document.querySelector('canvas')
-    if (canvas) {
-      canvas.addEventListener('resetCamera', handleReset)
-      return () => canvas.removeEventListener('resetCamera', handleReset)
-    }
-  }, [camera])
-
-  return null
-}
 
 // Loading component
 function ModelLoader() {
@@ -59,42 +39,16 @@ function ModelLoader() {
   )
 }
 
-// Component để reset camera về vị trí ban đầu
-function ResetCameraButton({ onReset }: { onReset: () => void }) {
-  return (
-    <Button
-      onClick={onReset}
-      size="sm"
-      variant="outline"
-      className="absolute top-2 right-2 z-10"
-    >
-      🔄 Reset View
-    </Button>
-  )
-}
 
-// Component Canvas wrapper để quản lý camera
+// Component Canvas wrapper
 function CanvasWrapper() {
-  const resetCamera = () => {
-    // Reset camera position
-    const canvas = document.querySelector('canvas')
-    if (canvas) {
-      // Trigger a custom event để reset camera
-      const event = new CustomEvent('resetCamera')
-      canvas.dispatchEvent(event)
-    }
-  }
-
   return (
-    <div className="h-80 w-full rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700 relative">
-      <ResetCameraButton onReset={resetCamera} />
+    <div className="h-80 w-full rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
       <Canvas
         camera={{ position: [5, 3, 8], fov: 45 }}
         style={{ width: "100%", height: "100%" }}
       >
         <Suspense fallback={null}>
-          <CameraController />
-          
           {/* Cải thiện lighting */}
           <ambientLight intensity={0.8} />
           <directionalLight 
@@ -146,14 +100,6 @@ function CanvasWrapper() {
           <Environment preset="sunset" />
         </Suspense>
       </Canvas>
-      <div className="mt-4 text-center">
-        <p className="text-sm text-muted-foreground">
-          🖱️ Kéo chuột trái để xoay • 🖱️ Cuộn chuột để zoom • 🖱️ Kéo chuột phải để di chuyển
-        </p>
-        <p className="text-xs text-muted-foreground mt-1">
-          Hoặc sử dụng touch gestures trên mobile • Nhấn nút "Reset View" nếu bị kẹt
-        </p>
-      </div>
     </div>
   )
 }
@@ -162,11 +108,7 @@ function CanvasWrapper() {
 export function Computer3DViewer() {
   return (
     <Card className="border-border bg-card">
-      <CardHeader>
-        <CardTitle>Máy tính 3D</CardTitle>
-        <CardDescription>Xem mô hình máy tính trong không gian 3D</CardDescription>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <CanvasWrapper />
       </CardContent>
     </Card>
