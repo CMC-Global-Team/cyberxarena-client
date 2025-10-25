@@ -442,3 +442,85 @@ export const validateStock = (stock: number): ValidationResult => {
 
   return { isValid: true }
 }
+
+// Discount name validation
+export const validateDiscountName = (name: string): ValidationResult => {
+  if (!name || name.trim() === '') {
+    return {
+      isValid: false,
+      message: 'Tên giảm giá không được để trống'
+    }
+  }
+
+  if (name.trim().length < 2) {
+    return {
+      isValid: false,
+      message: 'Tên giảm giá phải có ít nhất 2 ký tự'
+    }
+  }
+
+  if (name.trim().length > 100) {
+    return {
+      isValid: false,
+      message: 'Tên giảm giá không được vượt quá 100 ký tự'
+    }
+  }
+
+  // Allow letters (including Vietnamese), numbers, spaces, and common discount naming characters
+  const namePattern = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂÂÊÔƠưăâêôơẠẢÃẦẨẪẬẮẰẲẴẶẸẺẼỀỂỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴỶỸỳỵỷỹạảãầẩẫậắằẳẵặẹẻẽềểễệỉịọỏốồổỗộớờởỡợụủứừửữự0-9\s\-_\.\(\)]+$/
+  if (!namePattern.test(name.trim())) {
+    return {
+      isValid: false,
+      message: 'Tên giảm giá chỉ được chứa chữ cái, số, khoảng trắng và ký tự thông dụng'
+    }
+  }
+
+  return { isValid: true }
+}
+
+// Discount value validation
+export const validateDiscountValue = (value: number, type: 'Flat' | 'Percentage'): ValidationResult => {
+  if (value < 0) {
+    return {
+      isValid: false,
+      message: 'Giá trị giảm giá không được âm'
+    }
+  }
+
+  if (value === 0) {
+    return {
+      isValid: false,
+      message: 'Giá trị giảm giá phải lớn hơn 0'
+    }
+  }
+
+  if (type === 'Flat') {
+    if (value > 10000000) {
+      return {
+        isValid: false,
+        message: 'Giá trị giảm giá cố định không được vượt quá 10,000,000 VND'
+      }
+    }
+    if (value < 1000) {
+      return {
+        isValid: false,
+        message: 'Giá trị giảm giá cố định tối thiểu là 1,000 VND'
+      }
+    }
+  } else if (type === 'Percentage') {
+    if (value > 100) {
+      return {
+        isValid: false,
+        message: 'Phần trăm giảm giá không được vượt quá 100%'
+      }
+    }
+    if (value < 1) {
+      return {
+        isValid: false,
+        message: 'Phần trăm giảm giá tối thiểu là 1%'
+      }
+    }
+  }
+
+  return { isValid: true }
+}
