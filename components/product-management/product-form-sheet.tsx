@@ -9,6 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, Edit } from "lucide-react"
 import { Product, ProductDTO, UpdateProductRequestDTO, productsApi } from "@/lib/products"
 import { useToast } from "@/hooks/use-toast"
+import { 
+  validateProductName, 
+  validateSupplierName, 
+  validateProductPrice, 
+  validateStock,
+  formatNumber,
+  parseFormattedNumber,
+  type ValidationResult 
+} from "@/lib/validation"
 
 interface ProductFormSheetProps {
   product?: Product
@@ -34,6 +43,8 @@ export function ProductFormSheet({ product, onSuccess, trigger }: ProductFormShe
     stock: 0,
     supplierName: ""
   })
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({})
+  const [displayPrice, setDisplayPrice] = useState("")
   const { toast } = useToast()
 
   useEffect(() => {
@@ -45,6 +56,7 @@ export function ProductFormSheet({ product, onSuccess, trigger }: ProductFormShe
         stock: product.stock,
         supplierName: product.supplierName || ""
       })
+      setDisplayPrice(formatNumber(product.price))
     } else {
       setFormData({
         itemName: "",
@@ -53,11 +65,96 @@ export function ProductFormSheet({ product, onSuccess, trigger }: ProductFormShe
         stock: 0,
         supplierName: ""
       })
+      setDisplayPrice("")
     }
+    setValidationErrors({})
   }, [product, open])
+
+  // Real-time validation handlers
+  const handleProductNameChange = (value: string) => {
+    setFormData({ ...formData, itemName: value })
+    
+    const validation = validateProductName(value)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, itemName: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, itemName: '' }))
+    }
+  }
+
+  const handleSupplierNameChange = (value: string) => {
+    setFormData({ ...formData, supplierName: value })
+    
+    const validation = validateSupplierName(value)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, supplierName: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, supplierName: '' }))
+    }
+  }
+
+  const handlePriceChange = (value: string) => {
+    // Remove all non-digit characters to get clean number
+    const cleanValue = value.replace(/[^\d]/g, '')
+    const numericValue = parseFloat(cleanValue) || 0
+    
+    setFormData({ ...formData, price: numericValue })
+    
+    // Auto-format with commas if there's a value
+    if (numericValue > 0) {
+      setDisplayPrice(formatNumber(numericValue))
+    } else {
+      setDisplayPrice(cleanValue) // Show what user is typing
+    }
+    
+    const validation = validateProductPrice(numericValue)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, price: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, price: '' }))
+    }
+  }
+
+  const handleStockChange = (value: number) => {
+    setFormData({ ...formData, stock: value })
+    
+    const validation = validateStock(value)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, stock: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, stock: '' }))
+    }
+  }
+
+  const validateFormData = (): boolean => {
+    const validations = {
+      itemName: validateProductName(formData.itemName),
+      supplierName: validateSupplierName(formData.supplierName),
+      price: validateProductPrice(formData.price),
+      stock: validateStock(formData.stock)
+    }
+
+    let isValid = true
+    const errorMap: {[key: string]: string} = {}
+    
+    Object.entries(validations).forEach(([field, result]) => {
+      if (!result.isValid && result.message) {
+        errorMap[field] = result.message
+        isValid = false
+      }
+    })
+    
+    setValidationErrors(errorMap)
+    return isValid
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!validateFormData()) {
+      return
+    }
+    
     setLoading(true)
 
     try {
@@ -132,10 +229,14 @@ export function ProductFormSheet({ product, onSuccess, trigger }: ProductFormShe
             <Input
               id="itemName"
               value={formData.itemName}
-              onChange={(e) => setFormData(prev => ({ ...prev, itemName: e.target.value }))}
+              onChange={(e) => handleProductNameChange(e.target.value)}
               placeholder="Nhập tên sản phẩm"
+              className={validationErrors.itemName ? 'border-red-500' : ''}
               required
             />
+            {validationErrors.itemName && (
+              <p className="text-xs text-red-500">{validationErrors.itemName}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -161,14 +262,16 @@ export function ProductFormSheet({ product, onSuccess, trigger }: ProductFormShe
             <Label htmlFor="price">Giá (VNĐ) *</Label>
             <Input
               id="price"
-              type="number"
-              min="0"
-              step="1000"
-              value={formData.price}
-              onChange={(e) => setFormData(prev => ({ ...prev, price: Number(e.target.value) }))}
+              type="text"
+              value={displayPrice}
+              onChange={(e) => handlePriceChange(e.target.value)}
               placeholder="Nhập giá sản phẩm"
+              className={validationErrors.price ? 'border-red-500' : ''}
               required
             />
+            {validationErrors.price && (
+              <p className="text-xs text-red-500">{validationErrors.price}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -178,10 +281,14 @@ export function ProductFormSheet({ product, onSuccess, trigger }: ProductFormShe
               type="number"
               min="0"
               value={formData.stock}
-              onChange={(e) => setFormData(prev => ({ ...prev, stock: Number(e.target.value) }))}
+              onChange={(e) => handleStockChange(Number(e.target.value))}
               placeholder="Nhập số lượng"
+              className={validationErrors.stock ? 'border-red-500' : ''}
               required
             />
+            {validationErrors.stock && (
+              <p className="text-xs text-red-500">{validationErrors.stock}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -189,9 +296,13 @@ export function ProductFormSheet({ product, onSuccess, trigger }: ProductFormShe
             <Input
               id="supplierName"
               value={formData.supplierName}
-              onChange={(e) => setFormData(prev => ({ ...prev, supplierName: e.target.value }))}
+              onChange={(e) => handleSupplierNameChange(e.target.value)}
               placeholder="Nhập tên nhà cung cấp"
+              className={validationErrors.supplierName ? 'border-red-500' : ''}
             />
+            {validationErrors.supplierName && (
+              <p className="text-xs text-red-500">{validationErrors.supplierName}</p>
+            )}
           </div>
 
           <div className="flex gap-2 pt-4">
