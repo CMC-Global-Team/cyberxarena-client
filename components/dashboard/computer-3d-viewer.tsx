@@ -69,26 +69,27 @@ function DebugHelpers() {
 // Component Canvas wrapper
 function CanvasWrapper() {
   const [showDebug, setShowDebug] = useState(false)
-  const [scale, setScale] = useState(0.3)
-  const [cameraX, setCameraX] = useState(8)
-  const [cameraY, setCameraY] = useState(5)
-  const [cameraZ, setCameraZ] = useState(12)
-  const [cameraFOV, setCameraFOV] = useState(50)
+  const [scale, setScale] = useState(0.1)
+  const [cameraX, setCameraX] = useState(15)
+  const [cameraY, setCameraY] = useState(10)
+  const [cameraZ, setCameraZ] = useState(25)
+  const [cameraFOV, setCameraFOV] = useState(75)
   const [modelX, setModelX] = useState(0)
   const [modelY, setModelY] = useState(-0.5)
   const [modelZ, setModelZ] = useState(0)
 
   // Preset positions cho các góc nhìn phổ biến
   const presetPositions = {
-    front: { camera: [0, 0, 10], model: [0, -0.5, 0], fov: 50 },
-    back: { camera: [0, 0, -10], model: [0, -0.5, 0], fov: 50 },
-    left: { camera: [-10, 0, 0], model: [0, -0.5, 0], fov: 50 },
-    right: { camera: [10, 0, 0], model: [0, -0.5, 0], fov: 50 },
-    top: { camera: [0, 10, 0], model: [0, -0.5, 0], fov: 50 },
-    diagonal: { camera: [8, 5, 8], model: [0, -0.5, 0], fov: 50 },
-    far: { camera: [0, 0, 25], model: [0, -0.5, 0], fov: 60 },
-    veryFar: { camera: [0, 0, 40], model: [0, -0.5, 0], fov: 70 },
-    wide: { camera: [15, 8, 15], model: [0, -0.5, 0], fov: 80 }
+    front: { camera: [0, 0, 30], model: [0, -0.5, 0], fov: 70 },
+    back: { camera: [0, 0, -30], model: [0, -0.5, 0], fov: 70 },
+    left: { camera: [-30, 0, 0], model: [0, -0.5, 0], fov: 70 },
+    right: { camera: [30, 0, 0], model: [0, -0.5, 0], fov: 70 },
+    top: { camera: [0, 30, 0], model: [0, -0.5, 0], fov: 70 },
+    diagonal: { camera: [20, 15, 20], model: [0, -0.5, 0], fov: 75 },
+    far: { camera: [0, 0, 50], model: [0, -0.5, 0], fov: 80 },
+    veryFar: { camera: [0, 0, 80], model: [0, -0.5, 0], fov: 90 },
+    wide: { camera: [40, 25, 40], model: [0, -0.5, 0], fov: 100 },
+    overview: { camera: [0, 50, 0], model: [0, -0.5, 0], fov: 120 }
   }
 
   const applyPreset = (preset: keyof typeof presetPositions) => {
@@ -128,6 +129,7 @@ function CanvasWrapper() {
                 <button onClick={() => applyPreset('far')} className="px-2 py-1 bg-blue-600 rounded text-xs">Far</button>
                 <button onClick={() => applyPreset('veryFar')} className="px-2 py-1 bg-blue-600 rounded text-xs">Very Far</button>
                 <button onClick={() => applyPreset('wide')} className="px-2 py-1 bg-blue-600 rounded text-xs">Wide</button>
+                <button onClick={() => applyPreset('overview')} className="px-2 py-1 bg-purple-600 rounded text-xs">Overview</button>
               </div>
             </div>
 
@@ -177,9 +179,9 @@ function CanvasWrapper() {
               <label>Scale: {scale}</label>
               <input 
                 type="range" 
-                min="0.1" 
-                max="2" 
-                step="0.1" 
+                min="0.05" 
+                max="1" 
+                step="0.05" 
                 value={scale} 
                 onChange={(e) => setScale(parseFloat(e.target.value))}
                 className="w-full"
