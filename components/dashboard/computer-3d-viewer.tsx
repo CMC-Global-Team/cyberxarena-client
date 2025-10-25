@@ -20,7 +20,7 @@ function ComputerModel() {
 
   return (
     <group ref={groupRef}>
-      <primitive object={scene} scale={[2, 2, 2]} position={[0, -0.5, 0]} />
+      <primitive object={scene} scale={[0.8, 0.8, 0.8]} position={[0, -0.5, 0]} />
     </group>
   )
 
