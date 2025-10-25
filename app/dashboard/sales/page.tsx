@@ -22,6 +22,7 @@ import { Refund, refundsApi } from "@/lib/refunds"
 import { SaleDetailDialog } from "@/components/sales-management/sale-detail-dialog"
 import { DataPagination } from "@/components/ui/data-pagination"
 import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
+import { SalesAnimations } from "@/components/animations/sales-animations"
 
 export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([])
@@ -247,133 +248,140 @@ export default function SalesPage() {
 
   return (
     <OptimizedPageLayout isLoading={loading} pageType="sales">
-      <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <h1 className="text-3xl font-bold tracking-tight" data-tour="page-title">Quản lý bán hàng & Hoàn tiền</h1>
-            <TourTrigger onClick={() => setShowTour(true)} />
-          </div>
-          <p className="text-muted-foreground">
-            Quản lý hóa đơn bán hàng và xử lý yêu cầu hoàn tiền
-          </p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            onClick={() => {
-              if (activeTab === "sales") {
-                loadSales()
-              } else {
-                loadRefunds()
-              }
-            }}
-            variant="outline"
-            size="sm"
-            disabled={loading || refundsLoading}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${(loading || refundsLoading) ? 'animate-spin' : ''}`} />
-            Làm mới
-          </Button>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "sales" | "refunds")}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="sales" className="flex items-center space-x-2">
-            <ShoppingCart className="h-4 w-4" />
-            <span>Bán hàng</span>
-          </TabsTrigger>
-          <TabsTrigger value="refunds" className="flex items-center space-x-2">
-            <RotateCcw className="h-4 w-4" />
-            <span>Hoàn tiền</span>
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Sales Tab */}
-        <TabsContent value="sales" className="space-y-6">
-          {/* Sales Stats */}
-          <div data-tour="sale-stats">
-            <SaleStats sales={sales} loading={loading} refunds={refunds} />
+      <SalesAnimations>
+        <div className="space-y-6">
+          {/* Header */}
+          <div data-animate="page-header" className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <h1 className="text-3xl font-bold tracking-tight" data-tour="page-title">Quản lý bán hàng & Hoàn tiền</h1>
+                <TourTrigger onClick={() => setShowTour(true)} />
+              </div>
+              <p className="text-muted-foreground">
+                Quản lý hóa đơn bán hàng và xử lý yêu cầu hoàn tiền
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                onClick={() => {
+                  if (activeTab === "sales") {
+                    loadSales()
+                  } else {
+                    loadRefunds()
+                  }
+                }}
+                variant="outline"
+                size="sm"
+                disabled={loading || refundsLoading}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${(loading || refundsLoading) ? 'animate-spin' : ''}`} />
+                Làm mới
+              </Button>
+            </div>
           </div>
 
-          {/* Sales Table */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Danh sách hóa đơn</CardTitle>
-                  <CardDescription>
-                    Quản lý và theo dõi tất cả hóa đơn bán hàng
-                  </CardDescription>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="relative" data-tour="sale-search">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Tìm kiếm hóa đơn..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-8 w-64"
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "sales" | "refunds")}>
+            <TabsList data-animate="tabs-container" className="grid w-full grid-cols-2">
+              <TabsTrigger value="sales" className="flex items-center space-x-2">
+                <ShoppingCart className="h-4 w-4" />
+                <span>Bán hàng</span>
+              </TabsTrigger>
+              <TabsTrigger value="refunds" className="flex items-center space-x-2">
+                <RotateCcw className="h-4 w-4" />
+                <span>Hoàn tiền</span>
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Sales Tab */}
+            <TabsContent value="sales" className="space-y-6">
+              {/* Sales Stats */}
+              <div data-animate="sale-stats" data-tour="sale-stats">
+                <SaleStats sales={sales} loading={loading} refunds={refunds} />
+              </div>
+
+              {/* Sales Table */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Danh sách hóa đơn</CardTitle>
+                      <CardDescription>
+                        Quản lý và theo dõi tất cả hóa đơn bán hàng
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <div className="relative" data-tour="sale-search">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Tìm kiếm hóa đơn..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-8 w-64"
+                        />
+                      </div>
+                      <SaleFormSheet
+                        mode="add"
+                        onSuccess={handleCreateSale}
+                        open={formOpen && !editingSale}
+                        onOpenChange={setFormOpen}
+                      >
+                        <Button data-tour="add-sale-button">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Tạo hóa đơn mới
+                        </Button>
+                      </SaleFormSheet>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div data-animate="sales-table">
+                    <SaleTable
+                      sales={filteredSales}
+                      loading={loading}
+                      onEdit={handleEditSale}
+                      onView={handleViewSale}
+                      onRefund={handleRefundSale}
+                      onUpdateStatus={handleUpdateSaleStatus}
+                      refunds={refunds}
                     />
                   </div>
-                  <SaleFormSheet
-                    mode="add"
-                    onSuccess={handleCreateSale}
-                    open={formOpen && !editingSale}
-                    onOpenChange={setFormOpen}
-                  >
-                    <Button data-tour="add-sale-button">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Tạo hóa đơn mới
-                    </Button>
-                  </SaleFormSheet>
-                </div>
+                  
+                  {/* Pagination */}
+                  <div className="mt-6">
+                    <DataPagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      totalElements={totalElements}
+                      pageSize={pageSize}
+                      onPageChange={handlePageChange}
+                      onPageSizeChange={handlePageSizeChange}
+                      showPageSizeSelector={true}
+                      pageSizeOptions={[10, 20, 50, 100]}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Refunds Tab */}
+            <TabsContent value="refunds" className="space-y-6">
+              {/* Refunds Stats */}
+              <div data-animate="refund-stats">
+                <RefundStats refunds={refunds} loading={refundsLoading} />
               </div>
-            </CardHeader>
-            <CardContent>
-              <SaleTable
-                sales={filteredSales}
-                loading={loading}
-                onEdit={handleEditSale}
-                onView={handleViewSale}
-                onRefund={handleRefundSale}
-                onUpdateStatus={handleUpdateSaleStatus}
-                refunds={refunds}
-              />
-              
-              {/* Pagination */}
-              <div className="mt-6">
-                <DataPagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  totalElements={totalElements}
-                  pageSize={pageSize}
-                  onPageChange={handlePageChange}
-                  onPageSizeChange={handlePageSizeChange}
-                  showPageSizeSelector={true}
-                  pageSizeOptions={[10, 20, 50, 100]}
+
+              {/* Refunds Table */}
+              <div data-animate="refund-table">
+                <RefundTable
+                  refunds={refunds}
+                  loading={refundsLoading}
+                  onView={handleRefundView}
+                  onUpdateStatus={handleRefundStatusUpdate}
                 />
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Refunds Tab */}
-        <TabsContent value="refunds" className="space-y-6">
-          {/* Refunds Stats */}
-          <RefundStats refunds={refunds} loading={refundsLoading} />
-
-          {/* Refunds Table */}
-          <RefundTable
-            refunds={refunds}
-            loading={refundsLoading}
-            onView={handleRefundView}
-            onUpdateStatus={handleRefundStatusUpdate}
-          />
-        </TabsContent>
-      </Tabs>
+            </TabsContent>
+          </Tabs>
 
       {/* Edit Sale Form */}
       {editingSale && (
@@ -415,8 +423,9 @@ export default function SalesPage() {
       <SaleTour 
         isActive={showTour} 
         onComplete={() => setShowTour(false)} 
-      />
-      </div>
+        />
+        </div>
+      </SalesAnimations>
     </OptimizedPageLayout>
   )
 }
