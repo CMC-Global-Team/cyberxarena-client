@@ -1,9 +1,9 @@
 "use client"
 
-import { Suspense, useRef, useState } from "react"
+import { Suspense, useRef } from "react"
 import { Canvas, useFrame } from "@react-three/fiber"
-import { useGLTF, OrbitControls, Environment, PresentationControls, Grid, Stats } from "@react-three/drei"
-import { Group, AxesHelper } from "three"
+import { useGLTF, OrbitControls, Environment, PresentationControls } from "@react-three/drei"
+import { Group } from "three"
 
 // Component để load và hiển thị model 3D
 function ComputerModel({ scale, position }: { scale: number, position: [number, number, number] }) {
@@ -37,7 +37,7 @@ function CanvasWrapper() {
   return (
     <div className="h-96 w-full overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
       <Canvas
-        camera={{ position: [-20, 0, 0], fov: 120 }}
+        camera={{ position: [-15, 5, 10], fov: 120 }}
         style={{ width: "100%", height: "100%" }}
       >
         <Suspense fallback={null}>
@@ -64,9 +64,9 @@ function CanvasWrapper() {
           
           <PresentationControls
             global
-            rotation={[0.1, 0.1, 0]}
-            polar={[-Math.PI / 3, Math.PI / 3]}
-            azimuth={[-Math.PI / 1.4, Math.PI / 1.4]}
+            rotation={[0.2, 0.3, 0]}
+            polar={[-Math.PI / 4, Math.PI / 4]}
+            azimuth={[-Math.PI / 2, Math.PI / 2]}
             snap
           >
             <ComputerModel scale={0.1} position={[-3.5, -4.7, -5.0]} />
