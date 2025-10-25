@@ -237,7 +237,6 @@ export default function MembershipsPage() {
           onConfirm={handleUpdateEligibleCustomers}
           loading={updatingCustomers}
         />
-        />
         </div>
       </MembershipAnimations>
     </OptimizedPageLayout>
