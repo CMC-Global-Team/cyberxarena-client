@@ -48,13 +48,19 @@ export function SalesAnimations({ children, className }: SalesAnimationsProps) {
           opacity: 1,
           duration: 0.5,
           delay: 0.2,
-          ease: "power2.out"
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: "[data-animate='tabs-container']",
+            start: "top 80%",
+            end: "bottom 20%",
+            toggleActions: "play none none reverse"
+          }
         }
       )
 
-      // Animate stats cards
+      // Animate sale stats
       gsap.fromTo(
-        "[data-animate='stats-card']",
+        "[data-animate='sale-stats']",
         {
           y: 50,
           opacity: 0,
@@ -68,7 +74,7 @@ export function SalesAnimations({ children, className }: SalesAnimationsProps) {
           stagger: 0.1,
           ease: "back.out(1.7)",
           scrollTrigger: {
-            trigger: "[data-animate='stats-card']",
+            trigger: "[data-animate='sale-stats']",
             start: "top 80%",
             end: "bottom 20%",
             toggleActions: "play none none reverse"
@@ -77,6 +83,27 @@ export function SalesAnimations({ children, className }: SalesAnimationsProps) {
       )
 
       // Animate sales table
+      gsap.fromTo(
+        "[data-animate='sales-table']",
+        {
+          y: 100,
+          opacity: 0
+        },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: "[data-animate='sales-table']",
+            start: "top 70%",
+            end: "bottom 30%",
+            toggleActions: "play none none reverse"
+          }
+        }
+      )
+
+      // Animate table rows
       gsap.fromTo(
         "[data-animate='table-row']",
         {
@@ -90,7 +117,31 @@ export function SalesAnimations({ children, className }: SalesAnimationsProps) {
           stagger: 0.05,
           ease: "power2.out",
           scrollTrigger: {
-            trigger: "[data-animate='table-container']",
+            trigger: "[data-animate='sales-table']",
+            start: "top 80%",
+            end: "bottom 20%",
+            toggleActions: "play none none reverse"
+          }
+        }
+      )
+
+      // Animate refund stats
+      gsap.fromTo(
+        "[data-animate='refund-stats']",
+        {
+          y: 50,
+          opacity: 0,
+          scale: 0.9
+        },
+        {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: "back.out(1.7)",
+          scrollTrigger: {
+            trigger: "[data-animate='refund-stats']",
             start: "top 80%",
             end: "bottom 20%",
             toggleActions: "play none none reverse"
@@ -100,59 +151,20 @@ export function SalesAnimations({ children, className }: SalesAnimationsProps) {
 
       // Animate refund table
       gsap.fromTo(
-        "[data-animate='refund-table-row']",
+        "[data-animate='refund-table']",
         {
-          x: 50,
+          y: 100,
           opacity: 0
         },
         {
-          x: 0,
+          y: 0,
           opacity: 1,
-          duration: 0.5,
-          stagger: 0.05,
+          duration: 0.8,
           ease: "power2.out",
           scrollTrigger: {
-            trigger: "[data-animate='refund-table-container']",
-            start: "top 80%",
-            end: "bottom 20%",
-            toggleActions: "play none none reverse"
-          }
-        }
-      )
-
-      // Animate action buttons
-      gsap.fromTo(
-        "[data-animate='action-buttons']",
-        {
-          scale: 0.95,
-          opacity: 0
-        },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 0.4,
-          delay: 0.3,
-          ease: "back.out(1.7)"
-        }
-      )
-
-      // Animate status badges
-      gsap.fromTo(
-        "[data-animate='status-badge']",
-        {
-          scale: 0.8,
-          opacity: 0
-        },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 0.3,
-          stagger: 0.1,
-          ease: "back.out(1.7)",
-          scrollTrigger: {
-            trigger: "[data-animate='status-badge']",
-            start: "top 90%",
-            end: "bottom 10%",
+            trigger: "[data-animate='refund-table']",
+            start: "top 70%",
+            end: "bottom 30%",
             toggleActions: "play none none reverse"
           }
         }

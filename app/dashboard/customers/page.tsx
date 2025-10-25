@@ -20,6 +20,7 @@ import { CustomerApi, AccountApi, type CustomerDTO, type AccountDTO, CreateCusto
 import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
 import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
+import { CustomerAnimations } from "@/components/animations/customer-animations"
 
 interface Customer extends CustomerDTO {
   hasAccount?: boolean
@@ -370,64 +371,69 @@ export default function CustomersPage() {
 
   return (
     <OptimizedPageLayout isLoading={isLoading} pageType="customers">
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <h1 className="text-3xl font-bold text-foreground" data-tour="page-title">Quản lý khách hàng</h1>
-              <TourTrigger onClick={() => setShowTour(true)} />
+      <CustomerAnimations>
+        <div className="p-6 space-y-6">
+          {/* Header */}
+          <div data-animate="page-header" className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <h1 className="text-3xl font-bold text-foreground" data-tour="page-title">Quản lý khách hàng</h1>
+                <TourTrigger onClick={() => setShowTour(true)} />
+              </div>
+              <p className="text-muted-foreground">Danh sách và thông tin khách hàng, quản lý tài khoản</p>
             </div>
-            <p className="text-muted-foreground">Danh sách và thông tin khách hàng, quản lý tài khoản</p>
+            <Button
+              onClick={() => setAddSheetOpen(true)}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              data-tour="add-customer-btn"
+            >
+              <UserPlus className="h-4 w-4 mr-2" />
+              Thêm khách hàng
+            </Button>
           </div>
-          <Button
-            onClick={() => setAddSheetOpen(true)}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            data-tour="add-customer-btn"
-          >
-            <UserPlus className="h-4 w-4 mr-2" />
-            Thêm khách hàng
-          </Button>
-        </div>
 
-        <div data-tour="customer-stats">
-          <CustomerStats 
-            totalCustomers={totalCustomers}
-            activeCustomers={activeCustomers}
-            totalBalance={totalBalance}
-            newCustomersThisMonth={newCustomersThisMonth}
-          />
-        </div>
+          {/* Customer Stats */}
+          <div data-animate="customer-stats" data-tour="customer-stats">
+            <CustomerStats 
+              totalCustomers={totalCustomers}
+              activeCustomers={activeCustomers}
+              totalBalance={totalBalance}
+              newCustomersThisMonth={newCustomersThisMonth}
+            />
+          </div>
 
-        <div data-tour="balance-warning">
-          <BalanceWarningList customers={customersWithAccounts} />
-        </div>
+          {/* Balance Warning */}
+          <div data-animate="balance-warning" data-tour="balance-warning">
+            <BalanceWarningList customers={customersWithAccounts} />
+          </div>
 
-        <div data-tour="customer-table">
-          <CustomerTable 
-            customers={customersWithAccounts}
-            onEdit={handleEdit}
-            onDelete={handleDeleteCustomer}
-            onManageAccount={handleManageAccount}
-            onAddBalance={handleAddBalance}
-            onViewRechargeHistory={handleViewRechargeHistory}
-            onViewRankInfo={handleViewRankInfo}
-            onOpenDiscountCalculator={handleOpenDiscountCalculator}
-          />
-        </div>
+          {/* Customer Table */}
+          <div data-animate="customer-table" data-tour="customer-table">
+            <CustomerTable 
+              customers={customersWithAccounts}
+              onEdit={handleEdit}
+              onDelete={handleDeleteCustomer}
+              onManageAccount={handleManageAccount}
+              onAddBalance={handleAddBalance}
+              onViewRechargeHistory={handleViewRechargeHistory}
+              onViewRankInfo={handleViewRankInfo}
+              onOpenDiscountCalculator={handleOpenDiscountCalculator}
+            />
+          </div>
 
-        {/* Pagination */}
-        <div className="mt-6">
-          <DataPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalElements={totalElements}
-            pageSize={pageSize}
-            onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
-            showPageSizeSelector={true}
-            pageSizeOptions={[10, 20, 50, 100]}
-          />
-        </div>
+          {/* Pagination */}
+          <div data-animate="pagination" className="mt-6">
+            <DataPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalElements={totalElements}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              showPageSizeSelector={true}
+              pageSizeOptions={[10, 20, 50, 100]}
+            />
+          </div>
 
         <CustomerFormSheet 
           open={addSheetOpen} 
@@ -537,7 +543,8 @@ export default function CustomersPage() {
             loading={deleting}
           />
         )}
-      </div>
+        </div>
+      </CustomerAnimations>
     </OptimizedPageLayout>
   )
 }

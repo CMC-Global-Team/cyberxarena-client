@@ -8,6 +8,7 @@ import { RefreshCw, Table, BarChart3 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { usePageLoading } from "@/hooks/use-page-loading"
 import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
+import { MembershipAnimations } from "@/components/animations/membership-animations"
 import { membershipsApi, type MembershipCard, type MembershipCardDTO } from "@/lib/memberships"
 import { discountsApi, type Discount } from "@/lib/discounts"
 import { MembershipTable } from "@/components/membership-management/membership-table"
@@ -30,7 +31,6 @@ export default function MembershipsPage() {
   const [eligibleCustomersOpen, setEligibleCustomersOpen] = useState(false)
   const [selectedMembershipForEligible, setSelectedMembershipForEligible] = useState<MembershipCard | null>(null)
   const [updatingCustomers, setUpdatingCustomers] = useState(false)
-
 
   const loadData = async () => {
     try {
@@ -145,98 +145,100 @@ export default function MembershipsPage() {
 
   return (
     <OptimizedPageLayout isLoading={isLoading} pageType="memberships">
-      <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <h1 className="text-3xl font-bold tracking-tight" data-tour="page-title">Quản lý thẻ thành viên</h1>
-            <TourTrigger onClick={() => setShowTour(true)} />
-          </div>
-          <p className="text-muted-foreground">Quản lý các gói thẻ thành viên và giảm giá liên quan</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing} data-tour="refresh-btn">
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Làm mới
-          </Button>
-          <div data-tour="add-membership-btn">
-            <MembershipFormSheet mode="add" onSubmit={handleCreate} />
-          </div>
-        </div>
-      </div>
-
-      <Tabs defaultValue="table" className="space-y-4">
-        <TabsList data-tour="tabs-navigation">
-          <TabsTrigger value="table" className="flex items-center gap-2">
-            <Table className="h-4 w-4" />
-            Danh sách
-          </TabsTrigger>
-          <TabsTrigger value="stats" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Thống kê
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="table" className="space-y-4">
-          <div data-tour="membership-table">
-            <MembershipTable 
-              memberships={memberships}
-              loading={loading}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onCheckEligibleCustomers={handleCheckEligibleCustomers}
-              onSetDefault={handleSetDefault}
-            />
-          </div>
-        </TabsContent>
-
-        <TabsContent value="stats" className="space-y-4">
-          <div data-tour="membership-stats">
-            {loading ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[...Array(3)].map((_, i) => (
-                    <Card key={i}>
-                      <CardHeader className="pb-2">
-                        <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="h-8 w-16 bg-muted animate-pulse rounded" />
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+      <MembershipAnimations>
+        <div className="space-y-6 p-6">
+          {/* Header */}
+          <div data-animate="page-header" className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <h1 className="text-3xl font-bold tracking-tight" data-tour="page-title">Quản lý thẻ thành viên</h1>
+                <TourTrigger onClick={() => setShowTour(true)} />
               </div>
-            ) : (
-              <MembershipStats memberships={memberships} />
-            )}
+              <p className="text-muted-foreground">Quản lý các gói thẻ thành viên và giảm giá liên quan</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing} data-tour="refresh-btn">
+                <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+                Làm mới
+              </Button>
+              <div data-tour="add-membership-btn">
+                <MembershipFormSheet mode="add" onSubmit={handleCreate} />
+              </div>
+            </div>
           </div>
-        </TabsContent>
-      </Tabs>
 
-      {selected && (
-        <MembershipFormSheet membership={selected} mode="edit" onSubmit={handleUpdate} open={editOpen} onOpenChange={setEditOpen} />
-      )}
+          {/* Tabs */}
+          <Tabs defaultValue="table" className="space-y-4">
+            <TabsList data-animate="tabs-navigation" data-tour="tabs-navigation">
+              <TabsTrigger value="table" className="flex items-center gap-2">
+                <Table className="h-4 w-4" />
+                Danh sách
+              </TabsTrigger>
+              <TabsTrigger value="stats" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Thống kê
+              </TabsTrigger>
+            </TabsList>
 
-      <MembershipTour 
-        isActive={showTour} 
-        onComplete={() => setShowTour(false)} 
-      />
+            <TabsContent value="table" className="space-y-4">
+              <div data-animate="membership-table" data-tour="membership-table">
+                <MembershipTable 
+                  memberships={memberships}
+                  loading={loading}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  onCheckEligibleCustomers={handleCheckEligibleCustomers}
+                  onSetDefault={handleSetDefault}
+                />
+              </div>
+            </TabsContent>
 
-      {selectedMembershipForEligible && (
-        <EligibleCustomersModal
-          open={eligibleCustomersOpen}
-          onOpenChange={setEligibleCustomersOpen}
-          membershipCardId={selectedMembershipForEligible.membershipCardId}
-          membershipCardName={selectedMembershipForEligible.membershipCardName}
-          membershipCardThreshold={selectedMembershipForEligible.rechargeThreshold}
-          onConfirm={handleUpdateEligibleCustomers}
-          loading={updatingCustomers}
+            <TabsContent value="stats" className="space-y-4">
+              <div data-animate="membership-stats" data-tour="membership-stats">
+                {loading ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {[...Array(3)].map((_, i) => (
+                        <Card key={i}>
+                          <CardHeader className="pb-2">
+                            <div className="h-4 w-24 bg-muted animate-pulse rounded" />
+                          </CardHeader>
+                          <CardContent>
+                            <div className="h-8 w-16 bg-muted animate-pulse rounded" />
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <MembershipStats memberships={memberships} />
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {selected && (
+          <MembershipFormSheet membership={selected} mode="edit" onSubmit={handleUpdate} open={editOpen} onOpenChange={setEditOpen} />
+        )}
+
+        <MembershipTour 
+          isActive={showTour} 
+          onComplete={() => setShowTour(false)} 
         />
-      )}
-      </div>
+
+        {selectedMembershipForEligible && (
+          <EligibleCustomersModal
+            open={eligibleCustomersOpen}
+            onOpenChange={setEligibleCustomersOpen}
+            membershipCardId={selectedMembershipForEligible.membershipCardId}
+            membershipCardName={selectedMembershipForEligible.membershipCardName}
+            membershipCardThreshold={selectedMembershipForEligible.rechargeThreshold}
+            onConfirm={handleUpdateEligibleCustomers}
+            loading={updatingCustomers}
+          />
+        )}
+      </MembershipAnimations>
     </OptimizedPageLayout>
   )
 }
-
-
