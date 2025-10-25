@@ -252,6 +252,30 @@ export function CustomerFormSheet({
             {validationErrors.customerName && (
               <p className="text-xs text-red-500">{validationErrors.customerName}</p>
             )}
+
+            {/* Quick Name Templates - Only show in add mode */}
+            {mode === "add" && (
+              <div className="space-y-2">
+                <Label className="text-foreground text-sm">Mẫu tên phổ biến</Label>
+                <div className="grid grid-cols-1 gap-2">
+                  {["Nguyễn Văn A", "Trần Thị B", "Lê Văn C", "Phạm Thị D"].map((template) => (
+                    <Button
+                      key={template}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFormData({ ...formData, customerName: template })}
+                      className="border-border hover:bg-secondary text-xs justify-start"
+                    >
+                      {template}
+                    </Button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Nhấn để sử dụng mẫu hoặc nhập trực tiếp
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -271,6 +295,30 @@ export function CustomerFormSheet({
               <p className="text-xs text-muted-foreground">
                 Định dạng: 0xxxxxxxxx hoặc +84xxxxxxxxx
               </p>
+            )}
+
+            {/* Quick Phone Templates - Only show in add mode */}
+            {mode === "add" && (
+              <div className="space-y-2">
+                <Label className="text-foreground text-sm">Mẫu số điện thoại phổ biến</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {["0901234567", "0912345678", "0987654321", "0123456789"].map((template) => (
+                    <Button
+                      key={template}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setFormData({ ...formData, phoneNumber: template })}
+                      className="border-border hover:bg-secondary text-xs"
+                    >
+                      {template}
+                    </Button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Nhấn để sử dụng mẫu hoặc nhập trực tiếp
+                </p>
+              </div>
             )}
           </div>
 
@@ -317,6 +365,28 @@ export function CustomerFormSheet({
                 Số dư không được âm
               </p>
             )}
+
+            {/* Quick Balance Selection - Only show in add mode */}
+            {mode === "add" && (
+              <div className="space-y-2">
+                <Label className="text-foreground text-sm">Chọn nhanh số dư ban đầu</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[0, 50000, 100000, 200000, 500000, 1000000].map((quickBalance) => (
+                    <Button
+                      key={quickBalance}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleBalanceChange(quickBalance)}
+                      className="border-border hover:bg-secondary"
+                    >
+                      {quickBalance === 0 ? "0 VND" : formatNumber(quickBalance) + " VND"}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {formData.balance > 0 && (
               <Alert className="border-blue-200 bg-blue-50">
                 <AlertDescription className="text-blue-800">

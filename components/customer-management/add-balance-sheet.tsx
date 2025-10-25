@@ -173,7 +173,7 @@ export function AddBalanceSheet({
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setAmount(quickAmount)}
+                  onClick={() => handleAmountChange(quickAmount)}
                   className="border-border hover:bg-secondary"
                 >
                   {formatCurrency(quickAmount)}
