@@ -220,3 +220,111 @@ export const parseFormattedNumber = (formattedValue: string): number => {
   const cleaned = formattedValue.replace(/[^\d.]/g, '')
   return parseFloat(cleaned) || 0
 }
+
+// Computer name validation
+export const validateComputerName = (name: string): ValidationResult => {
+  if (!name || name.trim() === '') {
+    return {
+      isValid: false,
+      message: 'Tên máy tính không được để trống'
+    }
+  }
+
+  if (name.trim().length < 2) {
+    return {
+      isValid: false,
+      message: 'Tên máy tính phải có ít nhất 2 ký tự'
+    }
+  }
+
+  if (name.trim().length > 50) {
+    return {
+      isValid: false,
+      message: 'Tên máy tính không được vượt quá 50 ký tự'
+    }
+  }
+
+  // Allow letters, numbers, spaces, and common computer naming characters
+  const namePattern = /^[a-zA-Z0-9\s\-_\.]+$/
+  if (!namePattern.test(name.trim())) {
+    return {
+      isValid: false,
+      message: 'Tên máy tính chỉ được chứa chữ cái, số, khoảng trắng, dấu gạch ngang, gạch dưới và dấu chấm'
+    }
+  }
+
+  return { isValid: true }
+}
+
+// IP address validation
+export const validateIPAddress = (ip: string): ValidationResult => {
+  if (!ip || ip.trim() === '') {
+    return {
+      isValid: false,
+      message: 'Địa chỉ IP không được để trống'
+    }
+  }
+
+  // IPv4 pattern
+  const ipPattern = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+  if (!ipPattern.test(ip.trim())) {
+    return {
+      isValid: false,
+      message: 'Địa chỉ IP không hợp lệ. Định dạng: 192.168.1.1'
+    }
+  }
+
+  return { isValid: true }
+}
+
+// Computer specifications validation
+export const validateSpecification = (spec: string, fieldName: string): ValidationResult => {
+  if (!spec || spec.trim() === '') {
+    return {
+      isValid: false,
+      message: `${fieldName} không được để trống`
+    }
+  }
+
+  if (spec.trim().length < 2) {
+    return {
+      isValid: false,
+      message: `${fieldName} phải có ít nhất 2 ký tự`
+    }
+  }
+
+  if (spec.trim().length > 100) {
+    return {
+      isValid: false,
+      message: `${fieldName} không được vượt quá 100 ký tự`
+    }
+  }
+
+  return { isValid: true }
+}
+
+// Price per hour validation
+export const validatePricePerHour = (price: number): ValidationResult => {
+  if (price < 0) {
+    return {
+      isValid: false,
+      message: 'Giá/giờ không được âm'
+    }
+  }
+
+  if (price > 1000000) {
+    return {
+      isValid: false,
+      message: 'Giá/giờ không được vượt quá 1,000,000 VND'
+    }
+  }
+
+  if (price < 1000) {
+    return {
+      isValid: false,
+      message: 'Giá/giờ tối thiểu là 1,000 VND'
+    }
+  }
+
+  return { isValid: true }
+}
