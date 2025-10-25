@@ -36,23 +36,21 @@ export function ProductAnimations({ children, className }: ProductAnimationsProp
         }
       )
 
-      // Animate stats cards
+      // Animate tabs navigation
       gsap.fromTo(
-        "[data-animate='stats-card']",
+        "[data-animate='tabs-navigation']",
         {
-          y: 50,
-          opacity: 0,
-          scale: 0.9
+          y: 30,
+          opacity: 0
         },
         {
           y: 0,
           opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          stagger: 0.1,
-          ease: "back.out(1.7)",
+          duration: 0.5,
+          delay: 0.2,
+          ease: "power2.out",
           scrollTrigger: {
-            trigger: "[data-animate='stats-card']",
+            trigger: "[data-animate='tabs-navigation']",
             start: "top 80%",
             end: "bottom 20%",
             toggleActions: "play none none reverse"
@@ -61,6 +59,27 @@ export function ProductAnimations({ children, className }: ProductAnimationsProp
       )
 
       // Animate product table
+      gsap.fromTo(
+        "[data-animate='product-table']",
+        {
+          y: 100,
+          opacity: 0
+        },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: "[data-animate='product-table']",
+            start: "top 70%",
+            end: "bottom 30%",
+            toggleActions: "play none none reverse"
+          }
+        }
+      )
+
+      // Animate table rows
       gsap.fromTo(
         "[data-animate='table-row']",
         {
@@ -74,7 +93,7 @@ export function ProductAnimations({ children, className }: ProductAnimationsProp
           stagger: 0.05,
           ease: "power2.out",
           scrollTrigger: {
-            trigger: "[data-animate='table-container']",
+            trigger: "[data-animate='product-table']",
             start: "top 80%",
             end: "bottom 20%",
             toggleActions: "play none none reverse"
@@ -82,9 +101,33 @@ export function ProductAnimations({ children, className }: ProductAnimationsProp
         }
       )
 
-      // Animate search and filter controls
+      // Animate product stats
       gsap.fromTo(
-        "[data-animate='search-controls']",
+        "[data-animate='product-stats']",
+        {
+          y: 50,
+          opacity: 0,
+          scale: 0.9
+        },
+        {
+          y: 0,
+          opacity: 1,
+          scale: 1,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: "back.out(1.7)",
+          scrollTrigger: {
+            trigger: "[data-animate='product-stats']",
+            start: "top 80%",
+            end: "bottom 20%",
+            toggleActions: "play none none reverse"
+          }
+        }
+      )
+
+      // Animate pagination
+      gsap.fromTo(
+        "[data-animate='pagination']",
         {
           y: 30,
           opacity: 0
@@ -93,68 +136,11 @@ export function ProductAnimations({ children, className }: ProductAnimationsProp
           y: 0,
           opacity: 1,
           duration: 0.5,
-          delay: 0.2,
-          ease: "power2.out"
-        }
-      )
-
-      // Animate action buttons
-      gsap.fromTo(
-        "[data-animate='action-buttons']",
-        {
-          scale: 0.95,
-          opacity: 0
-        },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 0.4,
-          delay: 0.3,
-          ease: "back.out(1.7)"
-        }
-      )
-
-      // Animate product cards
-      gsap.fromTo(
-        "[data-animate='product-card']",
-        {
-          y: 30,
-          opacity: 0,
-          scale: 0.95
-        },
-        {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          stagger: 0.1,
           ease: "power2.out",
           scrollTrigger: {
-            trigger: "[data-animate='product-card']",
-            start: "top 85%",
-            end: "bottom 15%",
-            toggleActions: "play none none reverse"
-          }
-        }
-      )
-
-      // Animate category badges
-      gsap.fromTo(
-        "[data-animate='category-badge']",
-        {
-          scale: 0.8,
-          opacity: 0
-        },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 0.3,
-          stagger: 0.1,
-          ease: "back.out(1.7)",
-          scrollTrigger: {
-            trigger: "[data-animate='category-badge']",
-            start: "top 90%",
-            end: "bottom 10%",
+            trigger: "[data-animate='pagination']",
+            start: "top 80%",
+            end: "bottom 20%",
             toggleActions: "play none none reverse"
           }
         }
