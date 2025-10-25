@@ -328,3 +328,117 @@ export const validatePricePerHour = (price: number): ValidationResult => {
 
   return { isValid: true }
 }
+
+// Product name validation
+export const validateProductName = (name: string): ValidationResult => {
+  if (!name || name.trim() === '') {
+    return {
+      isValid: false,
+      message: 'Tên sản phẩm không được để trống'
+    }
+  }
+
+  if (name.trim().length < 2) {
+    return {
+      isValid: false,
+      message: 'Tên sản phẩm phải có ít nhất 2 ký tự'
+    }
+  }
+
+  if (name.trim().length > 100) {
+    return {
+      isValid: false,
+      message: 'Tên sản phẩm không được vượt quá 100 ký tự'
+    }
+  }
+
+  // Allow letters (including Vietnamese), numbers, spaces, and common product naming characters
+  const namePattern = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂÂÊÔƠưăâêôơẠẢÃẦẨẪẬẮẰẲẴẶẸẺẼỀỂỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴỶỸỳỵỷỹạảãầẩẫậắằẳẵặẹẻẽềểễệỉịọỏốồổỗộớờởỡợụủứừửữự0-9\s\-_\.\(\)]+$/
+  if (!namePattern.test(name.trim())) {
+    return {
+      isValid: false,
+      message: 'Tên sản phẩm chỉ được chứa chữ cái, số, khoảng trắng và ký tự thông dụng'
+    }
+  }
+
+  return { isValid: true }
+}
+
+// Supplier name validation
+export const validateSupplierName = (name: string): ValidationResult => {
+  if (!name || name.trim() === '') {
+    return {
+      isValid: true // Supplier name is optional
+    }
+  }
+
+  if (name.trim().length < 2) {
+    return {
+      isValid: false,
+      message: 'Tên nhà cung cấp phải có ít nhất 2 ký tự'
+    }
+  }
+
+  if (name.trim().length > 100) {
+    return {
+      isValid: false,
+      message: 'Tên nhà cung cấp không được vượt quá 100 ký tự'
+    }
+  }
+
+  // Allow letters (including Vietnamese), numbers, spaces, and common business naming characters
+  const namePattern = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂÂÊÔƠưăâêôơẠẢÃẦẨẪẬẮẰẲẴẶẸẺẼỀỂỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴỶỸỳỵỷỹạảãầẩẫậắằẳẵặẹẻẽềểễệỉịọỏốồổỗộớờởỡợụủứừửữự0-9\s\-_\.\(\)&]+$/
+  if (!namePattern.test(name.trim())) {
+    return {
+      isValid: false,
+      message: 'Tên nhà cung cấp chỉ được chứa chữ cái, số, khoảng trắng và ký tự thông dụng'
+    }
+  }
+
+  return { isValid: true }
+}
+
+// Product price validation
+export const validateProductPrice = (price: number): ValidationResult => {
+  if (price < 0) {
+    return {
+      isValid: false,
+      message: 'Giá sản phẩm không được âm'
+    }
+  }
+
+  if (price > 10000000) {
+    return {
+      isValid: false,
+      message: 'Giá sản phẩm không được vượt quá 10,000,000 VND'
+    }
+  }
+
+  if (price < 100) {
+    return {
+      isValid: false,
+      message: 'Giá sản phẩm tối thiểu là 100 VND'
+    }
+  }
+
+  return { isValid: true }
+}
+
+// Stock validation
+export const validateStock = (stock: number): ValidationResult => {
+  if (stock < 0) {
+    return {
+      isValid: false,
+      message: 'Số lượng tồn kho không được âm'
+    }
+  }
+
+  if (stock > 10000) {
+    return {
+      isValid: false,
+      message: 'Số lượng tồn kho không được vượt quá 10,000'
+    }
+  }
+
+  return { isValid: true }
+}
