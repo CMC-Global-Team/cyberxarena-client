@@ -330,6 +330,34 @@ export const validateIPAddress = (ip: string): ValidationResult => {
   return { isValid: true }
 }
 
+// IP address uniqueness validation
+export const validateIPAddressUniqueness = (
+  ip: string, 
+  existingComputers: Array<{ ipAddress?: string; computerId?: number }>,
+  currentComputerId?: number
+): ValidationResult => {
+  if (!ip || ip.trim() === '') {
+    return { isValid: false, message: 'Địa chỉ IP không được để trống' }
+  }
+
+  // Check if IP address already exists (excluding current computer in edit mode)
+  const duplicateComputer = existingComputers.find(computer => {
+    if (!computer.ipAddress) return false
+    if (currentComputerId && computer.computerId === currentComputerId) return false
+    
+    return computer.ipAddress.trim().toLowerCase() === ip.trim().toLowerCase()
+  })
+
+  if (duplicateComputer) {
+    return {
+      isValid: false,
+      message: 'Địa chỉ IP này đã được sử dụng bởi máy tính khác'
+    }
+  }
+
+  return { isValid: true }
+}
+
 // Computer specifications validation
 export const validateSpecification = (spec: string, fieldName: string): ValidationResult => {
   if (!spec || spec.trim() === '') {
