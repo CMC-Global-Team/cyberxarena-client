@@ -179,17 +179,29 @@ export function SessionFormSheet({
 
   // Filter out customers who are already in active sessions (except in edit mode)
   const availableCustomers = customers.filter(customer => {
+    console.log(`Checking customer ${customer.customerId}: ${customer.customerName}`)
+    
     if (mode === "edit" && session && customer.customerId === session.customerId) {
       return true // Include current customer in edit mode
     }
+    
     // Check if customer is in any ACTIVE session (not ended sessions)
     const isInActiveSession = activeSessions.some(session => {
       // Only consider sessions that are truly active (status === "Active" or no endTime)
       const isActive = session.status === "Active" || (!session.endTime)
-      return session.customerId === customer.customerId && isActive
+      const match = session.customerId === customer.customerId && isActive
+      if (match) {
+        console.log(`Customer ${customer.customerId} is in active session ${session.sessionId}`)
+      }
+      return match
     })
+    
+    console.log(`Customer ${customer.customerId} available: ${!isInActiveSession}`)
     return !isInActiveSession
   })
+  
+  console.log(`Total customers: ${customers.length}, Available customers: ${availableCustomers.length}`)
+  console.log(`Active sessions: ${activeSessions.length}`)
 
   // Count customers in active sessions
   const customersInActiveSessions = customers.filter(customer => {
