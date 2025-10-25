@@ -15,6 +15,8 @@ import {
   validateBalance, 
   validateMembershipCard,
   validateForm,
+  formatNumber,
+  parseFormattedNumber,
   type ValidationResult 
 } from "@/lib/validation"
 
@@ -60,6 +62,7 @@ export function CustomerFormSheet({
   const [membershipCards, setMembershipCards] = useState<MembershipCard[]>([])
   const [isLoadingCards, setIsLoadingCards] = useState(false)
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({})
+  const [displayBalance, setDisplayBalance] = useState("")
 
   useEffect(() => {
     if (customer && mode === "edit") {
@@ -69,6 +72,7 @@ export function CustomerFormSheet({
         membershipCardId: customer.membershipCardId || 0,
         balance: customer.balance,
       })
+      setDisplayBalance(formatNumber(customer.balance))
     } else {
       setFormData({
         customerName: "",
@@ -76,6 +80,7 @@ export function CustomerFormSheet({
         membershipCardId: 0,
         balance: 0,
       })
+      setDisplayBalance("")
     }
     setError("")
   }, [customer, mode, open])
@@ -177,9 +182,25 @@ export function CustomerFormSheet({
 
   const handleBalanceChange = (value: number) => {
     setFormData({ ...formData, balance: value })
+    setDisplayBalance(formatNumber(value))
     
     // Real-time validation
     const validation = validateBalance(value)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, balance: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, balance: '' }))
+    }
+  }
+
+  const handleBalanceInputChange = (value: string) => {
+    // Parse the formatted input back to number
+    const numericValue = parseFormattedNumber(value)
+    setFormData({ ...formData, balance: numericValue })
+    setDisplayBalance(value)
+    
+    // Real-time validation
+    const validation = validateBalance(numericValue)
     if (!validation.isValid && validation.message) {
       setValidationErrors(prev => ({ ...prev, balance: validation.message! }))
     } else {
@@ -274,11 +295,9 @@ export function CustomerFormSheet({
             </Label>
             <Input
               id="balance"
-              type="number"
-              min="0"
-              step="1000"
-              value={formData.balance}
-              onChange={(e) => handleBalanceChange(parseFloat(e.target.value) || 0)}
+              type="text"
+              value={displayBalance}
+              onChange={(e) => handleBalanceInputChange(e.target.value)}
               placeholder="0"
               className={`bg-secondary border-border ${validationErrors.balance ? 'border-red-500' : ''}`}
               required

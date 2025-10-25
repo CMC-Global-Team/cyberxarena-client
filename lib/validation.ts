@@ -61,12 +61,12 @@ export const validateName = (name: string): ValidationResult => {
     }
   }
 
-  // Check for valid characters (letters, spaces, Vietnamese characters)
-  const namePattern = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂÂÊÔƠưăâêôơ\s]+$/
+  // Check for valid characters (letters, spaces, Vietnamese characters, and common punctuation)
+  const namePattern = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂÂÊÔƠưăâêôơ\s\-'\.]+$/
   if (!namePattern.test(name.trim())) {
     return {
       isValid: false,
-      message: 'Họ và tên chỉ được chứa chữ cái và khoảng trắng'
+      message: 'Họ và tên chỉ được chứa chữ cái, khoảng trắng, dấu gạch ngang, dấu nháy đơn và dấu chấm'
     }
   }
 
@@ -200,4 +200,22 @@ export const validateForm = (validations: FieldValidation): { isValid: boolean; 
   })
 
   return { isValid, errors }
+}
+
+// Currency formatting utilities
+export const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND'
+  }).format(amount)
+}
+
+export const formatNumber = (amount: number): string => {
+  return new Intl.NumberFormat('vi-VN').format(amount)
+}
+
+export const parseFormattedNumber = (formattedValue: string): number => {
+  // Remove all non-digit characters except decimal point
+  const cleaned = formattedValue.replace(/[^\d.]/g, '')
+  return parseFloat(cleaned) || 0
 }
