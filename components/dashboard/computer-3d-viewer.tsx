@@ -14,13 +14,13 @@ function ComputerModel() {
   // Animation xoay nhẹ model
   useFrame((state) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.1
+      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.2
     }
   })
 
   return (
     <group ref={groupRef}>
-      <primitive object={scene} scale={[2, 2, 2]} position={[0, -1, 0]} />
+      <primitive object={scene} scale={[3.5, 3.5, 3.5]} position={[0, -0.5, 0]} />
     </group>
   )
 
@@ -46,28 +46,43 @@ export function Computer3DViewer() {
         <CardDescription>Xem mô hình máy tính trong không gian 3D</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-80 w-full rounded-lg overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+        <div className="h-80 w-full rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
           <Canvas
-            camera={{ position: [0, 0, 5], fov: 50 }}
+            camera={{ position: [0, 0, 8], fov: 45 }}
             style={{ width: "100%", height: "100%" }}
           >
             <Suspense fallback={null}>
-              <ambientLight intensity={0.5} />
-              <directionalLight position={[10, 10, 5]} intensity={1} />
-              <pointLight position={[-10, -10, -5]} intensity={0.5} />
+              {/* Cải thiện lighting */}
+              <ambientLight intensity={0.8} />
+              <directionalLight 
+                position={[10, 10, 5]} 
+                intensity={1.5} 
+                castShadow
+                shadow-mapSize={1024}
+              />
+              <directionalLight 
+                position={[-10, 5, -5]} 
+                intensity={0.8} 
+              />
+              <pointLight position={[0, 10, 0]} intensity={0.6} />
+              <spotLight 
+                position={[5, 5, 5]} 
+                angle={0.3} 
+                penumbra={1} 
+                intensity={1}
+                castShadow
+              />
               
               <PresentationControls
                 global
-                rotation={[0.13, 0.1, 0]}
-                polar={[-0.4, 0.2]}
-                azimuth={[-1, 0.75]}
-                config={{ mass: 2, tension: 400 }}
-                snap={{ mass: 4, tension: 400 }}
+                rotation={[0.1, 0.1, 0]}
+                polar={[-0.2, 0.3]}
+                azimuth={[-1.2, 1.2]}
               >
                 <ComputerModel />
               </PresentationControls>
               
-              <Environment preset="studio" />
+              <Environment preset="sunset" />
             </Suspense>
           </Canvas>
         </div>
