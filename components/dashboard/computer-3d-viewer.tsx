@@ -6,7 +6,7 @@ import { useGLTF, OrbitControls, Environment, PresentationControls, Grid, Stats 
 import { Group, AxesHelper } from "three"
 
 // Component để load và hiển thị model 3D
-function ComputerModel({ scale }: { scale: number }) {
+function ComputerModel({ scale, position }: { scale: number, position: [number, number, number] }) {
   const { scene } = useGLTF("/Computer.glb")
   const groupRef = useRef<Group>(null)
 
@@ -20,7 +20,7 @@ function ComputerModel({ scale }: { scale: number }) {
 
   return (
     <group ref={groupRef}>
-      <primitive object={scene} scale={[scale, scale, scale]} position={[0, -0.5, 0]} />
+      <primitive object={scene} scale={[scale, scale, scale]} position={position} />
     </group>
   )
 
@@ -73,6 +73,29 @@ function CanvasWrapper() {
   const [cameraX, setCameraX] = useState(8)
   const [cameraY, setCameraY] = useState(5)
   const [cameraZ, setCameraZ] = useState(12)
+  const [modelX, setModelX] = useState(0)
+  const [modelY, setModelY] = useState(-0.5)
+  const [modelZ, setModelZ] = useState(0)
+
+  // Preset positions cho các góc nhìn phổ biến
+  const presetPositions = {
+    front: { camera: [0, 0, 10], model: [0, -0.5, 0] },
+    back: { camera: [0, 0, -10], model: [0, -0.5, 0] },
+    left: { camera: [-10, 0, 0], model: [0, -0.5, 0] },
+    right: { camera: [10, 0, 0], model: [0, -0.5, 0] },
+    top: { camera: [0, 10, 0], model: [0, -0.5, 0] },
+    diagonal: { camera: [8, 5, 8], model: [0, -0.5, 0] }
+  }
+
+  const applyPreset = (preset: keyof typeof presetPositions) => {
+    const { camera, model } = presetPositions[preset]
+    setCameraX(camera[0])
+    setCameraY(camera[1])
+    setCameraZ(camera[2])
+    setModelX(model[0])
+    setModelY(model[1])
+    setModelZ(model[2])
+  }
 
   return (
     <div className="h-screen w-full overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700 relative">
@@ -86,7 +109,62 @@ function CanvasWrapper() {
         </button>
         
         {showDebug && (
-          <div className="space-y-2 text-xs">
+          <div className="space-y-2 text-xs max-h-96 overflow-y-auto">
+            {/* Preset buttons */}
+            <div className="space-y-1">
+              <label className="font-bold">Preset Views:</label>
+              <div className="grid grid-cols-2 gap-1">
+                <button onClick={() => applyPreset('front')} className="px-2 py-1 bg-green-600 rounded text-xs">Front</button>
+                <button onClick={() => applyPreset('back')} className="px-2 py-1 bg-green-600 rounded text-xs">Back</button>
+                <button onClick={() => applyPreset('left')} className="px-2 py-1 bg-green-600 rounded text-xs">Left</button>
+                <button onClick={() => applyPreset('right')} className="px-2 py-1 bg-green-600 rounded text-xs">Right</button>
+                <button onClick={() => applyPreset('top')} className="px-2 py-1 bg-green-600 rounded text-xs">Top</button>
+                <button onClick={() => applyPreset('diagonal')} className="px-2 py-1 bg-green-600 rounded text-xs">Diagonal</button>
+              </div>
+            </div>
+
+            {/* Model controls */}
+            <div className="space-y-1">
+              <label className="font-bold">Model Position:</label>
+              <div>
+                <label>Model X: {modelX}</label>
+                <input 
+                  type="range" 
+                  min="-5" 
+                  max="5" 
+                  step="0.1" 
+                  value={modelX} 
+                  onChange={(e) => setModelX(parseFloat(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label>Model Y: {modelY}</label>
+                <input 
+                  type="range" 
+                  min="-5" 
+                  max="5" 
+                  step="0.1" 
+                  value={modelY} 
+                  onChange={(e) => setModelY(parseFloat(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label>Model Z: {modelZ}</label>
+                <input 
+                  type="range" 
+                  min="-5" 
+                  max="5" 
+                  step="0.1" 
+                  value={modelZ} 
+                  onChange={(e) => setModelZ(parseFloat(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+            </div>
+
+            {/* Scale control */}
             <div>
               <label>Scale: {scale}</label>
               <input 
@@ -99,41 +177,54 @@ function CanvasWrapper() {
                 className="w-full"
               />
             </div>
-            <div>
-              <label>Camera X: {cameraX}</label>
-              <input 
-                type="range" 
-                min="0" 
-                max="20" 
-                step="1" 
-                value={cameraX} 
-                onChange={(e) => setCameraX(parseFloat(e.target.value))}
-                className="w-full"
-              />
+
+            {/* Camera controls */}
+            <div className="space-y-1">
+              <label className="font-bold">Camera Position:</label>
+              <div>
+                <label>Camera X: {cameraX}</label>
+                <input 
+                  type="range" 
+                  min="-20" 
+                  max="20" 
+                  step="1" 
+                  value={cameraX} 
+                  onChange={(e) => setCameraX(parseFloat(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label>Camera Y: {cameraY}</label>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="20" 
+                  step="1" 
+                  value={cameraY} 
+                  onChange={(e) => setCameraY(parseFloat(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label>Camera Z: {cameraZ}</label>
+                <input 
+                  type="range" 
+                  min="0" 
+                  max="30" 
+                  step="1" 
+                  value={cameraZ} 
+                  onChange={(e) => setCameraZ(parseFloat(e.target.value))}
+                  className="w-full"
+                />
+              </div>
             </div>
-            <div>
-              <label>Camera Y: {cameraY}</label>
-              <input 
-                type="range" 
-                min="0" 
-                max="20" 
-                step="1" 
-                value={cameraY} 
-                onChange={(e) => setCameraY(parseFloat(e.target.value))}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <label>Camera Z: {cameraZ}</label>
-              <input 
-                type="range" 
-                min="0" 
-                max="30" 
-                step="1" 
-                value={cameraZ} 
-                onChange={(e) => setCameraZ(parseFloat(e.target.value))}
-                className="w-full"
-              />
+
+            {/* Current values display */}
+            <div className="bg-gray-800 p-2 rounded text-xs">
+              <div className="font-bold mb-1">Current Values:</div>
+              <div>Model: ({modelX.toFixed(1)}, {modelY.toFixed(1)}, {modelZ.toFixed(1)})</div>
+              <div>Camera: ({cameraX.toFixed(1)}, {cameraY.toFixed(1)}, {cameraZ.toFixed(1)})</div>
+              <div>Scale: {scale.toFixed(1)}x</div>
             </div>
           </div>
         )}
@@ -175,7 +266,7 @@ function CanvasWrapper() {
             azimuth={[-Math.PI / 1.4, Math.PI / 1.4]}
             snap
           >
-            <ComputerModel scale={scale} />
+            <ComputerModel scale={scale} position={[modelX, modelY, modelZ]} />
           </PresentationControls>
           
           {/* Thêm OrbitControls để dễ tương tác hơn */}
