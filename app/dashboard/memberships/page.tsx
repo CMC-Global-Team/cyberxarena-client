@@ -32,7 +32,6 @@ export default function MembershipsPage() {
   const [selectedMembershipForEligible, setSelectedMembershipForEligible] = useState<MembershipCard | null>(null)
   const [updatingCustomers, setUpdatingCustomers] = useState(false)
 
-
   const loadData = async () => {
     try {
       const [m, d] = await withPageLoading(() => Promise.all([
@@ -217,30 +216,29 @@ export default function MembershipsPage() {
               </div>
             </TabsContent>
           </Tabs>
+        </div>
 
-      {selected && (
-        <MembershipFormSheet membership={selected} mode="edit" onSubmit={handleUpdate} open={editOpen} onOpenChange={setEditOpen} />
-      )}
+        {selected && (
+          <MembershipFormSheet membership={selected} mode="edit" onSubmit={handleUpdate} open={editOpen} onOpenChange={setEditOpen} />
+        )}
 
-      <MembershipTour 
-        isActive={showTour} 
-        onComplete={() => setShowTour(false)} 
-      />
-
-      {selectedMembershipForEligible && (
-        <EligibleCustomersModal
-          open={eligibleCustomersOpen}
-          onOpenChange={setEligibleCustomersOpen}
-          membershipCardId={selectedMembershipForEligible.membershipCardId}
-          membershipCardName={selectedMembershipForEligible.membershipCardName}
-          membershipCardThreshold={selectedMembershipForEligible.rechargeThreshold}
-          onConfirm={handleUpdateEligibleCustomers}
-          loading={updatingCustomers}
+        <MembershipTour 
+          isActive={showTour} 
+          onComplete={() => setShowTour(false)} 
         />
-      )}
+
+        {selectedMembershipForEligible && (
+          <EligibleCustomersModal
+            open={eligibleCustomersOpen}
+            onOpenChange={setEligibleCustomersOpen}
+            membershipCardId={selectedMembershipForEligible.membershipCardId}
+            membershipCardName={selectedMembershipForEligible.membershipCardName}
+            membershipCardThreshold={selectedMembershipForEligible.rechargeThreshold}
+            onConfirm={handleUpdateEligibleCustomers}
+            loading={updatingCustomers}
+          />
+        )}
       </MembershipAnimations>
     </OptimizedPageLayout>
   )
 }
-
-
