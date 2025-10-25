@@ -12,6 +12,7 @@ import { membershipsApi, type MembershipCard } from "@/lib/memberships"
 import { 
   validateName, 
   validatePhoneNumber, 
+  validatePhoneNumberUniqueness,
   validateBalance, 
   validateMembershipCard,
   validateForm,
@@ -35,6 +36,7 @@ interface CustomerFormSheetProps {
   customer?: Customer
   mode: "add" | "edit"
   onSubmit: (data: CustomerFormData) => Promise<void>
+  existingCustomers?: Array<{ phoneNumber?: string; customerId?: number }>
 }
 
 interface CustomerFormData {
@@ -49,7 +51,8 @@ export function CustomerFormSheet({
   onOpenChange, 
   customer, 
   mode, 
-  onSubmit 
+  onSubmit,
+  existingCustomers = []
 }: CustomerFormSheetProps) {
   const [formData, setFormData] = useState<CustomerFormData>({
     customerName: "",
@@ -103,7 +106,7 @@ export function CustomerFormSheet({
     }
   }, [open])
 
-  const validateFormData = (): boolean => {
+  const validateFormData = async (): Promise<boolean> => {
     const validations = {
       customerName: validateName(formData.customerName),
       phoneNumber: validatePhoneNumber(formData.phoneNumber),
@@ -111,15 +114,28 @@ export function CustomerFormSheet({
       membershipCardId: validateMembershipCard(formData.membershipCardId)
     }
 
+    // Check phone number uniqueness
+    const phoneUniqueness = await validatePhoneNumberUniqueness(
+      formData.phoneNumber,
+      existingCustomers,
+      customer?.customerId
+    )
+
     const { isValid, errors } = validateForm(validations)
     
-    if (!isValid) {
+    if (!isValid || !phoneUniqueness.isValid) {
       const errorMap: {[key: string]: string} = {}
       Object.entries(validations).forEach(([field, result]) => {
         if (!result.isValid && result.message) {
           errorMap[field] = result.message
         }
       })
+      
+      // Add phone uniqueness error
+      if (!phoneUniqueness.isValid && phoneUniqueness.message) {
+        errorMap.phoneNumber = phoneUniqueness.message
+      }
+      
       setValidationErrors(errorMap)
       return false
     }
@@ -131,7 +147,7 @@ export function CustomerFormSheet({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!validateFormData()) {
+    if (!(await validateFormData())) {
       return
     }
 
@@ -148,7 +164,7 @@ export function CustomerFormSheet({
     }
   }
 
-  const handlePhoneChange = (value: string) => {
+  const handlePhoneChange = async (value: string) => {
     // Chỉ cho phép số và dấu +
     const cleaned = value.replace(/[^\d+]/g, '')
     if (cleaned.startsWith('+84')) {
@@ -164,7 +180,22 @@ export function CustomerFormSheet({
     if (!validation.isValid && validation.message) {
       setValidationErrors(prev => ({ ...prev, phoneNumber: validation.message! }))
     } else {
-      setValidationErrors(prev => ({ ...prev, phoneNumber: '' }))
+      // Check uniqueness if phone number is valid
+      if (cleaned) {
+        const phoneUniqueness = await validatePhoneNumberUniqueness(
+          cleaned,
+          existingCustomers,
+          customer?.customerId
+        )
+        
+        if (!phoneUniqueness.isValid && phoneUniqueness.message) {
+          setValidationErrors(prev => ({ ...prev, phoneNumber: phoneUniqueness.message! }))
+        } else {
+          setValidationErrors(prev => ({ ...prev, phoneNumber: '' }))
+        }
+      } else {
+        setValidationErrors(prev => ({ ...prev, phoneNumber: '' }))
+      }
     }
   }
 
