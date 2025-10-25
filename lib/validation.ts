@@ -524,3 +524,51 @@ export const validateDiscountValue = (value: number, type: 'Flat' | 'Percentage'
 
   return { isValid: true }
 }
+
+// Membership card name validation
+export const validateMembershipCardName = (name: string): ValidationResult => {
+  if (!name || name.trim() === '') {
+    return {
+      isValid: false,
+      message: 'Tên thẻ thành viên không được để trống'
+    }
+  }
+
+  if (name.trim().length < 2) {
+    return {
+      isValid: false,
+      message: 'Tên thẻ thành viên phải có ít nhất 2 ký tự'
+    }
+  }
+
+  if (name.trim().length > 50) {
+    return {
+      isValid: false,
+      message: 'Tên thẻ thành viên không được vượt quá 50 ký tự'
+    }
+  }
+
+  // Allow letters (including Vietnamese), numbers, spaces, and common membership naming characters
+  const namePattern = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂÂÊÔƠưăâêôơẠẢÃẦẨẪẬẮẰẲẴẶẸẺẼỀỂỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴỶỸỳỵỷỹạảãầẩẫậắằẳẵặẹẻẽềểễệỉịọỏốồổỗộớờởỡợụủứừửữự0-9\s\-_\.\(\)]+$/
+  if (!namePattern.test(name.trim())) {
+    return {
+      isValid: false,
+      message: 'Tên thẻ thành viên chỉ được chứa chữ cái, số, khoảng trắng và ký tự thông dụng'
+    }
+  }
+
+  return { isValid: true }
+}
+
+// Recharge threshold validation (no minimum limit as requested)
+export const validateRechargeThreshold = (threshold: number): ValidationResult => {
+  if (threshold < 0) {
+    return {
+      isValid: false,
+      message: 'Ngưỡng nạp tiền không được âm'
+    }
+  }
+
+  // No maximum limit as requested by user
+  return { isValid: true }
+}

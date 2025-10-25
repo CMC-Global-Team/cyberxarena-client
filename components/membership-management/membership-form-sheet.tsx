@@ -10,6 +10,13 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Plus, Edit } from "lucide-react"
 import type { MembershipCard, MembershipCardDTO } from "@/lib/memberships"
 import { discountsApi, type Discount } from "@/lib/discounts"
+import { 
+  validateMembershipCardName, 
+  validateRechargeThreshold,
+  formatNumber,
+  parseFormattedNumber,
+  type ValidationResult 
+} from "@/lib/validation"
 
 interface MembershipFormSheetProps {
   membership?: MembershipCard | null
@@ -31,6 +38,8 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
     rechargeThreshold: 0,
     isDefault: false,
   })
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({})
+  const [displayThreshold, setDisplayThreshold] = useState("")
   const [loading, setLoading] = useState(false)
   const [discounts, setDiscounts] = useState<Discount[]>([])
 
@@ -42,9 +51,12 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
         rechargeThreshold: membership.rechargeThreshold ?? 0,
         isDefault: membership.isDefault ?? false,
       })
+      setDisplayThreshold(formatNumber(membership.rechargeThreshold ?? 0))
     } else {
       setFormData({ membershipCardName: "", discountId: null, rechargeThreshold: 0, isDefault: false })
+      setDisplayThreshold("")
     }
+    setValidationErrors({})
   }, [membership, mode])
 
   useEffect(() => {
@@ -56,15 +68,68 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
     label: `${d.discountName} (${d.discountType === 'Percentage' ? 'Phần trăm' : 'Cố định'}) - ${d.discountType === 'Percentage' ? `${d.discountValue}%` : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(d.discountValue)}`
   })), [discounts])
 
+  // Real-time validation handlers
+  const handleMembershipNameChange = (value: string) => {
+    setFormData({ ...formData, membershipCardName: value })
+    
+    const validation = validateMembershipCardName(value)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, membershipCardName: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, membershipCardName: '' }))
+    }
+  }
+
+  const handleThresholdChange = (value: string) => {
+    // Remove all non-digit characters to get clean number
+    const cleanValue = value.replace(/[^\d]/g, '')
+    const numericValue = parseFloat(cleanValue) || 0
+    
+    setFormData({ ...formData, rechargeThreshold: numericValue })
+    
+    // Auto-format with commas if there's a value
+    if (numericValue > 0) {
+      setDisplayThreshold(formatNumber(numericValue))
+    } else {
+      setDisplayThreshold(cleanValue) // Show what user is typing
+    }
+    
+    const validation = validateRechargeThreshold(numericValue)
+    if (!validation.isValid && validation.message) {
+      setValidationErrors(prev => ({ ...prev, rechargeThreshold: validation.message! }))
+    } else {
+      setValidationErrors(prev => ({ ...prev, rechargeThreshold: '' }))
+    }
+  }
+
+  const validateFormData = (): boolean => {
+    const validations = {
+      membershipCardName: validateMembershipCardName(formData.membershipCardName),
+      rechargeThreshold: validateRechargeThreshold(formData.rechargeThreshold)
+    }
+
+    let isValid = true
+    const errorMap: {[key: string]: string} = {}
+    
+    Object.entries(validations).forEach(([field, result]) => {
+      if (!result.isValid && result.message) {
+        errorMap[field] = result.message
+        isValid = false
+      }
+    })
+    
+    setValidationErrors(errorMap)
+    return isValid
+  }
+
   const handleChange = (field: keyof MembershipCardDTO, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value as never }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.membershipCardName.trim()) return
-    if (formData.rechargeThreshold < 0) {
-      alert("Ngưỡng nạp tiền không được âm")
+    
+    if (!validateFormData()) {
       return
     }
     setLoading(true)
@@ -114,21 +179,28 @@ export function MembershipFormSheet({ membership, mode, onSubmit, open: controll
             <Input
               id="membershipCardName"
               value={formData.membershipCardName}
-              onChange={e => handleChange("membershipCardName", e.target.value)}
+              onChange={e => handleMembershipNameChange(e.target.value)}
               placeholder="Ví dụ: Bạc, Vàng, Bạch kim"
+              className={validationErrors.membershipCardName ? 'border-red-500' : ''}
             />
+            {validationErrors.membershipCardName && (
+              <p className="text-xs text-red-500">{validationErrors.membershipCardName}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="rechargeThreshold">Ngưỡng nạp tiền (VND)</Label>
             <Input
               id="rechargeThreshold"
-              type="number"
-              value={formData.rechargeThreshold}
-              onChange={e => handleChange("rechargeThreshold", Number(e.target.value))}
-              placeholder="Ví dụ: 100000"
-              min="0"
+              type="text"
+              value={displayThreshold}
+              onChange={e => handleThresholdChange(e.target.value)}
+              placeholder="Ví dụ: 100,000"
+              className={validationErrors.rechargeThreshold ? 'border-red-500' : ''}
             />
+            {validationErrors.rechargeThreshold && (
+              <p className="text-xs text-red-500">{validationErrors.rechargeThreshold}</p>
+            )}
           </div>
 
           <div className="space-y-2">
