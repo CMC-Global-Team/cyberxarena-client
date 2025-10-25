@@ -78,9 +78,14 @@ export function SessionFormSheet({
       const response = await CustomerApi.list({ page: 0, size: 100 })
       console.log("Customer API response:", response)
       console.log("Customer content:", response.content)
-      console.log("Setting customers to:", response.content || [])
-      setCustomers(response.content || [])
-      console.log("Customers state should be set to:", response.content?.length || 0, "items")
+      console.log("Response type:", typeof response)
+      console.log("Is array:", Array.isArray(response))
+      
+      // Handle both paginated response and direct array response
+      const customersData = Array.isArray(response) ? response : (response.content || [])
+      console.log("Setting customers to:", customersData)
+      setCustomers(customersData)
+      console.log("Customers state should be set to:", customersData.length, "items")
     } catch (error) {
       console.error("Error loading customers:", error)
       notify({ type: "error", message: "Lỗi tải danh sách khách hàng" })
