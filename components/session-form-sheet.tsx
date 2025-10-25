@@ -96,7 +96,16 @@ export function SessionFormSheet({
   const loadActiveSessions = async () => {
     try {
       const response = await SessionApi.getActiveSessions()
-      setActiveSessions(response)
+      console.log("Active sessions loaded:", response)
+      console.log("Active sessions count:", response.length)
+      // Filter to only truly active sessions (status = "Active" or no endTime)
+      const trulyActiveSessions = response.filter(session => {
+        const isActive = session.status === "Active" || (!session.endTime)
+        console.log(`Session ${session.sessionId}: status=${session.status}, endTime=${session.endTime}, isActive=${isActive}`)
+        return isActive
+      })
+      console.log("Truly active sessions count:", trulyActiveSessions.length)
+      setActiveSessions(trulyActiveSessions)
     } catch (error) {
       console.error("Error loading active sessions:", error)
       notify({ type: "error", message: "Lỗi tải danh sách phiên đang hoạt động" })
@@ -173,14 +182,22 @@ export function SessionFormSheet({
     if (mode === "edit" && session && customer.customerId === session.customerId) {
       return true // Include current customer in edit mode
     }
-    // Check if customer is in any active session
-    const isInActiveSession = activeSessions.some(session => session.customerId === customer.customerId)
+    // Check if customer is in any ACTIVE session (not ended sessions)
+    const isInActiveSession = activeSessions.some(session => {
+      // Only consider sessions that are truly active (status === "Active" or no endTime)
+      const isActive = session.status === "Active" || (!session.endTime)
+      return session.customerId === customer.customerId && isActive
+    })
     return !isInActiveSession
   })
 
   // Count customers in active sessions
   const customersInActiveSessions = customers.filter(customer => {
-    return activeSessions.some(session => session.customerId === customer.customerId)
+    return activeSessions.some(session => {
+      // Only consider sessions that are truly active (status === "Active" or no endTime)
+      const isActive = session.status === "Active" || (!session.endTime)
+      return session.customerId === customer.customerId && isActive
+    })
   })
 
   // For edit mode, include current computer even if it's "In Use"
