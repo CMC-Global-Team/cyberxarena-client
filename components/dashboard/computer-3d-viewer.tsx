@@ -73,25 +73,30 @@ function CanvasWrapper() {
   const [cameraX, setCameraX] = useState(8)
   const [cameraY, setCameraY] = useState(5)
   const [cameraZ, setCameraZ] = useState(12)
+  const [cameraFOV, setCameraFOV] = useState(50)
   const [modelX, setModelX] = useState(0)
   const [modelY, setModelY] = useState(-0.5)
   const [modelZ, setModelZ] = useState(0)
 
   // Preset positions cho các góc nhìn phổ biến
   const presetPositions = {
-    front: { camera: [0, 0, 10], model: [0, -0.5, 0] },
-    back: { camera: [0, 0, -10], model: [0, -0.5, 0] },
-    left: { camera: [-10, 0, 0], model: [0, -0.5, 0] },
-    right: { camera: [10, 0, 0], model: [0, -0.5, 0] },
-    top: { camera: [0, 10, 0], model: [0, -0.5, 0] },
-    diagonal: { camera: [8, 5, 8], model: [0, -0.5, 0] }
+    front: { camera: [0, 0, 10], model: [0, -0.5, 0], fov: 50 },
+    back: { camera: [0, 0, -10], model: [0, -0.5, 0], fov: 50 },
+    left: { camera: [-10, 0, 0], model: [0, -0.5, 0], fov: 50 },
+    right: { camera: [10, 0, 0], model: [0, -0.5, 0], fov: 50 },
+    top: { camera: [0, 10, 0], model: [0, -0.5, 0], fov: 50 },
+    diagonal: { camera: [8, 5, 8], model: [0, -0.5, 0], fov: 50 },
+    far: { camera: [0, 0, 25], model: [0, -0.5, 0], fov: 60 },
+    veryFar: { camera: [0, 0, 40], model: [0, -0.5, 0], fov: 70 },
+    wide: { camera: [15, 8, 15], model: [0, -0.5, 0], fov: 80 }
   }
 
   const applyPreset = (preset: keyof typeof presetPositions) => {
-    const { camera, model } = presetPositions[preset]
+    const { camera, model, fov } = presetPositions[preset]
     setCameraX(camera[0])
     setCameraY(camera[1])
     setCameraZ(camera[2])
+    setCameraFOV(fov)
     setModelX(model[0])
     setModelY(model[1])
     setModelZ(model[2])
@@ -120,6 +125,9 @@ function CanvasWrapper() {
                 <button onClick={() => applyPreset('right')} className="px-2 py-1 bg-green-600 rounded text-xs">Right</button>
                 <button onClick={() => applyPreset('top')} className="px-2 py-1 bg-green-600 rounded text-xs">Top</button>
                 <button onClick={() => applyPreset('diagonal')} className="px-2 py-1 bg-green-600 rounded text-xs">Diagonal</button>
+                <button onClick={() => applyPreset('far')} className="px-2 py-1 bg-blue-600 rounded text-xs">Far</button>
+                <button onClick={() => applyPreset('veryFar')} className="px-2 py-1 bg-blue-600 rounded text-xs">Very Far</button>
+                <button onClick={() => applyPreset('wide')} className="px-2 py-1 bg-blue-600 rounded text-xs">Wide</button>
               </div>
             </div>
 
@@ -210,10 +218,22 @@ function CanvasWrapper() {
                 <input 
                   type="range" 
                   min="0" 
-                  max="30" 
+                  max="50" 
                   step="1" 
                   value={cameraZ} 
                   onChange={(e) => setCameraZ(parseFloat(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label>FOV (Field of View): {cameraFOV}°</label>
+                <input 
+                  type="range" 
+                  min="20" 
+                  max="120" 
+                  step="5" 
+                  value={cameraFOV} 
+                  onChange={(e) => setCameraFOV(parseFloat(e.target.value))}
                   className="w-full"
                 />
               </div>
@@ -224,6 +244,7 @@ function CanvasWrapper() {
               <div className="font-bold mb-1">Current Values:</div>
               <div>Model: ({modelX.toFixed(1)}, {modelY.toFixed(1)}, {modelZ.toFixed(1)})</div>
               <div>Camera: ({cameraX.toFixed(1)}, {cameraY.toFixed(1)}, {cameraZ.toFixed(1)})</div>
+              <div>FOV: {cameraFOV}°</div>
               <div>Scale: {scale.toFixed(1)}x</div>
             </div>
           </div>
@@ -231,7 +252,7 @@ function CanvasWrapper() {
       </div>
 
       <Canvas
-        camera={{ position: [cameraX, cameraY, cameraZ], fov: 50 }}
+        camera={{ position: [cameraX, cameraY, cameraZ], fov: cameraFOV }}
         style={{ width: "100%", height: "100%" }}
       >
         <Suspense fallback={null}>
