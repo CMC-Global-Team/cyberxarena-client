@@ -253,29 +253,6 @@ export function CustomerFormSheet({
               <p className="text-xs text-red-500">{validationErrors.customerName}</p>
             )}
 
-            {/* Quick Name Templates - Only show in add mode */}
-            {mode === "add" && (
-              <div className="space-y-2">
-                <Label className="text-foreground text-sm">Mẫu tên phổ biến</Label>
-                <div className="grid grid-cols-1 gap-2">
-                  {["Nguyễn Văn A", "Trần Thị B", "Lê Văn C", "Phạm Thị D"].map((template) => (
-                    <Button
-                      key={template}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setFormData({ ...formData, customerName: template })}
-                      className="border-border hover:bg-secondary text-xs justify-start"
-                    >
-                      {template}
-                    </Button>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Nhấn để sử dụng mẫu hoặc nhập trực tiếp
-                </p>
-              </div>
-            )}
           </div>
 
           <div className="space-y-2">
@@ -297,29 +274,6 @@ export function CustomerFormSheet({
               </p>
             )}
 
-            {/* Quick Phone Templates - Only show in add mode */}
-            {mode === "add" && (
-              <div className="space-y-2">
-                <Label className="text-foreground text-sm">Mẫu số điện thoại phổ biến</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {["0901234567", "0912345678", "0987654321", "0123456789"].map((template) => (
-                    <Button
-                      key={template}
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setFormData({ ...formData, phoneNumber: template })}
-                      className="border-border hover:bg-secondary text-xs"
-                    >
-                      {template}
-                    </Button>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Nhấn để sử dụng mẫu hoặc nhập trực tiếp
-                </p>
-              </div>
-            )}
           </div>
 
           <div className="space-y-2">
