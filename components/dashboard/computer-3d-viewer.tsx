@@ -3,7 +3,6 @@
 import { Suspense, useRef } from "react"
 import { Canvas, useFrame } from "@react-three/fiber"
 import { useGLTF, OrbitControls, Environment, PresentationControls } from "@react-three/drei"
-import { Card, CardContent } from "@/components/ui/card"
 import { Group } from "three"
 
 // Component để load và hiển thị model 3D
@@ -43,7 +42,7 @@ function ModelLoader() {
 // Component Canvas wrapper
 function CanvasWrapper() {
   return (
-    <div className="h-80 w-full rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
+    <div className="h-screen w-full overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
       <Canvas
         camera={{ position: [5, 3, 8], fov: 45 }}
         style={{ width: "100%", height: "100%" }}
@@ -106,11 +105,5 @@ function CanvasWrapper() {
 
 // Main 3D Viewer component
 export function Computer3DViewer() {
-  return (
-    <Card className="border-border bg-card">
-      <CardContent className="p-0">
-        <CanvasWrapper />
-      </CardContent>
-    </Card>
-  )
+  return <CanvasWrapper />
 }
