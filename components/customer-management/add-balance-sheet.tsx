@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, DollarSign } from "lucide-react"
 import { RechargeHistoryApi } from "@/lib/recharge-history"
-import { validateRechargeAmount } from "@/lib/validation"
+import { validateRechargeAmount, formatNumber, parseFormattedNumber } from "@/lib/validation"
 
 interface Customer {
   customerId: number
@@ -34,15 +34,32 @@ export function AddBalanceSheet({
   onSubmit 
 }: AddBalanceSheetProps) {
   const [amount, setAmount] = useState(0)
+  const [displayAmount, setDisplayAmount] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [validationError, setValidationError] = useState("")
 
   const handleAmountChange = (value: number) => {
     setAmount(value)
+    setDisplayAmount(formatNumber(value))
     
     // Real-time validation
     const validation = validateRechargeAmount(value)
+    if (!validation.isValid && validation.message) {
+      setValidationError(validation.message)
+    } else {
+      setValidationError("")
+    }
+  }
+
+  const handleAmountInputChange = (value: string) => {
+    // Parse the formatted input back to number
+    const numericValue = parseFormattedNumber(value)
+    setAmount(numericValue)
+    setDisplayAmount(value)
+    
+    // Real-time validation
+    const validation = validateRechargeAmount(numericValue)
     if (!validation.isValid && validation.message) {
       setValidationError(validation.message)
     } else {
@@ -122,11 +139,9 @@ export function AddBalanceSheet({
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="amount"
-                type="number"
-                min="1000"
-                step="1000"
-                value={amount}
-                onChange={(e) => handleAmountChange(parseFloat(e.target.value) || 0)}
+                type="text"
+                value={displayAmount}
+                onChange={(e) => handleAmountInputChange(e.target.value)}
                 placeholder="Nhập số tiền"
                 className={`bg-secondary border-border pl-10 ${validationError ? 'border-red-500' : ''}`}
                 required
