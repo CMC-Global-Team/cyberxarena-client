@@ -70,13 +70,13 @@ function DebugHelpers() {
 function CanvasWrapper() {
   const [showDebug, setShowDebug] = useState(false)
   const [scale, setScale] = useState(0.1)
-  const [cameraX, setCameraX] = useState(15)
-  const [cameraY, setCameraY] = useState(10)
-  const [cameraZ, setCameraZ] = useState(25)
-  const [cameraFOV, setCameraFOV] = useState(75)
-  const [modelX, setModelX] = useState(0)
-  const [modelY, setModelY] = useState(-0.5)
-  const [modelZ, setModelZ] = useState(0)
+  const [cameraX, setCameraX] = useState(-20)
+  const [cameraY, setCameraY] = useState(0)
+  const [cameraZ, setCameraZ] = useState(0)
+  const [cameraFOV, setCameraFOV] = useState(120)
+  const [modelX, setModelX] = useState(-3.5)
+  const [modelY, setModelY] = useState(-4.7)
+  const [modelZ, setModelZ] = useState(-5.0)
 
   // Preset positions cho các góc nhìn phổ biến
   const presetPositions = {
