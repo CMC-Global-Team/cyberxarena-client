@@ -1,9 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { dashboardApi, DashboardStats, RecentActivity, ComputerStatus } from "@/lib/dashboard"
+import { dashboardApi, DashboardStats, ComputerStatus } from "@/lib/dashboard"
 import { DashboardStats as DashboardStatsComponent } from "@/components/dashboard/dashboard-stats"
-import { RecentActivities } from "@/components/dashboard/recent-activities"
+import { Computer3DViewer } from "@/components/dashboard/computer-3d-viewer"
 import { ComputerStatusCard } from "@/components/dashboard/computer-status"
 import { DashboardLoading } from "@/components/dashboard/dashboard-loading"
 import { DashboardError } from "@/components/dashboard/dashboard-error"
@@ -11,7 +11,6 @@ import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([])
   const [computerStatus, setComputerStatus] = useState<ComputerStatus | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -22,14 +21,12 @@ export default function DashboardPage() {
         setLoading(true)
         setError(null)
         
-        const [statsData, activitiesData, statusData] = await Promise.all([
+        const [statsData, statusData] = await Promise.all([
           dashboardApi.getStats(),
-          dashboardApi.getRecentActivities(5),
           dashboardApi.getComputerStatus()
         ])
         
         setStats(statsData)
-        setRecentActivities(activitiesData)
         setComputerStatus(statusData)
       } catch (err) {
         console.error("Error fetching dashboard data:", err)
@@ -57,7 +54,7 @@ export default function DashboardPage() {
         {stats && <DashboardStatsComponent stats={stats} />}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <RecentActivities activities={recentActivities} />
+          <Computer3DViewer />
           {computerStatus && <ComputerStatusCard status={computerStatus} />}
         </div>
       </div>
