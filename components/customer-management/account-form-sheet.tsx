@@ -8,6 +8,12 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Eye, EyeOff } from "lucide-react"
 import { AccountApi, type AccountDTO } from "@/lib/customers"
+import { 
+  validateUsername, 
+  validatePassword, 
+  validateForm,
+  type ValidationResult 
+} from "@/lib/validation"
 
 interface Customer {
   customerId: number
@@ -50,6 +56,7 @@ export function AccountFormSheet({
   const [showPassword, setShowPassword] = useState(false)
   const [existingAccount, setExistingAccount] = useState<AccountDTO | null>(null)
   const [isLoadingAccount, setIsLoadingAccount] = useState(false)
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({})
 
   useEffect(() => {
     if (open) {
@@ -84,8 +91,37 @@ export function AccountFormSheet({
     }
   }
 
+  const validateFormData = (): boolean => {
+    const isPasswordRequired = !existingAccount
+    const validations = {
+      username: validateUsername(formData.username),
+      password: validatePassword(formData.password, isPasswordRequired)
+    }
+
+    const { isValid, errors } = validateForm(validations)
+    
+    if (!isValid) {
+      const errorMap: {[key: string]: string} = {}
+      Object.entries(validations).forEach(([field, result]) => {
+        if (!result.isValid && result.message) {
+          errorMap[field] = result.message
+        }
+      })
+      setValidationErrors(errorMap)
+      return false
+    }
+
+    setValidationErrors({})
+    return true
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!validateFormData()) {
+      return
+    }
+
     setIsLoading(true)
     setError("")
 
@@ -109,6 +145,10 @@ export function AccountFormSheet({
     // Chỉ cho phép chữ cái, số và dấu gạch dưới
     const cleaned = value.replace(/[^a-zA-Z0-9_]/g, '')
     setFormData({ ...formData, username: cleaned })
+    // Clear validation error when user starts typing
+    if (validationErrors.username) {
+      setValidationErrors(prev => ({ ...prev, username: '' }))
+    }
   }
 
   return (
@@ -153,14 +193,18 @@ export function AccountFormSheet({
               value={formData.username}
               onChange={(e) => handleUsernameChange(e.target.value)}
               placeholder="Nhập tên đăng nhập"
-              className="bg-secondary border-border"
+              className={`bg-secondary border-border ${validationErrors.username ? 'border-red-500' : ''}`}
               required
               minLength={3}
               maxLength={50}
             />
-            <p className="text-xs text-muted-foreground">
-              Chỉ được sử dụng chữ cái, số và dấu gạch dưới (3-50 ký tự)
-            </p>
+            {validationErrors.username ? (
+              <p className="text-xs text-red-500">{validationErrors.username}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Chỉ được sử dụng chữ cái, số và dấu gạch dưới (3-50 ký tự)
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -172,9 +216,15 @@ export function AccountFormSheet({
                 id="password"
                 type={showPassword ? "text" : "password"}
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, password: e.target.value })
+                  // Clear validation error when user starts typing
+                  if (validationErrors.password) {
+                    setValidationErrors(prev => ({ ...prev, password: '' }))
+                  }
+                }}
                 placeholder="Nhập mật khẩu"
-                className="bg-secondary border-border pr-10"
+                className={`bg-secondary border-border pr-10 ${validationErrors.password ? 'border-red-500' : ''}`}
                 required={!existingAccount}
                 minLength={existingAccount ? 0 : 6}
                 maxLength={255}
@@ -193,9 +243,13 @@ export function AccountFormSheet({
                 )}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {existingAccount ? "Để trống nếu không muốn thay đổi mật khẩu" : "Mật khẩu phải có ít nhất 6 ký tự"}
-            </p>
+            {validationErrors.password ? (
+              <p className="text-xs text-red-500">{validationErrors.password}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                {existingAccount ? "Để trống nếu không muốn thay đổi mật khẩu" : "Mật khẩu phải có ít nhất 6 ký tự"}
+              </p>
+            )}
           </div>
 
           <div className="flex gap-3 pt-4">
