@@ -1,9 +1,10 @@
 "use client"
 
-import { Suspense, useRef } from "react"
-import { Canvas, useFrame } from "@react-three/fiber"
+import { Suspense, useRef, useState } from "react"
+import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { useGLTF, OrbitControls, Environment, PresentationControls } from "@react-three/drei"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Group, Mesh } from "three"
 
 // Component để load và hiển thị model 3D
@@ -38,6 +39,27 @@ function ModelLoader() {
   )
 }
 
+// Component để reset camera về vị trí ban đầu
+function ResetCamera() {
+  const { camera } = useThree()
+  
+  const resetCamera = () => {
+    camera.position.set(5, 3, 8)
+    camera.lookAt(0, 0, 0)
+  }
+
+  return (
+    <Button
+      onClick={resetCamera}
+      size="sm"
+      variant="outline"
+      className="absolute top-2 right-2 z-10"
+    >
+      🔄 Reset View
+    </Button>
+  )
+}
+
 // Main 3D Viewer component
 export function Computer3DViewer() {
   return (
@@ -47,9 +69,10 @@ export function Computer3DViewer() {
         <CardDescription>Xem mô hình máy tính trong không gian 3D</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-80 w-full rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
+        <div className="h-80 w-full rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700 relative">
+          <ResetCamera />
           <Canvas
-            camera={{ position: [0, 0, 8], fov: 45 }}
+            camera={{ position: [5, 3, 8], fov: 45 }}
             style={{ width: "100%", height: "100%" }}
           >
             <Suspense fallback={null}>
@@ -92,10 +115,13 @@ export function Computer3DViewer() {
                 zoomSpeed={0.6}
                 rotateSpeed={0.5}
                 panSpeed={0.8}
-                minDistance={3}
-                maxDistance={15}
-                minPolarAngle={Math.PI / 6}
-                maxPolarAngle={Math.PI - Math.PI / 6}
+                minDistance={6}
+                maxDistance={20}
+                minPolarAngle={Math.PI / 8}
+                maxPolarAngle={Math.PI - Math.PI / 8}
+                target={[0, 0, 0]}
+                enableDamping={true}
+                dampingFactor={0.05}
               />
               
               <Environment preset="sunset" />
@@ -107,7 +133,7 @@ export function Computer3DViewer() {
             🖱️ Kéo chuột trái để xoay • 🖱️ Cuộn chuột để zoom • 🖱️ Kéo chuột phải để di chuyển
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Hoặc sử dụng touch gestures trên mobile
+            Hoặc sử dụng touch gestures trên mobile • Nhấn nút "Reset View" nếu bị kẹt
           </p>
         </div>
       </CardContent>
