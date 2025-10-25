@@ -11,10 +11,11 @@ function ComputerModel() {
   const { scene } = useGLTF("/Computer.glb")
   const groupRef = useRef<Group>(null)
 
-  // Animation xoay nhẹ model
+  // Animation xoay nhẹ model (chỉ khi không tương tác)
   useFrame((state) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.2
+      // Giảm animation để không can thiệp vào tương tác
+      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.2) * 0.1
     }
   })
 
@@ -76,11 +77,26 @@ export function Computer3DViewer() {
               <PresentationControls
                 global
                 rotation={[0.1, 0.1, 0]}
-                polar={[-0.2, 0.3]}
-                azimuth={[-1.2, 1.2]}
+                polar={[-Math.PI / 3, Math.PI / 3]}
+                azimuth={[-Math.PI / 1.4, Math.PI / 1.4]}
+                snap
               >
                 <ComputerModel />
               </PresentationControls>
+              
+              {/* Thêm OrbitControls để dễ tương tác hơn */}
+              <OrbitControls
+                enablePan={true}
+                enableZoom={true}
+                enableRotate={true}
+                zoomSpeed={0.6}
+                rotateSpeed={0.5}
+                panSpeed={0.8}
+                minDistance={3}
+                maxDistance={15}
+                minPolarAngle={Math.PI / 6}
+                maxPolarAngle={Math.PI - Math.PI / 6}
+              />
               
               <Environment preset="sunset" />
             </Suspense>
@@ -88,7 +104,10 @@ export function Computer3DViewer() {
         </div>
         <div className="mt-4 text-center">
           <p className="text-sm text-muted-foreground">
-            Kéo để xoay • Cuộn để zoom • Giữ chuột giữa để di chuyển
+            🖱️ Kéo chuột trái để xoay • 🖱️ Cuộn chuột để zoom • 🖱️ Kéo chuột phải để di chuyển
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Hoặc sử dụng touch gestures trên mobile
           </p>
         </div>
       </CardContent>
