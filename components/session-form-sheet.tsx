@@ -44,13 +44,15 @@ export function SessionFormSheet({
   
   const [customers, setCustomers] = useState<CustomerDTO[]>([])
   const [computers, setComputers] = useState<ComputerDTO[]>([])
+  const [activeSessions, setActiveSessions] = useState<SessionDTO[]>([])
   const [loading, setLoading] = useState(false)
 
-  // Load customers and computers
+  // Load customers, computers, and active sessions
   useEffect(() => {
     if (open) {
       loadCustomers()
       loadComputers()
+      loadActiveSessions()
     }
   }, [open])
 
@@ -74,7 +76,7 @@ export function SessionFormSheet({
   const loadCustomers = async () => {
     try {
       const response = await CustomerApi.list({ page: 0, size: 100 })
-      setCustomers(response)
+      setCustomers(response.content || [])
     } catch (error) {
       console.error("Error loading customers:", error)
       notify({ type: "error", message: "Lỗi tải danh sách khách hàng" })
@@ -88,6 +90,16 @@ export function SessionFormSheet({
     } catch (error) {
       console.error("Error loading computers:", error)
       notify({ type: "error", message: "Lỗi tải danh sách máy tính" })
+    }
+  }
+
+  const loadActiveSessions = async () => {
+    try {
+      const response = await SessionApi.getActiveSessions()
+      setActiveSessions(response)
+    } catch (error) {
+      console.error("Error loading active sessions:", error)
+      notify({ type: "error", message: "Lỗi tải danh sách phiên đang hoạt động" })
     }
   }
 
@@ -156,6 +168,21 @@ export function SessionFormSheet({
     }
   }
 
+  // Filter out customers who are already in active sessions (except in edit mode)
+  const availableCustomers = customers.filter(customer => {
+    if (mode === "edit" && session && customer.customerId === session.customerId) {
+      return true // Include current customer in edit mode
+    }
+    // Check if customer is in any active session
+    const isInActiveSession = activeSessions.some(session => session.customerId === customer.customerId)
+    return !isInActiveSession
+  })
+
+  // Count customers in active sessions
+  const customersInActiveSessions = customers.filter(customer => {
+    return activeSessions.some(session => session.customerId === customer.customerId)
+  })
+
   // For edit mode, include current computer even if it's "In Use"
   const availableComputers = computers.filter(c => {
     if (mode === "edit" && session && c.computerId === session.computerId) {
@@ -163,6 +190,7 @@ export function SessionFormSheet({
     }
     return c.status === "Available"
   })
+  
   const selectedCustomer = customers.find(c => c.customerId.toString() === formData.customerId)
   const selectedComputer = computers.find(c => c.computerId.toString() === formData.computerId)
 
@@ -197,17 +225,79 @@ export function SessionFormSheet({
                 <SelectValue placeholder="Chọn khách hàng" />
               </SelectTrigger>
               <SelectContent>
-                {customers.map((customer) => (
+                {availableCustomers.map((customer) => (
                   <SelectItem key={customer.customerId} value={customer.customerId.toString()}>
-                    {customer.customerName}
+                    <div className="flex flex-col w-full">
+                      <div className="flex items-center justify-between w-full">
+                        <span className="font-medium text-sm">{customer.customerName}</span>
+                        <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                          ID: {customer.customerId}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                        {customer.phoneNumber && (
+                          <span className="flex items-center gap-1">
+                            <span className="font-medium">SĐT:</span>
+                            <span className="font-mono">{customer.phoneNumber}</span>
+                          </span>
+                        )}
+                        {customer.balance !== undefined && (
+                          <span className="text-orange-600 dark:text-orange-400 font-medium">
+                            Số dư: {customer.balance.toLocaleString('vi-VN')}đ
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             {selectedCustomer && (
-              <p className="text-sm text-muted-foreground">
-                Đã chọn: {selectedCustomer.customerName}
-              </p>
+              <div className="bg-muted/50 p-3 rounded-lg space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="font-semibold text-foreground">Đã chọn khách hàng</p>
+                  <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
+                    ID: {selectedCustomer.customerId}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <p className="font-medium text-sm">{selectedCustomer.customerName}</p>
+                  <div className="flex flex-wrap gap-3 text-xs">
+                    {selectedCustomer.phoneNumber && (
+                      <span className="flex items-center gap-1 text-muted-foreground">
+                        <span className="font-medium">SĐT:</span>
+                        <span className="font-mono">{selectedCustomer.phoneNumber}</span>
+                      </span>
+                    )}
+                    {selectedCustomer.balance !== undefined && (
+                      <span className="text-orange-600 dark:text-orange-400 font-semibold">
+                        Số dư: {selectedCustomer.balance.toLocaleString('vi-VN')}đ
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Customer Statistics */}
+            {customers.length > 0 && (
+              <div className="bg-muted/30 p-2 rounded text-xs text-muted-foreground">
+                <div className="flex justify-between items-center">
+                  <span>Tổng khách hàng: <span className="font-medium">{customers.length}</span></span>
+                  <span>Khả dụng: <span className="font-medium text-green-600">{availableCustomers.length}</span></span>
+                  <span>Đang sử dụng: <span className="font-medium text-orange-600">{customersInActiveSessions.length}</span></span>
+                </div>
+              </div>
+            )}
+
+            {availableCustomers.length === 0 && (
+              <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-lg">
+                <p className="text-sm text-destructive font-medium">
+                  ⚠️ Không có khách hàng nào khả dụng
+                </p>
+                <p className="text-xs text-destructive/80 mt-1">
+                  Tất cả khách hàng đều đang trong phiên sử dụng hoặc không có khách hàng nào trong hệ thống
+                </p>
+              </div>
             )}
           </div>
 
@@ -297,7 +387,7 @@ export function SessionFormSheet({
             </Button>
             <Button
               type="submit"
-              disabled={loading || !formData.customerId || !formData.computerId || availableComputers.length === 0}
+              disabled={loading || !formData.customerId || !formData.computerId || availableComputers.length === 0 || availableCustomers.length === 0}
               className="flex-1"
             >
               {loading ? "Đang xử lý..." : mode === "add" ? "Tạo phiên" : "Cập nhật"}
