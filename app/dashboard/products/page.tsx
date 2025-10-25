@@ -181,7 +181,6 @@ export default function ProductsPage() {
                 ) : (
                   <ProductStats products={products} />
                 )}
-                )}
               </div>
             </TabsContent>
           </Tabs>

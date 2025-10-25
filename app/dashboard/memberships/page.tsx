@@ -216,7 +216,6 @@ export default function MembershipsPage() {
                 ) : (
                   <MembershipStats memberships={memberships} />
                 )}
-                )}
               </div>
             </TabsContent>
           </Tabs>
