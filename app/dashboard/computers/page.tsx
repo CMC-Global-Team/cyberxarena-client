@@ -14,6 +14,7 @@ import { ComputerApi, type ComputerDTO, type ComputerUsageStats } from "@/lib/co
 import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
 import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
+import { ComputerAnimations } from "@/components/animations/computer-animations"
 import { TourTrigger } from "@/components/ui/tour-trigger"
 
 export default function ComputersPage() {
@@ -202,242 +203,246 @@ export default function ComputersPage() {
 
   return (
     <OptimizedPageLayout isLoading={isLoading} pageType="computers">
-      <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <h1 className="text-3xl font-bold text-foreground" data-tour="page-title">Quản lý máy tính</h1>
-            <TourTrigger onClick={() => setShowTour(true)} />
+      <ComputerAnimations>
+        <div className="p-6 space-y-6">
+          {/* Header */}
+          <div data-animate="page-header" className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <h1 className="text-3xl font-bold text-foreground" data-tour="page-title">Quản lý máy tính</h1>
+                <TourTrigger onClick={() => setShowTour(true)} />
+              </div>
+              <p className="text-muted-foreground">Danh sách và thông tin máy tính</p>
+            </div>
+            <Button
+              onClick={() => setAddSheetOpen(true)}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              data-tour="add-computer-btn"
+            >
+              <Monitor className="h-4 w-4 mr-2" />
+              Thêm máy tính
+            </Button>
           </div>
-          <p className="text-muted-foreground">Danh sách và thông tin máy tính</p>
-        </div>
-        <Button
-          onClick={() => setAddSheetOpen(true)}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground"
-          data-tour="add-computer-btn"
-        >
-          <Monitor className="h-4 w-4 mr-2" />
-          Thêm máy tính
-        </Button>
-      </div>
 
-      <Card className="border-border bg-card">
-        <CardHeader>
-          <div className="flex flex-wrap items-center gap-4" data-tour="search-filter">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Tìm kiếm theo tên, IP hoặc CPU..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-secondary border-border"
-              />
-            </div>
-            <div className="w-[180px]">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="bg-secondary border-border">
-                  <SelectValue placeholder="Trạng thái" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả</SelectItem>
-                  <SelectItem value="Available">Sẵn sàng</SelectItem>
-                  <SelectItem value="In Use">Đang sử dụng</SelectItem>
-                  <SelectItem value="Broken">Bảo trì</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-[180px]">
-              <Select value={sortBy} onValueChange={(v)=> setSortBy(v)}>
-                <SelectTrigger className="bg-secondary border-border">
-                  <SelectValue placeholder="Sắp xếp theo" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="computerId">ID</SelectItem>
-                  <SelectItem value="computerName">Tên</SelectItem>
-                  <SelectItem value="ipAddress">IP</SelectItem>
-                  <SelectItem value="pricePerHour">Giá/giờ</SelectItem>
-                  <SelectItem value="status">Trạng thái</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-[140px]">
-              <Select value={sortDir} onValueChange={(v)=> setSortDir(v as any)}>
-                <SelectTrigger className="bg-secondary border-border">
-                  <SelectValue placeholder="Thứ tự" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="asc">Tăng dần</SelectItem>
-                  <SelectItem value="desc">Giảm dần</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto" data-tour="computer-table">
-            <table className="w-full min-w-[1200px]">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Máy tính</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Cấu hình</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Lần sử dụng cuối</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Tổng giờ chạy</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Giá/giờ</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Trạng thái</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredComputers.map((computer) => (
-                  <tr key={computer.computerId} className="border-b border-border hover:bg-secondary/50 transition-colors">
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 bg-primary/20 flex items-center justify-center text-primary font-medium">
-                          <Monitor className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{computer.computerName}</p>
-                          <p className="text-xs text-muted-foreground">IP: {computer.ipAddress}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-sm text-foreground">
-                          <Cpu className="h-3 w-3 text-muted-foreground" />
-                          {String(computer.specifications?.cpu ?? "")}
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-foreground">
-                          <HardDrive className="h-3 w-3 text-muted-foreground" />
-                          {String(computer.specifications?.ram ?? "")}
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-foreground">
-                          <Wifi className="h-3 w-3 text-muted-foreground" />
-                          {String(computer.specifications?.gpu ?? "")}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2 text-sm text-foreground">
-                        <Calendar className="h-3 w-3 text-muted-foreground" />
-                        {usageStats.get(computer.computerId)?.lastUsed ? 
-                          new Date(usageStats.get(computer.computerId)!.lastUsed).toLocaleDateString('vi-VN') : 
-                          'Chưa sử dụng'
-                        }
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2 text-sm text-foreground">
-                        <Clock className="h-3 w-3 text-muted-foreground" />
-                        {usageStats.get(computer.computerId)?.totalHours ? 
-                          `${usageStats.get(computer.computerId)!.totalHours.toFixed(1)}h` : 
-                          '0h'
-                        }
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className="text-sm font-medium text-foreground">{Intl.NumberFormat("vi-VN").format(Number(computer.pricePerHour))}đ/h</span>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span
-                        className={`inline-flex items-center px-2 py-1 text-xs font-medium ${getStatusColor(computer.status)}`}
-                      >
-                        {getStatusText(computer.status)}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-right">
-                      <div className="flex items-center gap-2 justify-end">
-                        <ComputerUsageHistorySheet 
-                          computerId={computer.computerId} 
-                          computerName={computer.computerName}
-                        >
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 px-2"
-                            data-tour="computer-history"
+          {/* Search Filter */}
+          <Card className="border-border bg-card">
+            <CardHeader>
+              <div data-animate="search-filter" className="flex flex-wrap items-center gap-4" data-tour="search-filter">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Tìm kiếm theo tên, IP hoặc CPU..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 bg-secondary border-border"
+                  />
+                </div>
+                <div className="w-[180px]">
+                  <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="bg-secondary border-border">
+                      <SelectValue placeholder="Trạng thái" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tất cả</SelectItem>
+                      <SelectItem value="Available">Sẵn sàng</SelectItem>
+                      <SelectItem value="In Use">Đang sử dụng</SelectItem>
+                      <SelectItem value="Broken">Bảo trì</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="w-[180px]">
+                  <Select value={sortBy} onValueChange={(v)=> setSortBy(v)}>
+                    <SelectTrigger className="bg-secondary border-border">
+                      <SelectValue placeholder="Sắp xếp theo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="computerId">ID</SelectItem>
+                      <SelectItem value="computerName">Tên</SelectItem>
+                      <SelectItem value="ipAddress">IP</SelectItem>
+                      <SelectItem value="pricePerHour">Giá/giờ</SelectItem>
+                      <SelectItem value="status">Trạng thái</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="w-[140px]">
+                  <Select value={sortDir} onValueChange={(v)=> setSortDir(v as any)}>
+                    <SelectTrigger className="bg-secondary border-border">
+                      <SelectValue placeholder="Thứ tự" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="asc">Tăng dần</SelectItem>
+                      <SelectItem value="desc">Giảm dần</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div data-animate="computer-table" className="overflow-x-auto" data-tour="computer-table">
+                <table className="w-full min-w-[1200px]">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Máy tính</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Cấu hình</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Lần sử dụng cuối</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Tổng giờ chạy</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Giá/giờ</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-muted-foreground">Trạng thái</th>
+                      <th className="text-right py-3 px-4 text-sm font-medium text-muted-foreground">Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredComputers.map((computer) => (
+                      <tr key={computer.computerId} data-animate="table-row" className="border-b border-border hover:bg-secondary/50 transition-colors">
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 bg-primary/20 flex items-center justify-center text-primary font-medium">
+                              <Monitor className="h-5 w-5" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-foreground">{computer.computerName}</p>
+                              <p className="text-xs text-muted-foreground">IP: {computer.ipAddress}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 text-sm text-foreground">
+                              <Cpu className="h-3 w-3 text-muted-foreground" />
+                              {String(computer.specifications?.cpu ?? "")}
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-foreground">
+                              <HardDrive className="h-3 w-3 text-muted-foreground" />
+                              {String(computer.specifications?.ram ?? "")}
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-foreground">
+                              <Wifi className="h-3 w-3 text-muted-foreground" />
+                              {String(computer.specifications?.gpu ?? "")}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2 text-sm text-foreground">
+                            <Calendar className="h-3 w-3 text-muted-foreground" />
+                            {usageStats.get(computer.computerId)?.lastUsed ? 
+                              new Date(usageStats.get(computer.computerId)!.lastUsed).toLocaleDateString('vi-VN') : 
+                              'Chưa sử dụng'
+                            }
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div className="flex items-center gap-2 text-sm text-foreground">
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                            {usageStats.get(computer.computerId)?.totalHours ? 
+                              `${usageStats.get(computer.computerId)!.totalHours.toFixed(1)}h` : 
+                              '0h'
+                            }
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className="text-sm font-medium text-foreground">{Intl.NumberFormat("vi-VN").format(Number(computer.pricePerHour))}đ/h</span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span
+                            className={`inline-flex items-center px-2 py-1 text-xs font-medium ${getStatusColor(computer.status)}`}
                           >
-                            <History className="h-4 w-4 mr-1" />
-                            Lịch sử
-                          </Button>
-                        </ComputerUsageHistorySheet>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          onClick={() => handleOpenActions(computer)}
-                          data-tour="computer-actions"
-                        >
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                            {getStatusText(computer.status)}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4 text-right">
+                          <div className="flex items-center gap-2 justify-end">
+                            <ComputerUsageHistorySheet 
+                              computerId={computer.computerId} 
+                              computerName={computer.computerName}
+                            >
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 px-2"
+                                data-tour="computer-history"
+                              >
+                                <History className="h-4 w-4 mr-1" />
+                                Lịch sử
+                              </Button>
+                            </ComputerUsageHistorySheet>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => handleOpenActions(computer)}
+                              data-tour="computer-actions"
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {(!loading && filteredComputers.length === 0) && (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">Không tìm thấy máy tính nào</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Computer Stats */}
+          <div data-animate="computer-stats" className="grid grid-cols-1 md:grid-cols-4 gap-4" data-tour="computer-stats">
+            <Card className="border-border bg-card">
+              <CardHeader>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Tổng máy tính</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground">{computers.length}</div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {computers.filter((c) => c.status === "Available").length} sẵn sàng
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border bg-card">
+              <CardHeader>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Đang sử dụng</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground">
+                  {computers.filter((c) => c.status === "In_Use").length}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {computers.length > 0 ? Math.round((computers.filter((c) => c.status === "In_Use").length / computers.length) * 100) : 0}% tổng số
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border bg-card">
+              <CardHeader>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Tổng giờ chạy</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground">
+                  {Array.from(usageStats.values()).reduce((total, stats) => total + (stats.totalHours || 0), 0).toFixed(1)}h
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {Array.from(usageStats.values()).reduce((total, stats) => total + (stats.totalSessions || 0), 0)} phiên
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border bg-card">
+              <CardHeader>
+                <CardTitle className="text-sm font-medium text-muted-foreground">Bảo trì</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-foreground">
+                  {computers.filter((c) => c.status === "Broken").length}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Máy cần sửa chữa</p>
+              </CardContent>
+            </Card>
           </div>
-          {(!loading && filteredComputers.length === 0) && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Không tìm thấy máy tính nào</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4" data-tour="computer-stats">
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">Tổng máy tính</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">{computers.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {computers.filter((c) => c.status === "Available").length} sẵn sàng
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">Đang sử dụng</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">
-              {computers.filter((c) => c.status === "In_Use").length}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {computers.length > 0 ? Math.round((computers.filter((c) => c.status === "In_Use").length / computers.length) * 100) : 0}% tổng số
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">Tổng giờ chạy</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">
-              {Array.from(usageStats.values()).reduce((total, stats) => total + (stats.totalHours || 0), 0).toFixed(1)}h
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {Array.from(usageStats.values()).reduce((total, stats) => total + (stats.totalSessions || 0), 0)} phiên
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border bg-card">
-          <CardHeader>
-            <CardTitle className="text-sm font-medium text-muted-foreground">Bảo trì</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-foreground">
-              {computers.filter((c) => c.status === "Broken").length}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Máy cần sửa chữa</p>
-          </CardContent>
-        </Card>
-      </div>
 
       <ComputerFormSheet
         open={addSheetOpen}
@@ -482,7 +487,8 @@ export default function ComputersPage() {
         isActive={showTour} 
         onComplete={() => setShowTour(false)} 
       />
-      </div>
+        </div>
+      </ComputerAnimations>
     </OptimizedPageLayout>
   )
 }
