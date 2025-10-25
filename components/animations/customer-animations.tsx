@@ -36,9 +36,9 @@ export function CustomerAnimations({ children, className }: CustomerAnimationsPr
         }
       )
 
-      // Animate stats cards
+      // Animate customer stats
       gsap.fromTo(
-        "[data-animate='stats-card']",
+        "[data-animate='customer-stats']",
         {
           y: 50,
           opacity: 0,
@@ -52,7 +52,29 @@ export function CustomerAnimations({ children, className }: CustomerAnimationsPr
           stagger: 0.1,
           ease: "back.out(1.7)",
           scrollTrigger: {
-            trigger: "[data-animate='stats-card']",
+            trigger: "[data-animate='customer-stats']",
+            start: "top 80%",
+            end: "bottom 20%",
+            toggleActions: "play none none reverse"
+          }
+        }
+      )
+
+      // Animate balance warning
+      gsap.fromTo(
+        "[data-animate='balance-warning']",
+        {
+          y: 30,
+          opacity: 0
+        },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.5,
+          delay: 0.2,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: "[data-animate='balance-warning']",
             start: "top 80%",
             end: "bottom 20%",
             toggleActions: "play none none reverse"
@@ -61,6 +83,27 @@ export function CustomerAnimations({ children, className }: CustomerAnimationsPr
       )
 
       // Animate customer table
+      gsap.fromTo(
+        "[data-animate='customer-table']",
+        {
+          y: 100,
+          opacity: 0
+        },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: "[data-animate='customer-table']",
+            start: "top 70%",
+            end: "bottom 30%",
+            toggleActions: "play none none reverse"
+          }
+        }
+      )
+
+      // Animate table rows
       gsap.fromTo(
         "[data-animate='table-row']",
         {
@@ -74,7 +117,7 @@ export function CustomerAnimations({ children, className }: CustomerAnimationsPr
           stagger: 0.05,
           ease: "power2.out",
           scrollTrigger: {
-            trigger: "[data-animate='table-container']",
+            trigger: "[data-animate='customer-table']",
             start: "top 80%",
             end: "bottom 20%",
             toggleActions: "play none none reverse"
@@ -82,9 +125,9 @@ export function CustomerAnimations({ children, className }: CustomerAnimationsPr
         }
       )
 
-      // Animate search and filter controls
+      // Animate pagination
       gsap.fromTo(
-        "[data-animate='search-controls']",
+        "[data-animate='pagination']",
         {
           y: 30,
           opacity: 0
@@ -93,46 +136,11 @@ export function CustomerAnimations({ children, className }: CustomerAnimationsPr
           y: 0,
           opacity: 1,
           duration: 0.5,
-          delay: 0.2,
-          ease: "power2.out"
-        }
-      )
-
-      // Animate action buttons
-      gsap.fromTo(
-        "[data-animate='action-buttons']",
-        {
-          scale: 0.95,
-          opacity: 0
-        },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 0.4,
-          delay: 0.3,
-          ease: "back.out(1.7)"
-        }
-      )
-
-      // Animate customer cards
-      gsap.fromTo(
-        "[data-animate='customer-card']",
-        {
-          y: 30,
-          opacity: 0,
-          scale: 0.95
-        },
-        {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          stagger: 0.1,
           ease: "power2.out",
           scrollTrigger: {
-            trigger: "[data-animate='customer-card']",
-            start: "top 85%",
-            end: "bottom 15%",
+            trigger: "[data-animate='pagination']",
+            start: "top 80%",
+            end: "bottom 20%",
             toggleActions: "play none none reverse"
           }
         }

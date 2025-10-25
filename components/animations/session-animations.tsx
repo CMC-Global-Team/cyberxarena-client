@@ -36,23 +36,21 @@ export function SessionAnimations({ children, className }: SessionAnimationsProp
         }
       )
 
-      // Animate stats cards
+      // Animate search filter
       gsap.fromTo(
-        "[data-animate='stats-card']",
+        "[data-animate='search-filter']",
         {
-          y: 50,
-          opacity: 0,
-          scale: 0.9
+          y: 30,
+          opacity: 0
         },
         {
           y: 0,
           opacity: 1,
-          scale: 1,
-          duration: 0.6,
-          stagger: 0.1,
-          ease: "back.out(1.7)",
+          duration: 0.5,
+          delay: 0.2,
+          ease: "power2.out",
           scrollTrigger: {
-            trigger: "[data-animate='stats-card']",
+            trigger: "[data-animate='search-filter']",
             start: "top 80%",
             end: "bottom 20%",
             toggleActions: "play none none reverse"
@@ -60,7 +58,28 @@ export function SessionAnimations({ children, className }: SessionAnimationsProp
         }
       )
 
-      // Animate session table
+      // Animate sessions table
+      gsap.fromTo(
+        "[data-animate='sessions-table']",
+        {
+          y: 100,
+          opacity: 0
+        },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: "[data-animate='sessions-table']",
+            start: "top 70%",
+            end: "bottom 30%",
+            toggleActions: "play none none reverse"
+          }
+        }
+      )
+
+      // Animate table rows
       gsap.fromTo(
         "[data-animate='table-row']",
         {
@@ -74,7 +93,7 @@ export function SessionAnimations({ children, className }: SessionAnimationsProp
           stagger: 0.05,
           ease: "power2.out",
           scrollTrigger: {
-            trigger: "[data-animate='table-container']",
+            trigger: "[data-animate='sessions-table']",
             start: "top 80%",
             end: "bottom 20%",
             toggleActions: "play none none reverse"
@@ -82,45 +101,13 @@ export function SessionAnimations({ children, className }: SessionAnimationsProp
         }
       )
 
-      // Animate search and filter controls
+      // Animate session stats
       gsap.fromTo(
-        "[data-animate='search-controls']",
+        "[data-animate='session-stats']",
         {
-          y: 30,
-          opacity: 0
-        },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.5,
-          delay: 0.2,
-          ease: "power2.out"
-        }
-      )
-
-      // Animate action buttons
-      gsap.fromTo(
-        "[data-animate='action-buttons']",
-        {
-          scale: 0.95,
-          opacity: 0
-        },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 0.4,
-          delay: 0.3,
-          ease: "back.out(1.7)"
-        }
-      )
-
-      // Animate session cards
-      gsap.fromTo(
-        "[data-animate='session-card']",
-        {
-          y: 30,
+          y: 50,
           opacity: 0,
-          scale: 0.95
+          scale: 0.9
         },
         {
           y: 0,
@@ -128,33 +115,11 @@ export function SessionAnimations({ children, className }: SessionAnimationsProp
           scale: 1,
           duration: 0.6,
           stagger: 0.1,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: "[data-animate='session-card']",
-            start: "top 85%",
-            end: "bottom 15%",
-            toggleActions: "play none none reverse"
-          }
-        }
-      )
-
-      // Animate duration indicators
-      gsap.fromTo(
-        "[data-animate='duration-indicator']",
-        {
-          scale: 0.8,
-          opacity: 0
-        },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 0.3,
-          stagger: 0.1,
           ease: "back.out(1.7)",
           scrollTrigger: {
-            trigger: "[data-animate='duration-indicator']",
-            start: "top 90%",
-            end: "bottom 10%",
+            trigger: "[data-animate='session-stats']",
+            start: "top 80%",
+            end: "bottom 20%",
             toggleActions: "play none none reverse"
           }
         }
