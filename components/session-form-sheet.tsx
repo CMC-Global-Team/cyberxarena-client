@@ -76,7 +76,11 @@ export function SessionFormSheet({
   const loadCustomers = async () => {
     try {
       const response = await CustomerApi.list({ page: 0, size: 100 })
+      console.log("Customer API response:", response)
+      console.log("Customer content:", response.content)
+      console.log("Setting customers to:", response.content || [])
       setCustomers(response.content || [])
+      console.log("Customers state should be set to:", response.content?.length || 0, "items")
     } catch (error) {
       console.error("Error loading customers:", error)
       notify({ type: "error", message: "Lỗi tải danh sách khách hàng" })
@@ -178,6 +182,8 @@ export function SessionFormSheet({
   }
 
   // Filter out customers who are already in active sessions (except in edit mode)
+  console.log("Filtering customers. Current customers array:", customers.length)
+  console.log("Customers array:", customers)
   const availableCustomers = customers.filter(customer => {
     console.log(`Checking customer ${customer.customerId}: ${customer.customerName}`)
     
