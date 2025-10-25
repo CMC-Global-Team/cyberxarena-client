@@ -53,10 +53,18 @@ export function AddBalanceSheet({
   }
 
   const handleAmountInputChange = (value: string) => {
-    // Parse the formatted input back to number
-    const numericValue = parseFormattedNumber(value)
+    // Remove all non-digit characters to get clean number
+    const cleanValue = value.replace(/[^\d]/g, '')
+    const numericValue = parseFloat(cleanValue) || 0
+    
     setAmount(numericValue)
-    setDisplayAmount(value)
+    
+    // Auto-format with commas if there's a value
+    if (numericValue > 0) {
+      setDisplayAmount(formatNumber(numericValue))
+    } else {
+      setDisplayAmount(cleanValue) // Show what user is typing
+    }
     
     // Real-time validation
     const validation = validateRechargeAmount(numericValue)
