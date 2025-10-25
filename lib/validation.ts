@@ -62,7 +62,8 @@ export const validateName = (name: string): ValidationResult => {
   }
 
   // Check for valid characters (letters, spaces, Vietnamese characters, and common punctuation)
-  const namePattern = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂÂÊÔƠưăâêôơ\s\-'\.]+$/
+  // Updated regex to include all Vietnamese diacritics
+  const namePattern = /^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂÂÊÔƠưăâêôơẠẢÃẦẨẪẬẮẰẲẴẶẸẺẼỀỂỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴỶỸỳỵỷỹạảãầẩẫậắằẳẵặẹẻẽềểễệỉịọỏốồổỗộớờởỡợụủứừửữự\s\-'\.]+$/
   if (!namePattern.test(name.trim())) {
     return {
       isValid: false,
