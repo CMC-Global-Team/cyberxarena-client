@@ -21,6 +21,7 @@ import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
 import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 import { CustomerAnimations } from "@/components/animations/customer-animations"
+import { LottieInlineLoading } from "@/components/ui/lottie-loading"
 
 interface Customer extends CustomerDTO {
   hasAccount?: boolean
@@ -409,16 +410,20 @@ export default function CustomersPage() {
 
           {/* Customer Table */}
           <div data-animate="customer-table" data-tour="customer-table">
-            <CustomerTable 
-              customers={customersWithAccounts}
-              onEdit={handleEdit}
-              onDelete={handleDeleteCustomer}
-              onManageAccount={handleManageAccount}
-              onAddBalance={handleAddBalance}
-              onViewRechargeHistory={handleViewRechargeHistory}
-              onViewRankInfo={handleViewRankInfo}
-              onOpenDiscountCalculator={handleOpenDiscountCalculator}
-            />
+            {isLoading ? (
+              <LottieInlineLoading text="Đang tải danh sách khách hàng..." />
+            ) : (
+              <CustomerTable 
+                customers={customersWithAccounts}
+                onEdit={handleEdit}
+                onDelete={handleDeleteCustomer}
+                onManageAccount={handleManageAccount}
+                onAddBalance={handleAddBalance}
+                onViewRechargeHistory={handleViewRechargeHistory}
+                onViewRankInfo={handleViewRankInfo}
+                onOpenDiscountCalculator={handleOpenDiscountCalculator}
+              />
+            )}
           </div>
 
           {/* Pagination */}

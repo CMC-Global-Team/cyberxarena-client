@@ -15,6 +15,7 @@ import { DataPagination } from "@/components/ui/data-pagination"
 import { TourTrigger } from "@/components/ui/tour-trigger"
 import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 import { ProductAnimations } from "@/components/animations/product-animations"
+import { LottieInlineLoading } from "@/components/ui/lottie-loading"
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -101,7 +102,7 @@ export default function ProductsPage() {
                 <TourTrigger onClick={() => setShowTour(true)} />
               </div>
               <p className="text-muted-foreground">
-                Quản lý danh mục sản phẩm, tồn kho và thông tin nhà cung cấp
+                Quản lý danh sách sản phẩm và dịch vụ
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -161,20 +162,7 @@ export default function ProductsPage() {
             <TabsContent value="stats" className="space-y-4">
               <div data-animate="product-stats" data-tour="product-stats">
                 {loading ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {[...Array(4)].map((_, i) => (
-                        <Card key={i}>
-                          <CardHeader className="pb-2">
-                            <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-                          </CardHeader>
-                          <CardContent>
-                            <div className="h-8 w-16 bg-muted animate-pulse rounded" />
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
+                  <LottieInlineLoading text="Đang tải thống kê sản phẩm..." />
                 ) : (
                   <ProductStats products={products} />
                 )}

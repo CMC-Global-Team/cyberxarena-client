@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast"
 import { usePageLoading } from "@/hooks/use-page-loading"
 import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 import { MembershipAnimations } from "@/components/animations/membership-animations"
+import { LottieInlineLoading } from "@/components/ui/lottie-loading"
 import { membershipsApi, type MembershipCard, type MembershipCardDTO } from "@/lib/memberships"
 import { discountsApi, type Discount } from "@/lib/discounts"
 import { MembershipTable } from "@/components/membership-management/membership-table"
@@ -195,7 +196,9 @@ export default function MembershipsPage() {
 
             <TabsContent value="stats" className="space-y-4">
               <div data-animate="membership-stats" data-tour="membership-stats">
-                {loading ? (
+                {isLoading ? (
+                  <LottieInlineLoading text="Đang tải thống kê thẻ thành viên..." />
+                ) : loading ? (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {[...Array(3)].map((_, i) => (

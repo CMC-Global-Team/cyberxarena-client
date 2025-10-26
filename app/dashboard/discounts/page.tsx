@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast"
 import { usePageLoading } from "@/hooks/use-page-loading"
 import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 import { DiscountAnimations } from "@/components/animations/discount-animations"
+import { LottieInlineLoading } from "@/components/ui/lottie-loading"
 import { DiscountTable } from "@/components/discount-management/discount-table"
 import { DiscountStats } from "@/components/discount-management/discount-stats"
 import { DiscountFormSheet } from "@/components/discount-management/discount-form-sheet"
@@ -178,7 +179,9 @@ export default function DiscountsPage() {
 
           <TabsContent value="stats" className="space-y-4">
             <div data-tour="discount-stats" data-animate="discount-stats">
-              {loading ? (
+              {isLoading ? (
+                <LottieInlineLoading text="Đang tải thống kê giảm giá..." />
+              ) : loading ? (
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[...Array(4)].map((_, i) => (

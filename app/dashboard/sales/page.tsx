@@ -23,6 +23,7 @@ import { SaleDetailDialog } from "@/components/sales-management/sale-detail-dial
 import { DataPagination } from "@/components/ui/data-pagination"
 import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 import { SalesAnimations } from "@/components/animations/sales-animations"
+import { LottieInlineLoading } from "@/components/ui/lottie-loading"
 
 export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([])
