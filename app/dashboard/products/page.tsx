@@ -102,7 +102,7 @@ export default function ProductsPage() {
                 <TourTrigger onClick={() => setShowTour(true)} />
               </div>
               <p className="text-muted-foreground">
-                Quản lý danh mục sản phẩm, tồn kho và thông tin nhà cung cấp
+                Quản lý danh sách sản phẩm và dịch vụ
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -163,21 +163,6 @@ export default function ProductsPage() {
               <div data-animate="product-stats" data-tour="product-stats">
                 {loading ? (
                   <LottieInlineLoading text="Đang tải thống kê sản phẩm..." />
-                ) : (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {[...Array(4)].map((_, i) => (
-                        <Card key={i}>
-                          <CardHeader className="pb-2">
-                            <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-                          </CardHeader>
-                          <CardContent>
-                            <div className="h-8 w-16 bg-muted animate-pulse rounded" />
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </div>
                 ) : (
                   <ProductStats products={products} />
                 )}
