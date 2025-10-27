@@ -28,6 +28,7 @@ export default function SessionsPage() {
   const [selectedSession, setSelectedSession] = useState<SessionDTO | null>(null)
   const [sessions, setSessions] = useState<SessionDTO[]>([])
   const [loading, setLoading] = useState<boolean>(false)
+  const [initialLoadCompleted, setInitialLoadCompleted] = useState<boolean>(false)
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("sessionId")
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
@@ -39,10 +40,12 @@ export default function SessionsPage() {
       console.log("Sessions API response:", res)
       console.log("Sessions content:", res?.content)
       setSessions(res?.content || [])
+      setInitialLoadCompleted(true)
     } catch (e: any) {
       console.error("Error loading sessions:", e)
       notify({ type: "error", message: `Lỗi tải danh sách: ${e?.message || ''}` })
       setSessions([]) // Set empty array on error
+      setInitialLoadCompleted(true)
     }
   }
 
@@ -52,6 +55,8 @@ export default function SessionsPage() {
 
   // Debounced server filter/sort/search
   useEffect(() => {
+    if (!initialLoadCompleted) return
+    
     const t = setTimeout(async () => {
       try {
         const res = await withPageLoading(() =>
@@ -72,7 +77,7 @@ export default function SessionsPage() {
       }
     }, 400)
     return () => clearTimeout(t)
-  }, [searchQuery, statusFilter, sortBy, sortDir])
+  }, [searchQuery, statusFilter, sortBy, sortDir, initialLoadCompleted])
 
   const filteredSessions = useMemo(() => {
     if (!sessions || !Array.isArray(sessions)) return []
@@ -383,7 +388,7 @@ export default function SessionsPage() {
                   </tbody>
                 </table>
               </div>
-              {(!isLoading && !loading && filteredSessions.length === 0) && (
+              {(!isLoading && !loading && initialLoadCompleted && filteredSessions.length === 0) && (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">Không tìm thấy phiên sử dụng nào</p>
                 </div>
