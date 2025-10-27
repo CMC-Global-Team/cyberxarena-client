@@ -62,7 +62,7 @@ export function SessionFormSheet({
     if (open) {
       setIsLoading(true)
       Promise.all([
-        loadCustomers(),
+        loadCustomers(0),
         loadComputers(),
         loadActiveSessions()
       ]).finally(() => {
@@ -91,15 +91,18 @@ export function SessionFormSheet({
   const loadCustomers = async (page: number = 0) => {
     try {
       const response = await CustomerApi.list({ page, size: 20 })
-      console.log("Customer API response:", response)
-      console.log("Customer content:", response.content)
+      console.log("Session - Customer API response:", response)
+      console.log("Session - Customer content:", response.content)
+      console.log("Session - Response type:", typeof response)
       
       // Handle paginated response
-      setCustomers(response.content || [])
+      const customersData = response.content || []
+      console.log("Session - Setting customers to:", customersData.length, "items")
+      setCustomers(customersData)
       setCustomerTotalPages(response.totalPages || 1)
       setCustomerPage(page)
     } catch (error) {
-      console.error("Error loading customers:", error)
+      console.error("Session - Error loading customers:", error)
       notify({ type: "error", message: "Lỗi tải danh sách khách hàng" })
     }
   }
