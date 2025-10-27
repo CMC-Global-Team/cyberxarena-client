@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Clock, User, Monitor, Calendar as CalendarIcon } from "lucide-react"
+import { Clock, User, Monitor, Calendar as CalendarIcon, ChevronDown } from "lucide-react"
 import { format } from "date-fns"
 import { vi } from "date-fns/locale"
 import { cn } from "@/lib/utils"
@@ -18,6 +18,7 @@ import { ComputerApi, type ComputerDTO } from "@/lib/computers"
 import { useNotice } from "@/components/notice-provider"
 import { useLoading } from "@/components/loading-provider"
 import { Spinner } from "@/components/ui/spinner"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 
 interface SessionFormSheetProps {
   open: boolean
@@ -48,6 +49,13 @@ export function SessionFormSheet({
   const [activeSessions, setActiveSessions] = useState<SessionDTO[]>([])
   const [loading, setLoading] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  
+  // Customer search and pagination
+  const [customerSearchTerm, setCustomerSearchTerm] = useState("")
+  const [filteredCustomers, setFilteredCustomers] = useState<CustomerDTO[]>([])
+  const [customerPage, setCustomerPage] = useState(0)
+  const [customerTotalPages, setCustomerTotalPages] = useState(1)
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false)
 
   // Load customers, computers, and active sessions
   useEffect(() => {
@@ -80,24 +88,34 @@ export function SessionFormSheet({
     }
   }, [session, mode, open])
 
-  const loadCustomers = async () => {
+  const loadCustomers = async (page: number = 0) => {
     try {
-      const response = await CustomerApi.list({ page: 0, size: 100 })
+      const response = await CustomerApi.list({ page, size: 20 })
       console.log("Customer API response:", response)
       console.log("Customer content:", response.content)
-      console.log("Response type:", typeof response)
-      console.log("Is array:", Array.isArray(response))
       
-      // Handle both paginated response and direct array response
-      const customersData = Array.isArray(response) ? response : (response.content || [])
-      console.log("Setting customers to:", customersData)
-      setCustomers(customersData)
-      console.log("Customers state should be set to:", customersData.length, "items")
+      // Handle paginated response
+      setCustomers(response.content || [])
+      setCustomerTotalPages(response.totalPages || 1)
+      setCustomerPage(page)
     } catch (error) {
       console.error("Error loading customers:", error)
       notify({ type: "error", message: "Lỗi tải danh sách khách hàng" })
     }
   }
+
+  // Filter customers based on search term
+  useEffect(() => {
+    if (customerSearchTerm) {
+      const filtered = customers.filter(customer =>
+        customer.customerName.toLowerCase().includes(customerSearchTerm.toLowerCase()) ||
+        customer.phoneNumber?.toLowerCase().includes(customerSearchTerm.toLowerCase())
+      )
+      setFilteredCustomers(filtered)
+    } else {
+      setFilteredCustomers(customers)
+    }
+  }, [customerSearchTerm, customers])
 
   const loadComputers = async () => {
     try {
@@ -276,42 +294,82 @@ export function SessionFormSheet({
               <User className="h-4 w-4" />
               Khách hàng *
             </Label>
-            <Select
-              value={formData.customerId}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, customerId: value }))}
-              disabled={isLoading}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Chọn khách hàng" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableCustomers.map((customer) => (
-                  <SelectItem key={customer.customerId} value={customer.customerId.toString()}>
-                    <div className="flex flex-col w-full">
-                      <div className="flex items-center justify-between w-full">
-                        <span className="font-medium text-sm">{customer.customerName}</span>
-                        <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                          ID: {customer.customerId}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                        {customer.phoneNumber && (
-                          <span className="flex items-center gap-1">
-                            <span className="font-medium">SĐT:</span>
-                            <span className="font-mono">{customer.phoneNumber}</span>
-                          </span>
-                        )}
-                        {customer.balance !== undefined && (
-                          <span className="text-orange-600 dark:text-orange-400 font-medium">
-                            Số dư: {customer.balance.toLocaleString('vi-VN')}đ
-                          </span>
-                        )}
-                      </div>
+            <Popover open={showCustomerDropdown} onOpenChange={setShowCustomerDropdown}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className="w-full justify-between"
+                  disabled={isLoading}
+                >
+                  {selectedCustomer 
+                    ? `${selectedCustomer.customerName} - ${selectedCustomer.phoneNumber}`
+                    : "Chọn khách hàng..."
+                  }
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[400px] p-0" align="start">
+                <Command>
+                  <CommandInput 
+                    placeholder="Tìm kiếm khách hàng..." 
+                    value={customerSearchTerm}
+                    onValueChange={setCustomerSearchTerm}
+                  />
+                  <CommandList>
+                    <CommandEmpty>Không tìm thấy khách hàng.</CommandEmpty>
+                    <CommandGroup>
+                      {filteredCustomers.slice(0, 10).map((customer) => (
+                        <CommandItem
+                          key={customer.customerId}
+                          value={customer.customerId.toString()}
+                          onSelect={() => {
+                            setFormData(prev => ({ ...prev, customerId: customer.customerId.toString() }))
+                            setShowCustomerDropdown(false)
+                            setCustomerSearchTerm("")
+                          }}
+                        >
+                          <div className="flex flex-col w-full">
+                            <div className="flex items-center justify-between w-full">
+                              <span className="font-medium">{customer.customerName}</span>
+                              <span className="text-xs text-muted-foreground">
+                                ID: {customer.customerId}
+                              </span>
+                            </div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              {customer.phoneNumber} • Số dư: {customer.balance.toLocaleString('vi-VN')}đ
+                            </div>
+                          </div>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                  {customerTotalPages > 1 && (
+                    <div className="flex items-center justify-between p-2 border-t">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => loadCustomers(Math.max(0, customerPage - 1))}
+                        disabled={customerPage === 0}
+                      >
+                        Trang trước
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        Trang {customerPage + 1} / {customerTotalPages}
+                      </span>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => loadCustomers(Math.min(customerTotalPages - 1, customerPage + 1))}
+                        disabled={customerPage >= customerTotalPages - 1}
+                      >
+                        Trang sau
+                      </Button>
                     </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                  )}
+                </Command>
+              </PopoverContent>
+            </Popover>
             {selectedCustomer && (
               <div className="bg-muted/50 p-3 rounded-lg space-y-2">
                 <div className="flex items-center justify-between">
