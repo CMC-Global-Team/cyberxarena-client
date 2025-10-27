@@ -68,12 +68,12 @@ export default function CustomersPage() {
   const loadCustomers = async (page: number = currentPage, size: number = pageSize) => {
     try {
       setLoading(true)
-      const res = await withPageLoading(() => CustomerApi.list({ 
+      const res = await CustomerApi.list({ 
         page, 
         size, 
         sortBy: "customerId", 
         sortDir: "asc" 
-      }))
+      })
       
       if (res && typeof res === 'object' && 'content' in res) {
         // Handle paginated response
@@ -138,7 +138,7 @@ export default function CustomersPage() {
 
   const loadAccounts = async () => {
     try {
-      const res = await withPageLoading(() => AccountApi.search({ page: 0, size: 1000 }))
+      const res = await AccountApi.search({ page: 0, size: 1000 })
       setAccounts(res.content)
     } catch (e: any) {
       console.warn("Could not load accounts:", e?.message || '')
@@ -161,12 +161,12 @@ export default function CustomersPage() {
 
   const handleCreateCustomer = async (data: CustomerFormData) => {
     try {
-      const newCustomer = await withPageLoading(() => CustomerApi.create({
+      const newCustomer = await CustomerApi.create({
         customerName: data.customerName,
         phoneNumber: data.phoneNumber,
         membershipCardId: data.membershipCardId,
         balance: data.balance
-      }))
+      })
       
       setCustomers(prev => [...prev, { ...newCustomer, hasAccount: false }])
       notify({ type: "success", message: "Đã thêm khách hàng thành công" })
@@ -188,13 +188,13 @@ export default function CustomersPage() {
     if (!selectedCustomer) return
     
     try {
-      const updatedCustomer = await withPageLoading(() => CustomerApi.update(selectedCustomer.customerId, {
+      const updatedCustomer = await CustomerApi.update(selectedCustomer.customerId, {
         ...selectedCustomer,
         customerName: data.customerName,
         phoneNumber: data.phoneNumber,
         membershipCardId: data.membershipCardId,
         balance: data.balance
-      }))
+      })
       
       setCustomers(prev => prev.map(c => 
         c.customerId === selectedCustomer.customerId 
@@ -218,7 +218,7 @@ export default function CustomersPage() {
     
     setDeleting(true)
     try {
-      await withPageLoading(() => CustomerApi.delete(customerToDelete.customerId))
+      await CustomerApi.delete(customerToDelete.customerId)
       setCustomers(prev => prev.filter(c => c.customerId !== customerToDelete.customerId))
       setAccounts(prev => prev.filter(a => a.customerId !== customerToDelete.customerId))
       notify({ type: "success", message: "Đã xóa khách hàng thành công" })
@@ -249,11 +249,11 @@ export default function CustomersPage() {
     if (!selectedCustomer) return
     
     try {
-      const newAccount = await withPageLoading(() => AccountApi.create({
+      const newAccount = await AccountApi.create({
         customerId: selectedCustomer.customerId,
         username: data.username,
         password: data.password
-      }))
+      })
       
       setAccounts(prev => [...prev, newAccount])
       setCustomers(prev => prev.map(c => 
@@ -283,7 +283,7 @@ export default function CustomersPage() {
         updateData.password = data.password
       }
       
-      const updatedAccount = await withPageLoading(() => AccountApi.update(selectedCustomer.customerId, updateData))
+      const updatedAccount = await AccountApi.update(selectedCustomer.customerId, updateData)
       
       setAccounts(prev => prev.map(a => 
         a.customerId === selectedCustomer.customerId 
@@ -307,10 +307,10 @@ export default function CustomersPage() {
     if (!selectedCustomer) return
     
     try {
-      const updatedCustomer = await withPageLoading(() => CustomerApi.update(selectedCustomer.customerId, {
+      const updatedCustomer = await CustomerApi.update(selectedCustomer.customerId, {
         ...selectedCustomer,
         balance: selectedCustomer.balance + amount
-      }))
+      })
       
       setCustomers(prev => prev.map(c => 
         c.customerId === selectedCustomer.customerId 
@@ -371,7 +371,7 @@ export default function CustomersPage() {
   }).length
 
   return (
-    <OptimizedPageLayout isLoading={isLoading} pageType="customers">
+    <OptimizedPageLayout isLoading={loading} pageType="customers">
       <CustomerAnimations>
         <div className="p-6 space-y-6">
           {/* Header */}
@@ -410,7 +410,7 @@ export default function CustomersPage() {
 
           {/* Customer Table */}
           <div data-animate="customer-table" data-tour="customer-table">
-            {isLoading ? (
+            {loading ? (
               <LottieInlineLoading text="Đang tải danh sách khách hàng..." />
             ) : (
               <CustomerTable 
