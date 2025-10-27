@@ -16,6 +16,7 @@ import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
 import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 import { SessionAnimations } from "@/components/animations/session-animations"
+import { DataPagination } from "@/components/ui/data-pagination"
 
 export default function SessionsPage() {
   const { notify } = useNotice()
@@ -33,14 +34,34 @@ export default function SessionsPage() {
   const [sortBy, setSortBy] = useState<string>("sessionId")
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc")
   const [showTour, setShowTour] = useState(false)
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0)
+  const [pageSize, setPageSize] = useState(20)
+  const [totalElements, setTotalElements] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
 
-  const loadSessions = async () => {
+  const loadSessions = async (page: number = currentPage, size: number = pageSize) => {
     setLoading(true)
     try {
-      const res = await SessionApi.list({ page: 0, size: 100, sortBy: "sessionId", sortDir: "desc" }) as any
+      const res = await SessionApi.list({ page, size, sortBy: "sessionId", sortDir: "desc" }) as any
       console.log("Sessions API response:", res)
       console.log("Sessions content:", res?.content)
-      setSessions(res?.content || [])
+      
+      if (res && typeof res === 'object' && 'content' in res) {
+        // Handle paginated response
+        setSessions(res.content || [])
+        setTotalElements(res.totalElements || 0)
+        setTotalPages(res.totalPages || 0)
+        setCurrentPage(res.number || 0)
+      } else {
+        // Handle non-paginated response (fallback)
+        setSessions(res || [])
+        setTotalElements((res || []).length)
+        setTotalPages(1)
+        setCurrentPage(0)
+      }
+      
       setInitialLoadCompleted(true)
     } catch (e: any) {
       console.error("Error loading sessions:", e)
@@ -56,6 +77,18 @@ export default function SessionsPage() {
     loadSessions()
   }, [])
 
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    loadSessions(page, pageSize)
+  }
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size)
+    setCurrentPage(0) // Reset to first page when changing page size
+    loadSessions(0, size)
+  }
+
   // Debounced server filter/sort/search
   useEffect(() => {
     if (!initialLoadCompleted) return
@@ -67,12 +100,25 @@ export default function SessionsPage() {
           customerName: searchQuery || undefined,
           computerName: searchQuery || undefined,
           status: statusFilter === "all" ? undefined : statusFilter,
-          page: 0,
-          size: 100,
+          page: currentPage,
+          size: pageSize,
           sortBy,
           sortDir,
         }) as any
-        setSessions(res?.content || [])
+        
+        if (res && typeof res === 'object' && 'content' in res) {
+          // Handle paginated response
+          setSessions(res.content || [])
+          setTotalElements(res.totalElements || 0)
+          setTotalPages(res.totalPages || 0)
+          setCurrentPage(res.number || 0)
+        } else {
+          // Handle non-paginated response (fallback)
+          setSessions(res || [])
+          setTotalElements((res || []).length)
+          setTotalPages(1)
+          setCurrentPage(0)
+        }
       } catch (e: any) {
         notify({ type: "error", message: `Lỗi tìm kiếm: ${e?.message || ''}` })
         setSessions([]) // Set empty array on error
@@ -81,7 +127,7 @@ export default function SessionsPage() {
       }
     }, 400)
     return () => clearTimeout(t)
-  }, [searchQuery, statusFilter, sortBy, sortDir, initialLoadCompleted])
+  }, [searchQuery, statusFilter, sortBy, sortDir, initialLoadCompleted, currentPage, pageSize])
 
   // Use sessions directly from server search (no client-side filtering)
   const displaySessions = sessions
@@ -456,6 +502,20 @@ export default function SessionsPage() {
                 </p>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Pagination */}
+          <div data-animate="pagination" className="mt-6">
+            <DataPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalElements={totalElements}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              showPageSizeSelector={true}
+              pageSizeOptions={[10, 20, 50, 100]}
+            />
           </div>
 
       <SessionFormSheet

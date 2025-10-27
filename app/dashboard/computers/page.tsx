@@ -17,6 +17,7 @@ import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 import { ComputerAnimations } from "@/components/animations/computer-animations"
 import { TourTrigger } from "@/components/ui/tour-trigger"
 import { LottieInlineLoading } from "@/components/ui/lottie-loading"
+import { DataPagination } from "@/components/ui/data-pagination"
 
 export default function ComputersPage() {
   const { notify } = useNotice()
@@ -33,30 +34,61 @@ export default function ComputersPage() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc")
   const [showTour, setShowTour] = useState(false)
   const [usageStats, setUsageStats] = useState<Map<number, ComputerUsageStats>>(new Map())
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0)
+  const [pageSize, setPageSize] = useState(20)
+  const [totalElements, setTotalElements] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
 
-  const loadComputers = async () => {
+  const loadComputers = async (page: number = currentPage, size: number = pageSize) => {
     try {
       setLoading(true)
-      const res = await withPageLoading(() => ComputerApi.list({ page: 0, size: 100, sortBy: "computerId", sortDir: "asc" }))
-      setComputers(res.content)
+      const res = await withPageLoading(() => ComputerApi.list({ page, size, sortBy: "computerId", sortDir: "asc" }))
       
-      // Load usage stats for all computers
-      const statsMap = new Map<number, ComputerUsageStats>()
-      for (const computer of res.content) {
-        try {
-          const stats = await ComputerApi.getUsageStats(computer.computerId)
-          statsMap.set(computer.computerId, stats)
-        } catch (e) {
-          // Silently fail for individual computer stats
-          console.warn(`Failed to load usage stats for computer ${computer.computerId}:`, e)
+      if (res && typeof res === 'object' && 'content' in res) {
+        // Handle paginated response
+        setComputers(res.content)
+        setTotalElements(res.totalElements || 0)
+        setTotalPages(res.totalPages || 0)
+        setCurrentPage(res.number || 0)
+        
+        // Load usage stats for all computers
+        const statsMap = new Map<number, ComputerUsageStats>()
+        for (const computer of res.content) {
+          try {
+            const stats = await ComputerApi.getUsageStats(computer.computerId)
+            statsMap.set(computer.computerId, stats)
+          } catch (e) {
+            // Silently fail for individual computer stats
+            console.warn(`Failed to load usage stats for computer ${computer.computerId}:`, e)
+          }
         }
+        setUsageStats(statsMap)
+      } else {
+        // Handle non-paginated response (fallback)
+        setComputers(res || [])
+        setTotalElements((res || []).length)
+        setTotalPages(1)
+        setCurrentPage(0)
       }
-      setUsageStats(statsMap)
     } catch (e: any) {
       notify({ type: "error", message: `Lỗi tải danh sách: ${e?.message || ''}` })
     } finally {
       setLoading(false)
     }
+  }
+
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    loadComputers(page, pageSize)
+  }
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size)
+    setCurrentPage(0) // Reset to first page when changing page size
+    loadComputers(0, size)
   }
 
   useEffect(() => {
@@ -73,13 +105,26 @@ export default function ComputersPage() {
           ComputerApi.search({
             name: searchQuery || undefined,
             status: statusFilter === "all" ? undefined : toApiStatus(statusFilter),
-            page: 0,
-            size: 100,
+            page: currentPage,
+            size: pageSize,
             sortBy,
             sortDir,
           })
         )
-        setComputers(res.content)
+        
+        if (res && typeof res === 'object' && 'content' in res) {
+          // Handle paginated response
+          setComputers(res.content)
+          setTotalElements(res.totalElements || 0)
+          setTotalPages(res.totalPages || 0)
+          setCurrentPage(res.number || 0)
+        } else {
+          // Handle non-paginated response (fallback)
+          setComputers(res || [])
+          setTotalElements((res || []).length)
+          setTotalPages(1)
+          setCurrentPage(0)
+        }
       } catch (e: any) {
         notify({ type: "error", message: `Lỗi tìm kiếm: ${e?.message || ''}` })
       } finally {
@@ -87,7 +132,7 @@ export default function ComputersPage() {
       }
     }, 400)
     return () => clearTimeout(t)
-  }, [searchQuery, statusFilter, sortBy, sortDir])
+  }, [searchQuery, statusFilter, sortBy, sortDir, currentPage, pageSize])
 
   const filteredComputers = useMemo(() => {
     return computers.filter((computer) => {
@@ -451,6 +496,20 @@ export default function ComputersPage() {
                 <p className="text-xs text-muted-foreground mt-1">Máy cần sửa chữa</p>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Pagination */}
+          <div data-animate="pagination" className="mt-6">
+            <DataPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalElements={totalElements}
+              pageSize={pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              showPageSizeSelector={true}
+              pageSizeOptions={[10, 20, 50, 100]}
+            />
           </div>
 
       <ComputerFormSheet
