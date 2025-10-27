@@ -336,7 +336,7 @@ export function SessionFormSheet({
                       {filteredCustomers.slice(0, 10).map((customer) => (
                         <CommandItem
                           key={customer.customerId}
-                          value={customer.customerId.toString()}
+                          value={`${customer.customerName} ${customer.phoneNumber}`}
                           onSelect={() => {
                             setFormData(prev => ({ ...prev, customerId: customer.customerId.toString() }))
                             setShowCustomerDropdown(false)
