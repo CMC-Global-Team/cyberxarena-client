@@ -493,6 +493,7 @@ export default function SessionsPage() {
               <CardContent>
                 <div className="text-2xl font-bold text-foreground">
                   {(() => {
+                    console.log('Calculating total hours. Sessions array:', sessions, 'Length:', sessions?.length)
                     const totalHours = (sessions || []).reduce((total, session) => {
                       if (!session.startTime) {
                         console.log('Session missing startTime:', session)
