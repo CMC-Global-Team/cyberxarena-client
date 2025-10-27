@@ -92,14 +92,25 @@ export function SessionFormSheet({
     try {
       const response = await CustomerApi.list({ page, size: 20 })
       console.log("Session - Customer API response:", response)
-      console.log("Session - Customer content:", response.content)
-      console.log("Session - Response type:", typeof response)
+      console.log("Session - Response type:", typeof response, "Is array:", Array.isArray(response))
       
-      // Handle paginated response
-      const customersData = response.content || []
+      // Handle both array response and PageResponse
+      let customersData: CustomerDTO[] = []
+      let totalPages = 1
+      
+      if (Array.isArray(response)) {
+        customersData = response
+        console.log("Session - Response is array with", customersData.length, "items")
+        totalPages = 1 // Single page for array response
+      } else if (response && typeof response === 'object' && 'content' in response) {
+        customersData = response.content || []
+        totalPages = response.totalPages || 1
+        console.log("Session - Response is PageResponse with", customersData.length, "items, total pages:", totalPages)
+      }
+      
       console.log("Session - Setting customers to:", customersData.length, "items")
       setCustomers(customersData)
-      setCustomerTotalPages(response.totalPages || 1)
+      setCustomerTotalPages(totalPages)
       setCustomerPage(page)
     } catch (error) {
       console.error("Session - Error loading customers:", error)
