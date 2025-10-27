@@ -48,6 +48,12 @@ export default function ComputersPage() {
       
       if (res && typeof res === 'object' && 'content' in res) {
         // Handle paginated response
+        console.log("Computers pagination data:", {
+          totalElements: res.totalElements,
+          totalPages: res.totalPages,
+          currentPage: res.number,
+          contentLength: res.content?.length
+        })
         setComputers(res.content)
         setTotalElements(res.totalElements || 0)
         setTotalPages(res.totalPages || 0)
@@ -67,6 +73,7 @@ export default function ComputersPage() {
         setUsageStats(statsMap)
       } else {
         // Handle non-paginated response (fallback)
+        console.log("Computers non-paginated response, setting totalPages to 1")
         setComputers(res || [])
         setTotalElements((res || []).length)
         setTotalPages(1)
@@ -94,6 +101,17 @@ export default function ComputersPage() {
   useEffect(() => {
     loadComputers()
   }, [])
+
+  // Debug pagination values
+  useEffect(() => {
+    console.log("Computers pagination state updated:", {
+      currentPage,
+      totalPages,
+      totalElements,
+      pageSize,
+      shouldShow: totalPages > 1
+    })
+  }, [currentPage, totalPages, totalElements, pageSize])
 
   // Debounced server filter/sort/search
   useEffect(() => {
