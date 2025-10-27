@@ -492,17 +492,45 @@ export default function SessionsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-foreground">
-                  {(sessions || []).reduce((total, session) => {
-                    if (!session.startTime) return total
-                    const start = new Date(session.startTime)
-                    const end = session.endTime ? new Date(session.endTime) : new Date()
-                    const diffMs = end.getTime() - start.getTime()
-                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-                    return total + diffHours
-                  }, 0)}h
+                  {(() => {
+                    const totalHours = (sessions || []).reduce((total, session) => {
+                      if (!session.startTime) {
+                        console.log('Session missing startTime:', session)
+                        return total
+                      }
+                      try {
+                        const start = new Date(session.startTime)
+                        const end = session.endTime ? new Date(session.endTime) : new Date()
+                        
+                        // Check for invalid dates
+                        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                          console.log('Invalid date in session:', { session, start: start.getTime(), end: end.getTime() })
+                          return total
+                        }
+                        
+                        const diffMs = end.getTime() - start.getTime()
+                        
+                        // Check for negative or invalid time difference
+                        if (diffMs < 0) {
+                          console.log('Negative time diff for session:', session.sessionId, 'diffMs:', diffMs)
+                          return total
+                        }
+                        
+                        const diffHours = diffMs / (1000 * 60 * 60)
+                        console.log(`Session ${session.sessionId}: ${diffHours.toFixed(2)}h (start: ${start}, end: ${end || 'NOW'})`)
+                        return total + diffHours
+                      } catch (e) {
+                        console.error('Error calculating time for session:', session, e)
+                        return total
+                      }
+                    }, 0)
+                    
+                    console.log('Total hours calculated:', totalHours)
+                    return totalHours.toFixed(1) + 'h'
+                  })()}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Tổng thời gian sử dụng
+                  {sessions?.length || 0} phiên
                 </p>
               </CardContent>
             </Card>
@@ -513,14 +541,47 @@ export default function SessionsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-foreground">
-                  {(sessions || []).reduce((total, session) => {
-                    if (!session.startTime) return total
-                    const start = new Date(session.startTime)
-                    const end = session.endTime ? new Date(session.endTime) : new Date()
-                    const diffMs = end.getTime() - start.getTime()
-                    const diffHours = diffMs / (1000 * 60 * 60)
-                    return total + (diffHours * Number(session.pricePerHour || 0))
-                  }, 0).toLocaleString('vi-VN')}đ
+                  {(() => {
+                    const totalRevenue = (sessions || []).reduce((total, session) => {
+                      if (!session.startTime) {
+                        console.log('Session missing startTime for revenue:', session)
+                        return total
+                      }
+                      if (!session.pricePerHour) {
+                        console.log('Session missing pricePerHour:', session)
+                        return total
+                      }
+                      try {
+                        const start = new Date(session.startTime)
+                        const end = session.endTime ? new Date(session.endTime) : new Date()
+                        
+                        // Check for invalid dates
+                        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                          console.log('Invalid date in session for revenue:', { session, start: start.getTime(), end: end.getTime() })
+                          return total
+                        }
+                        
+                        const diffMs = end.getTime() - start.getTime()
+                        
+                        // Check for negative or invalid time difference
+                        if (diffMs < 0) {
+                          console.log('Negative time diff for session revenue:', session.sessionId, 'diffMs:', diffMs)
+                          return total
+                        }
+                        
+                        const diffHours = diffMs / (1000 * 60 * 60)
+                        const revenue = diffHours * Number(session.pricePerHour)
+                        console.log(`Session ${session.sessionId}: ${revenue.toLocaleString('vi-VN')}đ (${diffHours.toFixed(2)}h × ${session.pricePerHour}đ/h)`)
+                        return total + revenue
+                      } catch (e) {
+                        console.error('Error calculating revenue for session:', session, e)
+                        return total
+                      }
+                    }, 0)
+                    
+                    console.log('Total revenue calculated:', totalRevenue)
+                    return totalRevenue.toLocaleString('vi-VN') + 'đ'
+                  })()}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   Tổng doanh thu từ phiên
