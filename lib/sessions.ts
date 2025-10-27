@@ -116,6 +116,7 @@ export class SessionApi {
           hasAccount: !!account,
           accountUsername: account?.username,
           computerName: computer?.computerName || 'Unknown Computer',
+          pricePerHour: computer?.pricePerHour, // Get price from computer
           // Calculate status based on endTime
           status: (session.endTime ? 'Ended' : 'Active') as "Active" | "Ended"
         }
