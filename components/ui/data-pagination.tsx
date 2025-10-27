@@ -88,7 +88,8 @@ export function DataPagination({
 
   const pages = generatePageNumbers()
 
-  if (totalPages <= 1) {
+  // Always show pagination if there's data
+  if (totalElements === 0) {
     return null
   }
 
