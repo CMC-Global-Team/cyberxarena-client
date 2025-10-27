@@ -88,7 +88,12 @@ export const revenueApi = {
       
       const revenues = data.content || [];
       
+      console.log('🔍 Revenue API getStats - Raw data:', data);
+      console.log('🔍 Revenue API getStats - Revenues array:', revenues);
+      console.log('🔍 Revenue API getStats - Revenues length:', revenues.length);
+      
       if (revenues.length === 0) {
+        console.log('⚠️ No revenue data found');
         return {
           totalRevenue: 0,
           totalComputerUsageRevenue: 0,
@@ -103,6 +108,13 @@ export const revenueApi = {
       const totalComputerUsageRevenue = revenues.reduce((sum, r) => sum + r.computerUsageRevenue, 0);
       const totalSalesRevenue = revenues.reduce((sum, r) => sum + r.salesRevenue, 0);
       const averageDailyRevenue = totalRevenue / revenues.length;
+      
+      console.log('💰 Calculated stats:', {
+        totalRevenue,
+        totalComputerUsageRevenue,
+        totalSalesRevenue,
+        averageDailyRevenue
+      });
       
       // Tính revenue growth (so với kỳ trước - giả sử)
       const revenueGrowth = 0; // TODO: Implement proper growth calculation
