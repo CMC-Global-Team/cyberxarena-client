@@ -17,6 +17,7 @@ import { CustomerApi, type CustomerDTO } from "@/lib/customers"
 import { ComputerApi, type ComputerDTO } from "@/lib/computers"
 import { useNotice } from "@/components/notice-provider"
 import { useLoading } from "@/components/loading-provider"
+import { Spinner } from "@/components/ui/spinner"
 
 interface SessionFormSheetProps {
   open: boolean
@@ -46,13 +47,19 @@ export function SessionFormSheet({
   const [computers, setComputers] = useState<ComputerDTO[]>([])
   const [activeSessions, setActiveSessions] = useState<SessionDTO[]>([])
   const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   // Load customers, computers, and active sessions
   useEffect(() => {
     if (open) {
-      loadCustomers()
-      loadComputers()
-      loadActiveSessions()
+      setIsLoading(true)
+      Promise.all([
+        loadCustomers(),
+        loadComputers(),
+        loadActiveSessions()
+      ]).finally(() => {
+        setIsLoading(false)
+      })
     }
   }, [open])
 
@@ -250,7 +257,19 @@ export function SessionFormSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 py-6">
+        {/* Loading Overlay */}
+        {isLoading && (
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-3">
+              <Spinner className="h-8 w-8 text-primary" />
+              <span className="text-sm text-muted-foreground font-medium">
+                Đang tải dữ liệu...
+              </span>
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className={cn("space-y-6 py-6", isLoading && "pointer-events-none opacity-50")}>
           {/* Customer Selection */}
           <div className="space-y-2">
             <Label htmlFor="customerId" className="flex items-center gap-2">
@@ -260,6 +279,7 @@ export function SessionFormSheet({
             <Select
               value={formData.customerId}
               onValueChange={(value) => setFormData(prev => ({ ...prev, customerId: value }))}
+              disabled={isLoading}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Chọn khách hàng" />
@@ -350,6 +370,7 @@ export function SessionFormSheet({
             <Select
               value={formData.computerId}
               onValueChange={(value) => setFormData(prev => ({ ...prev, computerId: value }))}
+              disabled={isLoading}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Chọn máy tính" />
@@ -388,6 +409,7 @@ export function SessionFormSheet({
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
+                  disabled={isLoading}
                   className={cn(
                     "w-full justify-start text-left font-normal",
                     !formData.startTime && "text-muted-foreground"
