@@ -60,11 +60,6 @@ export default function SessionsPage() {
   useEffect(() => {
     if (!initialLoadCompleted) return
     
-    // Skip if no search query and filter is "all" (use initial load result)
-    if (!searchQuery && statusFilter === "all" && sortBy === "sessionId" && sortDir === "desc") {
-      return
-    }
-    
     const t = setTimeout(async () => {
       setLoading(true)
       try {
@@ -88,21 +83,8 @@ export default function SessionsPage() {
     return () => clearTimeout(t)
   }, [searchQuery, statusFilter, sortBy, sortDir, initialLoadCompleted])
 
-  const filteredSessions = useMemo(() => {
-    if (!sessions || !Array.isArray(sessions)) return []
-    const query = searchQuery || ''
-    return sessions.filter((session) => {
-      const customerName = session.customerName || ''
-      const computerName = session.computerName || ''
-      const sessionId = session.sessionId || ''
-      
-      return (
-        customerName.toLowerCase().includes(query.toLowerCase()) ||
-        computerName.toLowerCase().includes(query.toLowerCase()) ||
-        sessionId.toString().includes(query)
-      )
-    })
-  }, [sessions, searchQuery])
+  // Use sessions directly from server search (no client-side filtering)
+  const displaySessions = sessions
 
   const handleOpenActions = (session: SessionDTO) => {
     setSelectedSession(session)
@@ -300,7 +282,7 @@ export default function SessionsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredSessions.map((session) => (
+                    {displaySessions.map((session) => (
                       <tr key={session.sessionId} data-animate="table-row" className="border-b border-border hover:bg-secondary/50 transition-colors">
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
@@ -397,7 +379,7 @@ export default function SessionsPage() {
                   </tbody>
                 </table>
               </div>
-              {(!loading && initialLoadCompleted && filteredSessions.length === 0) && (
+              {(!loading && initialLoadCompleted && displaySessions.length === 0) && (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">Không tìm thấy phiên sử dụng nào</p>
                 </div>
