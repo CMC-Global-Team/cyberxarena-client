@@ -50,12 +50,19 @@ export default function SessionsPage() {
       
       if (res && typeof res === 'object' && 'content' in res) {
         // Handle paginated response
+        console.log("Pagination data:", {
+          totalElements: res.totalElements,
+          totalPages: res.totalPages,
+          currentPage: res.number,
+          contentLength: res.content?.length
+        })
         setSessions(res.content || [])
         setTotalElements(res.totalElements || 0)
         setTotalPages(res.totalPages || 0)
         setCurrentPage(res.number || 0)
       } else {
         // Handle non-paginated response (fallback)
+        console.log("Non-paginated response, setting totalPages to 1")
         setSessions(res || [])
         setTotalElements((res || []).length)
         setTotalPages(1)
@@ -76,6 +83,17 @@ export default function SessionsPage() {
   useEffect(() => {
     loadSessions()
   }, [])
+
+  // Debug pagination values
+  useEffect(() => {
+    console.log("Pagination state updated:", {
+      currentPage,
+      totalPages,
+      totalElements,
+      pageSize,
+      shouldShow: totalPages > 1
+    })
+  }, [currentPage, totalPages, totalElements, pageSize])
 
   // Pagination handlers
   const handlePageChange = (page: number) => {
@@ -108,12 +126,19 @@ export default function SessionsPage() {
         
         if (res && typeof res === 'object' && 'content' in res) {
           // Handle paginated response
+          console.log("Search pagination data:", {
+            totalElements: res.totalElements,
+            totalPages: res.totalPages,
+            currentPage: res.number,
+            contentLength: res.content?.length
+          })
           setSessions(res.content || [])
           setTotalElements(res.totalElements || 0)
           setTotalPages(res.totalPages || 0)
           setCurrentPage(res.number || 0)
         } else {
           // Handle non-paginated response (fallback)
+          console.log("Search non-paginated response, setting totalPages to 1")
           setSessions(res || [])
           setTotalElements((res || []).length)
           setTotalPages(1)
