@@ -35,6 +35,7 @@ export default function SessionsPage() {
   const [showTour, setShowTour] = useState(false)
 
   const loadSessions = async () => {
+    setLoading(true)
     try {
       const res = await withPageLoading(() => SessionApi.list({ page: 0, size: 100, sortBy: "sessionId", sortDir: "desc" })) as any
       console.log("Sessions API response:", res)
@@ -46,6 +47,8 @@ export default function SessionsPage() {
       notify({ type: "error", message: `Lỗi tải danh sách: ${e?.message || ''}` })
       setSessions([]) // Set empty array on error
       setInitialLoadCompleted(true)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -63,6 +66,7 @@ export default function SessionsPage() {
     }
     
     const t = setTimeout(async () => {
+      setLoading(true)
       try {
         const res = await withPageLoading(() =>
           SessionApi.search({
@@ -79,6 +83,8 @@ export default function SessionsPage() {
       } catch (e: any) {
         notify({ type: "error", message: `Lỗi tìm kiếm: ${e?.message || ''}` })
         setSessions([]) // Set empty array on error
+      } finally {
+        setLoading(false)
       }
     }, 400)
     return () => clearTimeout(t)
@@ -205,7 +211,7 @@ export default function SessionsPage() {
   }
 
   return (
-    <OptimizedPageLayout isLoading={isLoading} pageType="sessions">
+    <OptimizedPageLayout isLoading={isLoading || loading} pageType="sessions">
       <SessionAnimations>
         <div className="p-6 space-y-6">
           {/* Header */}
