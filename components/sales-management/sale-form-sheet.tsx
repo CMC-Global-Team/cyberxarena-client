@@ -103,11 +103,17 @@ export function SaleFormSheet({ sale, mode, onSuccess, children, open: controlle
   const loadCustomers = async (page: number) => {
     try {
       const response = await CustomerApi.list({ page, size: 20 })
-      setCustomers(response.content || [])
+      console.log("Sale - Customer API response:", response)
+      console.log("Sale - Customer content:", response.content)
+      console.log("Sale - Response type:", typeof response)
+      
+      const customersData = response.content || []
+      console.log("Sale - Setting customers to:", customersData.length, "items")
+      setCustomers(customersData)
       setCustomerTotalPages(response.totalPages || 1)
       setCustomerPage(page)
     } catch (error) {
-      console.error("Error loading customers:", error)
+      console.error("Sale - Error loading customers:", error)
     }
   }
 
