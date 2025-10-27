@@ -16,6 +16,7 @@ import { useNotice } from "@/components/notice-provider"
 import { usePageLoading } from "@/hooks/use-page-loading"
 import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 import { SessionAnimations } from "@/components/animations/session-animations"
+import { LottieInlineLoading } from "@/components/ui/lottie-loading"
 
 export default function SessionsPage() {
   const { notify } = useNotice()
@@ -291,7 +292,14 @@ export default function SessionsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredSessions.map((session) => (
+                    {isLoading ? (
+                      <tr>
+                        <td colSpan={8} className="py-12">
+                          <LottieInlineLoading text="Đang tải danh sách phiên sử dụng..." />
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredSessions.map((session) => (
                       <tr key={session.sessionId} data-animate="table-row" className="border-b border-border hover:bg-secondary/50 transition-colors">
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
@@ -384,7 +392,8 @@ export default function SessionsPage() {
                           </Button>
                         </td>
                       </tr>
-                    ))}
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

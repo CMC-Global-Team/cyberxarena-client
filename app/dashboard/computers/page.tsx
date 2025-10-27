@@ -16,6 +16,7 @@ import { usePageLoading } from "@/hooks/use-page-loading"
 import { OptimizedPageLayout } from "@/components/ui/optimized-page-layout"
 import { ComputerAnimations } from "@/components/animations/computer-animations"
 import { TourTrigger } from "@/components/ui/tour-trigger"
+import { LottieInlineLoading } from "@/components/ui/lottie-loading"
 
 export default function ComputersPage() {
   const { notify } = useNotice()
@@ -292,7 +293,14 @@ export default function ComputersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredComputers.map((computer) => (
+                    {isLoading ? (
+                      <tr>
+                        <td colSpan={7} className="py-12">
+                          <LottieInlineLoading text="Đang tải danh sách máy tính..." />
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredComputers.map((computer) => (
                       <tr key={computer.computerId} data-animate="table-row" className="border-b border-border hover:bg-secondary/50 transition-colors">
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
@@ -377,7 +385,8 @@ export default function ComputersPage() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
