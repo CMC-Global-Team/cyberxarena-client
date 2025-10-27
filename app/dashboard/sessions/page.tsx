@@ -37,7 +37,7 @@ export default function SessionsPage() {
   const loadSessions = async () => {
     setLoading(true)
     try {
-      const res = await withPageLoading(() => SessionApi.list({ page: 0, size: 100, sortBy: "sessionId", sortDir: "desc" })) as any
+      const res = await SessionApi.list({ page: 0, size: 100, sortBy: "sessionId", sortDir: "desc" }) as any
       console.log("Sessions API response:", res)
       console.log("Sessions content:", res?.content)
       setSessions(res?.content || [])
@@ -68,17 +68,15 @@ export default function SessionsPage() {
     const t = setTimeout(async () => {
       setLoading(true)
       try {
-        const res = await withPageLoading(() =>
-          SessionApi.search({
-            customerName: searchQuery || undefined,
-            computerName: searchQuery || undefined,
-            status: statusFilter === "all" ? undefined : statusFilter,
-            page: 0,
-            size: 100,
-            sortBy,
-            sortDir,
-          })
-        ) as any
+        const res = await SessionApi.search({
+          customerName: searchQuery || undefined,
+          computerName: searchQuery || undefined,
+          status: statusFilter === "all" ? undefined : statusFilter,
+          page: 0,
+          size: 100,
+          sortBy,
+          sortDir,
+        }) as any
         setSessions(res?.content || [])
       } catch (e: any) {
         notify({ type: "error", message: `Lỗi tìm kiếm: ${e?.message || ''}` })
@@ -211,7 +209,7 @@ export default function SessionsPage() {
   }
 
   return (
-    <OptimizedPageLayout isLoading={isLoading || loading} pageType="sessions">
+    <OptimizedPageLayout isLoading={loading} pageType="sessions">
       <SessionAnimations>
         <div className="p-6 space-y-6">
           {/* Header */}
@@ -399,7 +397,7 @@ export default function SessionsPage() {
                   </tbody>
                 </table>
               </div>
-              {(!isLoading && !loading && initialLoadCompleted && filteredSessions.length === 0) && (
+              {(!loading && initialLoadCompleted && filteredSessions.length === 0) && (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">Không tìm thấy phiên sử dụng nào</p>
                 </div>
