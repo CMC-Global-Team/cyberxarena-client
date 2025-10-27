@@ -432,7 +432,7 @@ export function SaleFormSheet({ sale, mode, onSuccess, children, open: controlle
                       {filteredCustomers.slice(0, 10).map((customer) => (
                         <CommandItem
                           key={customer.customerId}
-                          value={customer.customerId.toString()}
+                          value={`${customer.customerName} ${customer.phoneNumber}`}
                           onSelect={() => {
                             setFormData(prev => ({ ...prev, customerId: customer.customerId }))
                             setSelectedCustomer(customer)
