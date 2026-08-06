@@ -15,7 +15,9 @@ const envFlag = (typeof process !== "undefined" ? process.env.NEXT_PUBLIC_API_EN
 
 export const API_ENV: ApiEnvironment = envFlag ?? (process.env.NODE_ENV === "production" ? "production" : "local");
 
-export const API_BASE_URL = BASE_URLS[API_ENV];
+export const API_BASE_URL =
+  (typeof process !== "undefined" && process.env.NEXT_PUBLIC_API_URL) ||
+  BASE_URLS[API_ENV];
 
 export const withBaseUrl = (path: string): string => {
   if (!path) return API_BASE_URL;
