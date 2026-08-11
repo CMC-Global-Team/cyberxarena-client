@@ -20,64 +20,77 @@ export function BackgroundAnimations() {
     const tl = gsap.timeline({ repeat: -1 })
 
     // Circle 1 - Rolling left to right
-    tl.to(circle1Ref.current, {
-      x: "100vw",
-      rotation: 360,
-      duration: 8,
-      ease: "none"
-    })
+    if (circle1Ref.current) {
+      tl.to(circle1Ref.current, {
+        x: "100vw",
+        rotation: 360,
+        duration: 8,
+        ease: "none"
+      }, 0)
+    }
 
     // Circle 2 - Rolling right to left
-    tl.to(circle2Ref.current, {
-      x: "-100vw",
-      rotation: -360,
-      duration: 10,
-      ease: "none"
-    }, 0)
+    if (circle2Ref.current) {
+      tl.to(circle2Ref.current, {
+        x: "-100vw",
+        rotation: -360,
+        duration: 10,
+        ease: "none"
+      }, 0)
+    }
 
     // Circle 3 - Rolling up and down
-    tl.to(circle3Ref.current, {
-      y: "-100vh",
-      rotation: 180,
-      duration: 12,
-      ease: "none"
-    }, 0)
+    if (circle3Ref.current) {
+      tl.to(circle3Ref.current, {
+        y: "-100vh",
+        rotation: 180,
+        duration: 12,
+        ease: "none"
+      }, 0)
+    }
 
     // Square 1 - Rolling diagonal
-    tl.to(square1Ref.current, {
-      x: "100vw",
-      y: "100vh",
-      rotation: 720,
-      duration: 15,
-      ease: "none"
-    }, 0)
+    if (square1Ref.current) {
+      tl.to(square1Ref.current, {
+        x: "100vw",
+        y: "100vh",
+        rotation: 720,
+        duration: 15,
+        ease: "none"
+      }, 0)
+    }
 
     // Square 2 - Rolling opposite diagonal
-    tl.to(square2Ref.current, {
-      x: "-100vw",
-      y: "-100vh",
-      rotation: -720,
-      duration: 18,
-      ease: "none"
-    }, 0)
+    if (square2Ref.current) {
+      tl.to(square2Ref.current, {
+        x: "-100vw",
+        y: "-100vh",
+        rotation: -720,
+        duration: 18,
+        ease: "none"
+      }, 0)
+    }
 
-    // Triangle 1 - Rolling in figure 8
-    tl.to(triangle1Ref.current, {
-      motionPath: {
-        path: "M0,0 Q50,50 100,0 Q150,-50 200,0 Q250,50 300,0 Q350,-50 400,0",
-        autoRotate: true
-      },
-      duration: 20,
-      ease: "none"
-    }, 0)
+    // Triangle 1 - Rolling in figure 8 (standard x/y keyframes)
+    if (triangle1Ref.current) {
+      tl.to(triangle1Ref.current, {
+        x: "150px",
+        y: "30px",
+        rotation: 360,
+        duration: 20,
+        ease: "none"
+      }, 0)
+    }
 
     // Triangle 2 - Rolling in circle
-    tl.to(triangle2Ref.current, {
-      rotation: 360,
-      transformOrigin: "center center",
-      duration: 6,
-      ease: "none"
-    }, 0)
+    if (triangle2Ref.current) {
+      tl.to(triangle2Ref.current, {
+        rotation: 360,
+        transformOrigin: "center center",
+        duration: 6,
+        ease: "none"
+      }, 0)
+    }
 
     return () => {
       tl.kill()
@@ -203,25 +216,31 @@ export function RotatingElements() {
     const tl = gsap.timeline({ repeat: -1 })
 
     // Gear 1 - Clockwise rotation
-    tl.to(gear1Ref.current, {
-      rotation: 360,
-      duration: 4,
-      ease: "none"
-    })
+    if (gear1Ref.current) {
+      tl.to(gear1Ref.current, {
+        rotation: 360,
+        duration: 4,
+        ease: "none"
+      })
+    }
 
     // Gear 2 - Counter-clockwise rotation
-    tl.to(gear2Ref.current, {
-      rotation: -360,
-      duration: 6,
-      ease: "none"
-    }, 0)
+    if (gear2Ref.current) {
+      tl.to(gear2Ref.current, {
+        rotation: -360,
+        duration: 6,
+        ease: "none"
+      }, 0)
+    }
 
     // Gear 3 - Fast rotation
-    tl.to(gear3Ref.current, {
-      rotation: 720,
-      duration: 3,
-      ease: "none"
-    }, 0)
+    if (gear3Ref.current) {
+      tl.to(gear3Ref.current, {
+        rotation: 720,
+        duration: 3,
+        ease: "none"
+      }, 0)
+    }
 
     return () => {
       tl.kill()

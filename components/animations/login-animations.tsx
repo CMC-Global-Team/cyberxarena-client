@@ -27,25 +27,23 @@ export function LoginAnimations({ children }: LoginAnimationsProps) {
       transformOrigin: "center center"
     })
     
-    gsap.set([titleRef.current, descriptionRef.current], { 
-      y: 30, 
-      opacity: 0 
-    })
+    const validTitleDesc = [titleRef.current, descriptionRef.current].filter(Boolean)
+    if (validTitleDesc.length > 0) {
+      gsap.set(validTitleDesc, { y: 30, opacity: 0 })
+    }
     
-    gsap.set(formRef.current, { 
-      y: 50, 
-      opacity: 0 
-    })
+    if (formRef.current) {
+      gsap.set(formRef.current, { y: 50, opacity: 0 })
+    }
     
-    gsap.set(inputsRef.current, { 
-      x: -50, 
-      opacity: 0 
-    })
+    const validInputs = inputsRef.current.filter(Boolean)
+    if (validInputs.length > 0) {
+      gsap.set(validInputs, { x: -50, opacity: 0 })
+    }
     
-    gsap.set(buttonRef.current, { 
-      scale: 0.8, 
-      opacity: 0 
-    })
+    if (buttonRef.current) {
+      gsap.set(buttonRef.current, { scale: 0.8, opacity: 0 })
+    }
 
     // Create timeline
     const tl = gsap.timeline({ delay: 0.2 })
@@ -60,38 +58,46 @@ export function LoginAnimations({ children }: LoginAnimationsProps) {
     })
 
     // Title and description animation
-    tl.to([titleRef.current, descriptionRef.current], {
-      y: 0,
-      opacity: 1,
-      duration: 0.6,
-      stagger: 0.1,
-      ease: "power2.out"
-    }, "-=0.4")
+    if (validTitleDesc.length > 0) {
+      tl.to(validTitleDesc, {
+        y: 0,
+        opacity: 1,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: "power2.out"
+      }, "-=0.4")
+    }
 
     // Form animation
-    tl.to(formRef.current, {
-      y: 0,
-      opacity: 1,
-      duration: 0.6,
-      ease: "power2.out"
-    }, "-=0.3")
+    if (formRef.current) {
+      tl.to(formRef.current, {
+        y: 0,
+        opacity: 1,
+        duration: 0.6,
+        ease: "power2.out"
+      }, "-=0.3")
+    }
 
     // Inputs staggered animation
-    tl.to(inputsRef.current, {
-      x: 0,
-      opacity: 1,
-      duration: 0.5,
-      stagger: 0.15,
-      ease: "power2.out"
-    }, "-=0.2")
+    if (validInputs.length > 0) {
+      tl.to(validInputs, {
+        x: 0,
+        opacity: 1,
+        duration: 0.5,
+        stagger: 0.15,
+        ease: "power2.out"
+      }, "-=0.2")
+    }
 
     // Button animation
-    tl.to(buttonRef.current, {
-      scale: 1,
-      opacity: 1,
-      duration: 0.5,
-      ease: "back.out(1.7)"
-    }, "-=0.1")
+    if (buttonRef.current) {
+      tl.to(buttonRef.current, {
+        scale: 1,
+        opacity: 1,
+        duration: 0.5,
+        ease: "back.out(1.7)"
+      }, "-=0.1")
+    }
 
     // Add floating animation
     tl.to(cardRef.current, {

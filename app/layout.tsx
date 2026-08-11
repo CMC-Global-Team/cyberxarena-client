@@ -54,8 +54,12 @@ export default function RootLayout({
             </NoticeProvider>
           </LoadingProvider>
         </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
+        {process.env.VERCEL && (
+          <>
+            <Analytics />
+            <SpeedInsights />
+          </>
+        )}
       </body>
     </html>
   )
