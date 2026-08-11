@@ -4,7 +4,7 @@ export type ApiEnvironment = "production" | "local";
 
 // Base URLs
 const BASE_URLS: Record<ApiEnvironment, string> = {
-  production: "https://cyberxarena-server.onrender.com/api/v1",
+  production: "https://cyberxarena-server-ollt.onrender.com/api/v1",
   local: "http://localhost:8080/api/v1",
 };
 
